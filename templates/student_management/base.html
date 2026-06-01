@@ -1032,7 +1032,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="">
+                        <a href="{% url 'student_management:student_list' %}" class="{% if request.path == '/student-management/students/' %}active{% endif %}">
                             <i class="icofont-users-alt-3"></i>
                             Students
                         </a>

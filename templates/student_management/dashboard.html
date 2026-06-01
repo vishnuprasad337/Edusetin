@@ -18,7 +18,7 @@
                     <i class="icon">👥</i>
                 </div>
             </div>
-            <div class="stat-value">124</div>
+            <div class="stat-value">{{ total_students }}</div>
             <div class="stat-change">
                 <span class="text-muted">Total students registered</span>
             </div>
@@ -131,30 +131,24 @@
             </div>
             
             <ul class="data-list">
-                <!-- Placeholders -->
+                {% for student in recent_students %}
                 <li class="data-item">
                     <div class="data-icon">👤</div>
                     <div class="data-content">
-                        <p><strong>John Doe</strong> registered</p>
-                        <div class="data-time">2 hours ago</div>
+                        <p><strong>{{ student.full_name }}</strong> registered</p>
+                        <div class="data-time">{{ student.created_at|timesince }} ago</div>
                     </div>
+                    {% if forloop.first %}
                     <span class="badge badge-primary">New</span>
+                    {% endif %}
                 </li>
+                {% empty %}
                 <li class="data-item">
-                    <div class="data-icon">👤</div>
                     <div class="data-content">
-                        <p><strong>Jane Smith</strong> registered</p>
-                        <div class="data-time">5 hours ago</div>
-                    </div>
-                    <span class="badge badge-primary">New</span>
-                </li>
-                <li class="data-item">
-                    <div class="data-icon">👤</div>
-                    <div class="data-content">
-                        <p><strong>Alice Johnson</strong> registered</p>
-                        <div class="data-time">1 day ago</div>
+                        <p class="text-muted">No recent students.</p>
                     </div>
                 </li>
+                {% endfor %}
             </ul>
         </div>
         

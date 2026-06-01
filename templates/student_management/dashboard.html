@@ -1,0 +1,286 @@
+{% extends "student_management/base.html" %}
+{% load static %}
+
+{% block title %}Student Management Dashboard | EdusetIn{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'student_management/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <!-- Students -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Students</div>
+                <div class="stat-icon icon-blue">
+                    <i class="icon">👥</i>
+                </div>
+            </div>
+            <div class="stat-value">124</div>
+            <div class="stat-change">
+                <span class="text-muted">Total students registered</span>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Categories</div>
+                <div class="stat-icon icon-green">
+                    <i class="icon">📁</i>
+                </div>
+            </div>
+            <div class="stat-value">12</div>
+            <div class="stat-change">
+                <span class="text-muted">Test categories</span>
+            </div>
+        </div>
+
+        <!-- Topics -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Topics</div>
+                <div class="stat-icon icon-purple">
+                    <i class="icon">📑</i>
+                </div>
+            </div>
+            <div class="stat-value">48</div>
+            <div class="stat-change">
+                <span class="text-muted">Subject topics</span>
+            </div>
+        </div>
+
+        <!-- Questions -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Questions</div>
+                <div class="stat-icon icon-orange">
+                    <i class="icon">❓</i>
+                </div>
+            </div>
+            <div class="stat-value">1,250</div>
+            <div class="stat-change">
+                <span class="text-muted">Question bank size</span>
+            </div>
+        </div>
+
+        <!-- Mock Tests -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Mock Tests</div>
+                <div class="stat-icon icon-blue">
+                    <i class="icon">📝</i>
+                </div>
+            </div>
+            <div class="stat-value">25</div>
+            <div class="stat-change">
+                <span class="text-muted">Active mock tests</span>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Results</div>
+                <div class="stat-icon icon-green">
+                    <i class="icon">📊</i>
+                </div>
+            </div>
+            <div class="stat-value">845</div>
+            <div class="stat-change">
+                <span class="text-muted">Test attempts</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-container">
+        <!-- Student Registrations -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">Student Registrations</div>
+                <div class="chart-actions">
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="registrationsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Mock Test Activity -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">Mock Test Activity</div>
+                <div class="chart-actions">
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Grids -->
+    <div class="data-grid">
+        <!-- Recent Students -->
+        <div class="data-card">
+            <div class="data-header">
+                <div class="data-title">Recent Students</div>
+            </div>
+            
+            <ul class="data-list">
+                <!-- Placeholders -->
+                <li class="data-item">
+                    <div class="data-icon">👤</div>
+                    <div class="data-content">
+                        <p><strong>John Doe</strong> registered</p>
+                        <div class="data-time">2 hours ago</div>
+                    </div>
+                    <span class="badge badge-primary">New</span>
+                </li>
+                <li class="data-item">
+                    <div class="data-icon">👤</div>
+                    <div class="data-content">
+                        <p><strong>Jane Smith</strong> registered</p>
+                        <div class="data-time">5 hours ago</div>
+                    </div>
+                    <span class="badge badge-primary">New</span>
+                </li>
+                <li class="data-item">
+                    <div class="data-icon">👤</div>
+                    <div class="data-content">
+                        <p><strong>Alice Johnson</strong> registered</p>
+                        <div class="data-time">1 day ago</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Latest Mock Tests -->
+        <div class="data-card">
+            <div class="data-header">
+                <div class="data-title">Latest Mock Tests</div>
+            </div>
+            
+            <ul class="data-list">
+                <li class="data-item">
+                    <div class="data-icon">📝</div>
+                    <div class="data-content">
+                        <p><strong>IELTS Academic Mock 1</strong> - Published</p>
+                        <div class="data-time">3 days ago</div>
+                    </div>
+                </li>
+                <li class="data-item">
+                    <div class="data-icon">📝</div>
+                    <div class="data-content">
+                        <p><strong>PTE Core Practice 4</strong> - Published</p>
+                        <div class="data-time">1 week ago</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Top Performers -->
+        <div class="data-card">
+            <div class="data-header">
+                <div class="data-title">Top Performers</div>
+            </div>
+            
+            <ul class="data-list">
+                <li class="data-item">
+                    <div class="data-icon">🏆</div>
+                    <div class="data-content">
+                        <p><strong>Michael Brown</strong></p>
+                        <div class="data-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 95%"></div>
+                            </div>
+                            <span>95%</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="data-item">
+                    <div class="data-icon">🥈</div>
+                    <div class="data-content">
+                        <p><strong>Emily Davis</strong></p>
+                        <div class="data-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%"></div>
+                            </div>
+                            <span>92%</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="data-item">
+                    <div class="data-icon">🥉</div>
+                    <div class="data-content">
+                        <p><strong>Robert Wilson</strong></p>
+                        <div class="data-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 88%"></div>
+                            </div>
+                            <span>88%</span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Student Registrations Chart
+    var ctx1 = document.getElementById('registrationsChart');
+    if (ctx1) {
+        new Chart(ctx1.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'New Registrations',
+                    data: [12, 19, 15, 22, 28, 24],
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Mock Test Activity Chart
+    var ctx2 = document.getElementById('activityChart');
+    if (ctx2) {
+        new Chart(ctx2.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Test Attempts',
+                    data: [45, 52, 38, 65],
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+</script>
+{% endblock %}

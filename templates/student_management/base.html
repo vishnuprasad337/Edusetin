@@ -967,9 +967,10 @@
 
         <div class="header-right">
            
-           <a href="{% url 'student_management:dashboard' %}" target="_blank" class="btn btn-primary btn-sm d-flex align-items-center gap-2">
-               <i class="icofont-users-alt-3"></i> <span class="d-none d-sm-inline">Student Management</span>
-           </a>
+   
+
+
+            
 
            <div class="user-profile-dropdown">
     <div class="user-profile-toggle">
@@ -1018,140 +1019,55 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Dashboard Sidebar -->
+        <!-- Dashboard Sidebar -->
     <aside class="dashboard-sidebar" id="dashboardSidebar">
         <div class="sidebar-content">
-
             <!-- Main Section -->
             <div class="sidebar-section">
-                <h6 class="sidebar-title">Main</h6>
+                <h6 class="sidebar-title">Student Management</h6>
                 <ul class="sidebar-menu">
                     <li>
-    <a href="{% url 'admin-dashboard' %}" class="{% if request.path == '/admin-dashboard/' %}active{% endif %}">
-        <i class="icofont-dashboard"></i>
-        Dashboard
-    </a>
-</li>
-                    <li class="has-dropdown">
-                        <a href="#">
-                            <i class="icofont-ui-messaging"></i>
-                            Enquiries
+                        <a href="{% url 'student_management:dashboard' %}" class="{% if request.path == '/student-management/' %}active{% endif %}">
+                            <i class="icofont-dashboard"></i>
+                            Dashboard
                         </a>
-                        <ul class="submenu">
-                            <li>
-                                <a href="{% url 'admin_contacts' %}" class="{% if request.path == '/admin-contacts/' %}active{% endif %}">
-                                    Course Enquiries
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'application_list' %}" class="{% if request.path == '/application-list/' %}active{% endif %}">
-                                    Applications
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'inquiry_list' %}" class="{% if request.path == '/application-list/' %}active{% endif %}">
-                                    Get In Touch
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'chatbot_enquiries_list' %}" class="{% if request.path == '/application-list/' %}active{% endif %}">
-                                    Chatbot inquiry
-                                </a>
-                            </li>
-                             <li>
-                                <a href="{% url 'subscriber_list' %}" class="{% if request.path == '/application-list/' %}active{% endif %}">
-                                    News letters
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Add this toast container near the end of your body, before the scripts -->
-
-
-            <!-- Management Section -->
-            <div class="sidebar-section">
-                <h6 class="sidebar-title">Management</h6>
-                <ul class="sidebar-menu">
-                    <li>
-                        <a href="{% url 'country_list' %}" class="{% if request.path == '/country-list/' %}active{% endif %}">
-                            <i class="icofont-globe"></i>
-                            Countries
-                        </a>
-                    </li>
-                   <li>
-    <a href="{% url 'uni-list' %}" class="{% if request.path == '/uni-list/' %}active{% endif %}">
-        <i class="icofont-university"></i>
-        Universities
-    </a>
-</li>
-                    <li class="has-dropdown">
-                        <a href="#">
-                            <i class="icofont-book"></i>
-                            Courses
-                        </a>
-                        <ul class="submenu">
-                            <li>
-                                <a href="{% url 'course_list' %}" class="{% if request.path == '/course-list/' %}active{% endif %}">
-                                    All Courses
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'course_category_list' %}" class="{% if request.path == '/course-category-list/' %}active{% endif %}">
-                                    Course Categories
-                                </a>
-                            </li>
-                        </ul>
                     </li>
                     <li>
-                        <a href="{% url 'blog_list' %}" class="{% if request.path == '/blog-list/' %}active{% endif %}">
-                            <i class="icofont-newspaper"></i>
-                            Blogs
-                        </a>
-                    </li>
-                    <li class="has-dropdown">
-    <a href="#">
-        <i class="icofont-picture"></i>
-        Gallery
-    </a>
-    <ul class="submenu">
-        <li>
-            <a href="{% url 'list_image' %}" class="{% if request.path == '/list_image/' %}active{% endif %}">
-                Gallery Images
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'add_category' %}" class="{% if request.path == '/add_category/' %}active{% endif %}">
-                 Add Gallery Category
-            </a>
-        </li>
-        <li>
-            <a href="{% url "category_list" %}" class="{% if request.path == '/category_list/' %}active{% endif %}">
-                Gallery Categories
-            </a>
-        </li>
-    </ul>
-</li>
-                    <li>
-                        <a href="{% url 'team_list' %}" class="{% if request.path == '/team-list/' %}active{% endif %}">
+                        <a href="#" class="">
                             <i class="icofont-users-alt-3"></i>
-                            Teams
+                            Students
                         </a>
                     </li>
                     <li>
-    <a href="{% url 'testimonial_list' %}" class="{% if request.path == '/testimonial-list/' %}active{% endif %}">
-        <i class="icofont-quote-left"></i>
-        Testimonials
-    </a>
-</li>
+                        <a href="#" class="">
+                            <i class="icofont-folder"></i>
+                            Categories
+                        </a>
+                    </li>
                     <li>
-    <a href="{% url 'service_list' %}" class="{% if request.path == '/service-list/' %}active{% endif %}">
-        <i class="icofont-gears"></i>
-        Services
-    </a>
-</li>
+                        <a href="#" class="">
+                            <i class="icofont-list"></i>
+                            Topics
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="">
+                            <i class="icofont-question-circle"></i>
+                            Questions
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="">
+                            <i class="icofont-paper"></i>
+                            Mock Tests
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="">
+                            <i class="icofont-chart-bar-graph"></i>
+                            Results
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

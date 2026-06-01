@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "edusetin_app",
-    
+    "student_management",
 ]
 
 MIDDLEWARE = [

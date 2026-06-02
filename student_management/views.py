@@ -204,7 +204,26 @@ def subject_delete(request, id):
 @login_required(login_url='admin_login')
 def question_list(request):
     questions = Question.objects.select_related('subject').order_by('-created_at')
-    return render(request, 'student_management/question_list.html', {'questions': questions})
+    subjects = Subject.objects.filter(is_active=True).order_by('name')
+    sources = Question.SOURCE_CHOICES
+
+    # Filtering logic
+    subject_id = request.GET.get('subject')
+    source = request.GET.get('source')
+
+    if subject_id:
+        questions = questions.filter(subject_id=subject_id)
+    if source:
+        questions = questions.filter(source=source)
+
+    context = {
+        'questions': questions,
+        'subjects': subjects,
+        'sources': sources,
+        'selected_subject': subject_id,
+        'selected_source': source,
+    }
+    return render(request, 'student_management/question_list.html', context)
 
 
 @login_required(login_url='admin_login')
@@ -469,7 +488,7 @@ def question_import(request):
 
         # ── 5. Process rows ─────────────────────────────────────────────
         VALID_ANSWERS = {'A', 'B', 'C', 'D', 'E'}
-        VALID_SOURCES = {'PYQ', 'EDUSETIN', 'IMPORTED'}
+        VALID_SOURCES = {'PYQ', 'EDUSETIN', 'OTHER'}
 
         imported_count = 0
         duplicate_count = 0
@@ -542,7 +561,7 @@ def question_import(request):
             source = None
             if source_raw:
                 if source_raw not in VALID_SOURCES:
-                    add_error('Source', source_raw, 'Must be PYQ, EDUSETIN, or IMPORTED')
+                    add_error('Source', source_raw, 'Must be PYQ, EDUSETIN, or OTHER')
                 else:
                     source = source_raw
 

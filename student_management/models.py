@@ -25,7 +25,7 @@ class Question(models.Model):
     SOURCE_CHOICES = [
         ('PYQ', 'PYQ'),
         ('EDUSETIN', 'EDUSETIN'),
-        ('IMPORTED', 'IMPORTED'),
+        ('OTHER', 'OTHER'),
     ]
 
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='questions')

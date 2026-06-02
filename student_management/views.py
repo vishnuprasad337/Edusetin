@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import FileResponse, Http404
 from django.conf import settings
 import os
+import io
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from student_portal.models import Student
@@ -403,8 +405,6 @@ def question_activate(request, id):
         question.save()
         messages.success(request, "Question activated successfully.")
     return redirect('student_management:question_detail', id=question.id)
-
-
 @login_required(login_url='admin_login')
 def question_deactivate(request, id):
     question = get_object_or_404(Question, id=id)
@@ -429,11 +429,185 @@ def question_delete(request, id):
 
 @login_required(login_url='admin_login')
 def question_import(request):
+    import_report = None  # Only set after a POST with a valid file
+
     if request.method == 'POST':
-        messages.info(request, "Question import functionality will be implemented soon.")
-        return redirect('student_management:question_import')
-        
-    return render(request, 'student_management/question_import.html')
+        excel_file = request.FILES.get('excel_file')
+
+        # ── 1. File presence check ──────────────────────────────────────
+        if not excel_file:
+            messages.error(request, "No file was uploaded. Please select an Excel file.")
+            return redirect('student_management:question_import')
+
+        # ── 2. File format check ────────────────────────────────────────
+        filename = excel_file.name.lower()
+        if not (filename.endswith('.xlsx') or filename.endswith('.xls')):
+            messages.error(request, "Invalid file format. Only .xlsx and .xls files are accepted.")
+            return redirect('student_management:question_import')
+
+        # ── 3. Parse Excel ──────────────────────────────────────────────
+        try:
+            file_bytes = io.BytesIO(excel_file.read())
+            df = pd.read_excel(file_bytes, engine='openpyxl')
+        except Exception as e:
+            messages.error(request, f"Could not read the Excel file. Please check the file is valid. ({e})")
+            return redirect('student_management:question_import')
+
+        # ── 4. Required columns check ───────────────────────────────────
+        required_columns = [
+            'Subject', 'Question', 'Option A', 'Option B',
+            'Option C', 'Option D', 'Correct Answer',
+        ]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            messages.error(
+                request,
+                f"Missing required column(s): {', '.join(missing_columns)}. "
+                "Please use the provided sample template."
+            )
+            return redirect('student_management:question_import')
+
+        # ── 5. Process rows ─────────────────────────────────────────────
+        VALID_ANSWERS = {'A', 'B', 'C', 'D', 'E'}
+        VALID_SOURCES = {'PYQ', 'EDUSETIN', 'IMPORTED'}
+
+        imported_count = 0
+        duplicate_count = 0
+        failed_count = 0
+        error_rows = []    # list of dicts: {row, column, value, message}
+        duplicate_rows = []  # list of dicts: {row, message}
+
+        for row_num, (_, row) in enumerate(df.iterrows(), start=2):
+
+            def get_cell(col_name, _row=row):
+                """Return stripped string value or empty string for a cell."""
+                val = _row.get(col_name, None)
+                try:
+                    if pd.isna(val):
+                        return ''
+                except (TypeError, ValueError):
+                    pass
+                return str(val).strip() if val is not None else ''
+
+            subject_name   = get_cell('Subject')
+            question_text  = get_cell('Question')
+            option_a       = get_cell('Option A')
+            option_b       = get_cell('Option B')
+            option_c       = get_cell('Option C')
+            option_d       = get_cell('Option D')
+            option_e       = get_cell('Option E') if 'Option E' in df.columns else ''
+            correct_answer = get_cell('Correct Answer').upper()
+            source_raw     = get_cell('Source').upper() if 'Source' in df.columns else ''
+            year_raw       = get_cell('Year') if 'Year' in df.columns else ''
+            explanation    = get_cell('Explanation') if 'Explanation' in df.columns else ''
+
+            # ── Per-row validation — collect structured errors ──────────
+            row_has_error = False
+            subject = None
+
+            def add_error(column, value, message):
+                nonlocal row_has_error
+                row_has_error = True
+                error_rows.append({
+                    'row': row_num,
+                    'column': column,
+                    'value': value if value else 'Empty',
+                    'message': message,
+                })
+
+            if not subject_name:
+                add_error('Subject', subject_name, 'Subject is required')
+            else:
+                subject = Subject.objects.filter(name__iexact=subject_name).first()
+                if not subject:
+                    add_error('Subject', subject_name, f"Subject not found in database")
+
+            if not question_text:
+                add_error('Question', question_text, 'Question text is required')
+
+            if not option_a:
+                add_error('Option A', option_a, 'Option A is required')
+            if not option_b:
+                add_error('Option B', option_b, 'Option B is required')
+            if not option_c:
+                add_error('Option C', option_c, 'Option C is required')
+            if not option_d:
+                add_error('Option D', option_d, 'Option D is required')
+
+            if not correct_answer:
+                add_error('Correct Answer', correct_answer, 'Correct Answer is required')
+            elif correct_answer not in VALID_ANSWERS:
+                add_error('Correct Answer', correct_answer, 'Must be A, B, C, D, or E')
+
+            source = None
+            if source_raw:
+                if source_raw not in VALID_SOURCES:
+                    add_error('Source', source_raw, 'Must be PYQ, EDUSETIN, or IMPORTED')
+                else:
+                    source = source_raw
+
+            year = None
+            if year_raw:
+                try:
+                    year = int(float(year_raw))
+                    if year < 1900 or year > 2100:
+                        add_error('Year', year_raw, 'Must be between 1900 and 2100')
+                        year = None
+                except (ValueError, TypeError):
+                    add_error('Year', year_raw, 'Must be a valid number')
+
+            if row_has_error:
+                failed_count += 1
+                continue
+
+            # ── Duplicate check ─────────────────────────────────────────
+            if Question.objects.filter(subject=subject, question_text=question_text).exists():
+                duplicate_count += 1
+                duplicate_rows.append({'row': row_num, 'message': 'Question already exists'})
+                continue
+
+            # ── Create question ─────────────────────────────────────────
+            try:
+                Question.objects.create(
+                    subject=subject,
+                    question_text=question_text,
+                    option_a=option_a,
+                    option_b=option_b,
+                    option_c=option_c,
+                    option_d=option_d,
+                    option_e=option_e or None,
+                    correct_answer=correct_answer,
+                    source=source,
+                    year=year,
+                    explanation=explanation or None,
+                    is_active=True,
+                )
+                imported_count += 1
+            except Exception as e:
+                failed_count += 1
+                error_rows.append({
+                    'row': row_num,
+                    'column': '—',
+                    'value': '—',
+                    'message': f"Database error: {e}",
+                })
+
+        # ── 6. Build structured import report ───────────────────────────
+        import_report = {
+            'total_rows': len(df),
+            'imported': imported_count,
+            'duplicates': duplicate_count,
+            'failed': failed_count,
+            'errors': error_rows,
+            'duplicate_rows': duplicate_rows,
+        }
+
+    return render(request, 'student_management/question_import.html', {
+        'import_report': import_report,
+    })
+
+
+
 
 
 @login_required(login_url='admin_login')

@@ -206,22 +206,28 @@ def question_list(request):
     questions = Question.objects.select_related('subject').order_by('-created_at')
     subjects = Subject.objects.filter(is_active=True).order_by('name')
     sources = Question.SOURCE_CHOICES
+    years = Question.objects.exclude(year__isnull=True).values_list('year', flat=True).distinct().order_by('-year')
 
     # Filtering logic
     subject_id = request.GET.get('subject')
     source = request.GET.get('source')
+    year = request.GET.get('year')
 
     if subject_id:
         questions = questions.filter(subject_id=subject_id)
     if source:
         questions = questions.filter(source=source)
+    if year:
+        questions = questions.filter(year=year)
 
     context = {
         'questions': questions,
         'subjects': subjects,
         'sources': sources,
+        'years': years,
         'selected_subject': subject_id,
         'selected_source': source,
+        'selected_year': year,
     }
     return render(request, 'student_management/question_list.html', context)
 

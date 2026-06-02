@@ -6,6 +6,8 @@ app_name = 'student_portal'
 
 urlpatterns = [
     path('register/', views.student_register, name='register'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('login/', views.student_login, name='login'),
     path('dashboard/', views.student_dashboard, name='dashboard'),
     path('logout/', views.student_logout, name='logout'),

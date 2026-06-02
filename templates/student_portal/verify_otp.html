@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP | EdusetIn</title>
+    <link rel="stylesheet" href="{% static 'admin-static/assets/css/bootstrap.min.css' %}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .otp-container {
+            max-width: 450px;
+            width: 100%;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+        }
+        .form-subtitle {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        .otp-icon {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .otp-input {
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .divider {
+            border: 0;
+            border-top: 1px solid #e9ecef;
+            margin: 1.25rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="otp-container">
+    <h3 class="form-title">Verify Your Email</h3>
+    <p class="form-subtitle mb-2">
+        We sent a 6-digit code to <strong>{{ masked_email }}</strong>.<br>
+        Enter the code below to complete registration.
+    </p>
+    <div class="text-center mb-4">
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill" style="font-size: 0.85rem; font-weight: 500;">
+            Code expires in 10 minutes
+        </span>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- OTP Verify Form -->
+    <form method="POST" action="{% url 'student_portal:verify_otp' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="otp" class="form-label">Verification Code</label>
+            <input
+                type="text"
+                id="otp"
+                name="otp"
+                class="form-control otp-input"
+                placeholder="______"
+                maxlength="6"
+                minlength="6"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                autocomplete="one-time-code"
+                autofocus
+                required
+            >
+            <div class="form-text text-muted">Enter the 6-digit code from your email. It expires in 10 minutes.</div>
+        </div>
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary">Verify &amp; Create Account</button>
+        </div>
+    </form>
+
+    <hr class="divider">
+
+    <!-- Resend OTP Form -->
+    <form method="POST" action="{% url 'student_portal:resend_otp' %}">
+        {% csrf_token %}
+        <div class="d-grid">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                Resend OTP
+            </button>
+        </div>
+    </form>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'student_portal:register' %}" class="text-muted text-decoration-none small">
+            ← Back to Registration
+        </a>
+    </div>
+</div>
+
+<script src="{% static 'admin-static/assets/js/bootstrap.min.js' %}"></script>
+<script>
+    // Allow only numeric input in the OTP field
+    document.getElementById('otp').addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+</script>
+
+</body>
+</html>

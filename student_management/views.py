@@ -3,11 +3,28 @@ from django.http import FileResponse, Http404
 from django.conf import settings
 import os
 import io
+import re
 import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from student_portal.models import Student
 from .models import Subject, Question
+
+
+def normalize_question(text):
+    text = text.lower().strip()
+
+    # Collapse multiple spaces
+    text = re.sub(r'\s+', ' ', text)
+
+    # Remove spaces around punctuation and mathematical operators
+    text = re.sub(
+        r'\s*([?.!,;:+\-*/=])\s*',
+        r'\1',
+        text
+    )
+
+    return text
 
 
 # ─────────────────────────────────────────────
@@ -283,6 +300,24 @@ def question_create(request):
             except ValueError:
                 errors.append("Year must be a valid number.")
 
+        if not errors and subject and question_text:
+            normalized_current = normalize_question(question_text)
+            comparison_source = source or 'OTHER'
+            existing_qs = Question.objects.filter(subject=subject).values('question_text', 'source', 'year')
+            is_duplicate = False
+            for eq in existing_qs:
+                if normalize_question(eq['question_text']) == normalized_current:
+                    existing_source = eq['source'] or 'OTHER'
+                    if comparison_source == 'PYQ' and existing_source == 'PYQ':
+                        if year == eq['year']:
+                            is_duplicate = True
+                            break
+                    elif comparison_source == existing_source and comparison_source != 'PYQ':
+                        is_duplicate = True
+                        break
+            if is_duplicate:
+                errors.append("This question already exists (duplicate detected based on subject, text, source, and year rules).")
+
         if errors:
             for err in errors:
                 messages.error(request, err)
@@ -383,6 +418,24 @@ def question_edit(request, id):
                     errors.append("Please enter a valid year between 1900 and 2100.")
             except ValueError:
                 errors.append("Year must be a valid number.")
+
+        if not errors and subject and question_text:
+            normalized_current = normalize_question(question_text)
+            comparison_source = source or 'OTHER'
+            existing_qs = Question.objects.filter(subject=subject).exclude(id=id).values('question_text', 'source', 'year')
+            is_duplicate = False
+            for eq in existing_qs:
+                if normalize_question(eq['question_text']) == normalized_current:
+                    existing_source = eq['source'] or 'OTHER'
+                    if comparison_source == 'PYQ' and existing_source == 'PYQ':
+                        if year == eq['year']:
+                            is_duplicate = True
+                            break
+                    elif comparison_source == existing_source and comparison_source != 'PYQ':
+                        is_duplicate = True
+                        break
+            if is_duplicate:
+                errors.append("This question already exists (duplicate detected based on subject, text, source, and year rules).")
 
         if errors:
             for err in errors:
@@ -501,6 +554,8 @@ def question_import(request):
         failed_count = 0
         error_rows = []    # list of dicts: {row, column, value, message}
         duplicate_rows = []  # list of dicts: {row, message}
+        
+        existing_questions_cache = {}
 
         for row_num, (_, row) in enumerate(df.iterrows(), start=2):
 
@@ -586,7 +641,35 @@ def question_import(request):
                 continue
 
             # ── Duplicate check ─────────────────────────────────────────
-            if Question.objects.filter(subject=subject, question_text=question_text).exists():
+            if subject.id not in existing_questions_cache:
+                existing_qs = Question.objects.filter(subject=subject).values('question_text', 'source', 'year')
+                existing_questions_cache[subject.id] = [
+                    {
+                        'text': normalize_question(q['question_text']),
+                        'source': q['source'] or 'OTHER',
+                        'year': q['year']
+                    }
+                    for q in existing_qs
+                ]
+
+            normalized_current = normalize_question(question_text)
+            comparison_source = source or 'OTHER'
+            
+            is_duplicate = False
+            for eq in existing_questions_cache[subject.id]:
+                if eq['text'] == normalized_current:
+                    existing_source = eq['source']
+                    # If both are PYQ, check the year
+                    if comparison_source == 'PYQ' and existing_source == 'PYQ':
+                        if year == eq['year']:
+                            is_duplicate = True
+                            break
+                    # If both are from the same source (non-PYQ), ignore the year and match
+                    elif comparison_source == existing_source and comparison_source != 'PYQ':
+                        is_duplicate = True
+                        break
+
+            if is_duplicate:
                 duplicate_count += 1
                 duplicate_rows.append({'row': row_num, 'message': 'Question already exists'})
                 continue
@@ -608,6 +691,11 @@ def question_import(request):
                     is_active=True,
                 )
                 imported_count += 1
+                existing_questions_cache[subject.id].append({
+                    'text': normalized_current,
+                    'source': source or 'OTHER',
+                    'year': year
+                })
             except Exception as e:
                 failed_count += 1
                 error_rows.append({

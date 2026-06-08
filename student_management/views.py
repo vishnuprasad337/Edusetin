@@ -1033,12 +1033,24 @@ def question_import(request):
                         asset = MediaLibrary.objects.filter(name__iexact=img_name, is_active=True).first()
                     
                     if not asset and img_url:
-                        db_path = img_url
-                        if hasattr(settings, 'MEDIA_URL') and db_path.startswith(settings.MEDIA_URL):
-                            db_path = db_path[len(settings.MEDIA_URL):]
-                        elif db_path.startswith('/media/'):
-                            db_path = db_path[7:]
-                        asset = MediaLibrary.objects.filter(image=db_path, is_active=True).first()
+                        # Django renames files on upload (e.g. brain.png → brain_XyZ.png),
+                        # so matching against the physical image path stored in the DB will
+                        # never work for user-supplied URLs. Instead, extract the filename
+                        # from the URL and match against MediaLibrary.name (case-insensitive),
+                        # which is exactly what the "Image Name" column already does.
+                        #
+                        # Supported input formats:
+                        #   /media/media_library/brain.png
+                        #   media_library/brain.png
+                        #   http://127.0.0.1:8000/media/media_library/brain.png
+                        import os as _os
+                        from urllib.parse import urlparse as _urlparse
+                        _parsed = _urlparse(img_url)
+                        # Use the path component so full http(s):// URLs work too
+                        _path = _parsed.path if _parsed.scheme else img_url
+                        _filename = _os.path.basename(_path.rstrip('/'))
+                        if _filename:
+                            asset = MediaLibrary.objects.filter(name__iexact=_filename, is_active=True).first()
 
                     if asset:
                         # Create QuestionMedia referencing the library asset

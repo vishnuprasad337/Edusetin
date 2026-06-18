@@ -272,6 +272,7 @@ class Exam(models.Model):
     created_at         = models.DateTimeField(auto_now_add=True)
     updated_at         = models.DateTimeField(auto_now=True)
     description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='exam_images/', blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']

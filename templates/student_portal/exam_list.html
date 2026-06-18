@@ -66,11 +66,28 @@
   background: rgba(255,255,255,.22);
   color: #fff;
 }
-.exam-type-section { transition: none; }
+
+/* ── FILTER TRANSITION (smooth fade instead of a hard cut) ── */
+.exam-type-section {
+  transition: opacity .25s ease;
+  opacity: 1;
+}
+.exam-type-section.fading {
+  opacity: 0;
+  pointer-events: none;
+}
 .exam-type-section.hidden { display: none !important; }
 
+/* ── CARD ENTRANCE ── */
+@keyframes examCardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.exam-card-wrap {
+  animation: examCardIn .45s cubic-bezier(.2,.7,.2,1) both;
+}
 
-/* ── EXAM CARD (UPDATED) ── */
+/* ── EXAM CARD ── */
 .exam-card {
   background: #fff;
   border-radius: 16px;
@@ -83,95 +100,209 @@
   border: 1px solid rgba(0,0,0,0.04);
   position: relative;
 }
-.exam-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #0066f5, #4ea5ff, #85b7eb);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 .exam-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 102, 245, 0.12), 0 4px 12px rgba(0,0,0,0.06);
   border-color: rgba(0,102,245,0.15);
 }
-.exam-card:hover::before {
-  opacity: 1;
+
+/* ── MEDIA (image / placeholder) ── */
+.exam-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #f3f4f6;
 }
-.exam-card-top {
-  padding: 18px 18px 12px;
-  flex-grow: 1;
+.exam-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .55s cubic-bezier(.2,.7,.2,1);
 }
-.exam-card-badge-row {
+.exam-card:hover .exam-card-media img {
+  transform: scale(1.08);
+}
+.exam-card-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.32) 100%);
+  pointer-events: none;
+}
+
+/* Placeholder (no image uploaded) — cycles through 3 brand gradients for variety */
+.exam-card-media.no-image {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  justify-content: center;
+}
+.exam-card-media.no-image i {
+  font-size: 40px;
+  color: rgba(255,255,255,.85);
+  position: relative;
+  z-index: 1;
+}
+.exam-card-media.no-image::before {
+  content: '';
+  position: absolute;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.14);
+  filter: blur(2px);
+  top: -30px; right: -30px;
+}
+.exam-card-media.no-image::after {
+  background: none;
+}
+.col-exam-card:nth-of-type(3n+1) .exam-card-media.no-image {
+  background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
+}
+.col-exam-card:nth-of-type(3n+2) .exam-card-media.no-image {
+  background: linear-gradient(135deg, #5b3df5 0%, #8b6cf7 100%);
+}
+.col-exam-card:nth-of-type(3n) .exam-card-media.no-image {
+  background: linear-gradient(135deg, #0F6E56 0%, #15856A 100%);
+}
+
+/* Status ribbon — floats over the image, top-left */
+.exam-card-media .badge-status {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  box-shadow: 0 3px 10px rgba(0,0,0,.18);
+  animation: ribbonDrop .45s .05s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes ribbonDrop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Quick-view fab — top-right, mirrors the "heart" icon in the reference */
+.exam-media-fab {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  transition: transform .2s ease, background .2s ease;
+}
+.exam-media-fab i {
+  font-size: 14px;
+  color: #0066f5;
+  transition: transform .2s ease;
+}
+.exam-media-fab:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+.exam-media-fab:hover i {
+  transform: rotate(8deg);
+}
+
+/* Duration pill — bottom-left over the image */
+.exam-duration-pill {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(17,24,39,.55);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+.exam-duration-pill i { font-size: 12px; }
+
+/* ── CARD BODY ── */
+.exam-card-top {
+  padding: 16px 18px 10px;
+  flex-grow: 1;
+}
+.exam-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.exam-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.exam-meta-pill i { font-size: 12px; }
+.exam-meta-type {
+  background: #e6f1fb;
+  color: #0052cc;
+}
+.exam-meta-plain {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 .exam-card-title {
   font-size: 15px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   line-height: 1.4;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.exam-card-title i {
-  color: #0066f5;
-  font-size: 16px;
-  opacity: 0.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .exam-card-desc {
   font-size: 12px;
   color: #6b7280;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.exam-stat-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+
+/* Marking mini-row — compact version of the modal's marking chips */
+.exam-marking-mini {
+  display: flex;
   gap: 6px;
+  margin-bottom: 4px;
 }
-.exam-stat-chip {
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-  border-radius: 10px;
-  padding: 8px 6px;
-  text-align: center;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(0,0,0,0.04);
-}
-.exam-card:hover .exam-stat-chip {
-  background: linear-gradient(135deg, #eaf4ff 0%, #d4eaff 100%);
-  border-color: rgba(0,102,245,0.1);
-}
-.exam-stat-chip .sv {
-  font-size: 18px;
+.emm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
   font-weight: 600;
-  color: #111827;
-  line-height: 1;
-  transition: color 0.2s ease;
+  padding: 3px 8px;
+  border-radius: 7px;
 }
-.exam-card:hover .exam-stat-chip .sv {
-  color: #0066f5;
-}
-.exam-stat-chip .sl {
-  font-size: 10px;
-  color: #9ca3af;
-  margin-top: 3px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
+.emm-correct { background: #EAF3DE; color: #3B6D11; }
+.emm-wrong   { background: #FCEBEB; color: #A32D2D; }
+
+/* ── FOOTER (marks value ~ "price" + CTA ~ "View Course") ── */
 .exam-card-footer {
   padding: 12px 18px 16px;
   border-top: 1px solid rgba(0,0,0,0.05);
@@ -184,18 +315,26 @@
 .exam-card:hover .exam-card-footer {
   background: #f0f6ff;
 }
-.exam-students-label {
-  font-size: 11px;
-  color: #9ca3af;
+.exam-footer-value {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 5px;
 }
-.exam-students-label i {
-  font-size: 13px;
+.exam-footer-value .efv-num {
+  font-size: 19px;
+  font-weight: 700;
   color: #0066f5;
+  line-height: 1;
 }
+.exam-footer-value .efv-label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
 .btn-exam-action {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -211,6 +350,18 @@
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 102, 245, 0.25);
 }
+.btn-exam-action::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: skewX(-20deg);
+  transition: left .5s ease;
+}
+.btn-exam-action:hover::after { left: 130%; }
 .btn-exam-action:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 102, 245, 0.35);
@@ -228,7 +379,7 @@
   box-shadow: 0 4px 16px rgba(15, 110, 86, 0.35);
 }
 
-/* ── STATUS BADGES (UPDATED) ── */
+/* ── STATUS BADGES ── */
 .badge-status {
   display: inline-flex;
   align-items: center;
@@ -272,32 +423,6 @@
   50% { transform: scale(1.5); opacity: 0.5; }
 }
 
-/* Card icon decoration */
-.exam-card-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #e6f1fb 0%, #d4eaff 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.exam-card-icon i {
-  font-size: 18px;
-  color: #0066f5;
-}
-.exam-card-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.exam-card-title-wrap {
-  flex: 1;
-  min-width: 0;
-}
-
 /* ── EXAM DETAIL MODAL ── */
 .exam-modal .modal-content {
   border: none;
@@ -309,16 +434,36 @@
   background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
   border: none;
   padding: 18px 22px 16px;
+  position: relative;
+}
+.exam-modal .modal-header.has-image {
+  background-size: cover;
+  background-position: center;
+  min-height: 110px;
+  align-items: flex-end;
+}
+.exam-modal .modal-header.has-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,20,60,.15) 0%, rgba(0,10,30,.72) 100%);
 }
 .exam-modal .modal-title {
   color: #fff;
   font-size: 15px;
   font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.exam-modal .modal-header.has-image .modal-title {
+  text-shadow: 0 1px 6px rgba(0,0,0,.4);
 }
 .exam-modal .modal-title i { opacity: .8; }
 .exam-modal .btn-close {
   filter: brightness(0) invert(1);
   opacity: .65;
+  position: relative;
+  z-index: 1;
 }
 .exam-modal .btn-close:hover { opacity: 1; }
 .exam-modal .modal-body {
@@ -532,6 +677,20 @@
   border-radius: 8px; padding: 9px 18px;
   font-size: 13px; font-weight: 500; flex: 1;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-card-wrap,
+  .exam-card-media .badge-status,
+  .badge-progress,
+  .badge-status-dot {
+    animation: none !important;
+  }
+  .exam-card-media img,
+  .exam-card,
+  .btn-exam-action::after {
+    transition: none !important;
+  }
+}
 </style>
 <!-- PAGE HEADER -->
 <div class="page-header">
@@ -584,56 +743,74 @@
 <div class="exam-type-section mb-4" data-section="{{ type_name|slugify }}">
     <div class="row g-3">
         {% for exam in exams %}
-        <div class="col-sm-6 col-lg-4">
+        <div class="col-sm-6 col-lg-4 col-exam-card">
+            <div class="exam-card-wrap" style="animation-delay: {% widthratio forloop.counter0 1 60 %}ms;">
 
-            <!-- Exam Card (UPDATED) -->
+            <!-- Exam Card -->
             <div class="exam-card">
+
+                <!-- Media: uploaded exam image, or a brand-gradient placeholder -->
+                <div class="exam-card-media{% if not exam.image %} no-image{% endif %}">
+                    {% if exam.image %}
+                        <img src="{{ exam.image.url }}" alt="{{ exam.custom_name|default:exam.title }}" loading="lazy">
+                    {% else %}
+                        <i class="icon-book-open"></i>
+                    {% endif %}
+
+                    {% if exam.in_progress_attempt %}
+                    <span class="badge-status badge-progress"><span class="badge-status-dot"></span>In Progress</span>
+                    {% elif exam.last_attempt %}
+                    <span class="badge-status badge-attempted"><span class="badge-status-dot"></span>Attempted</span>
+                    {% else %}
+                    <span class="badge-status badge-new"><span class="badge-status-dot"></span>New</span>
+                    {% endif %}
+
+                    <button type="button"
+                            class="exam-media-fab"
+                            data-bs-toggle="modal"
+                            data-bs-target="#examModal{{ exam.id }}"
+                            title="View details"
+                            aria-label="View exam details">
+                        <i class="icon-eye"></i>
+                    </button>
+
+                    <span class="exam-duration-pill"><i class="icon-hourglass"></i>{{ exam.duration_minutes }} min</span>
+                </div>
+
                 <div class="exam-card-top">
 
-                    <div class="exam-card-badge-row">
-                        {% if exam.in_progress_attempt %}
-                        <span class="badge-status badge-progress"><span class="badge-status-dot"></span>In Progress</span>
-                        {% elif exam.last_attempt %}
-                        <span class="badge-status badge-attempted"><span class="badge-status-dot"></span>Attempted</span>
-                        {% else %}
-                        <span class="badge-status badge-new"><span class="badge-status-dot"></span>New</span>
+                    <div class="exam-meta-row">
+                        <span class="exam-meta-pill exam-meta-type">
+                            <i class="icon-tag"></i>{{ exam.exam_type.get_name_display }}
+                        </span>
+                        <span class="exam-meta-pill exam-meta-plain">
+                            <i class="icon-list"></i>{{ exam.question_count }} Qs
+                        </span>
+                        <span class="exam-meta-pill exam-meta-plain">
+                            <i class="icon-users"></i>{{ exam.attempt_count }} attempted
+                        </span>
+                    </div>
+
+                    <div class="exam-card-title">
+                        {{ exam.custom_name|default:exam.title }}
+                    </div>
+
+                    
+
+                    <div class="exam-marking-mini">
+                        <span class="emm-chip emm-correct"><i class="icon-plus"></i>{{ exam.marks_per_question }} correct</span>
+                        {% if exam.negative_marks %}
+                        <span class="emm-chip emm-wrong"><i class="icon-minus"></i>{{ exam.negative_marks }} wrong</span>
                         {% endif %}
-                    </div>
-
-                    <div class="exam-card-header">
-                        <div class="exam-card-icon">
-                            <i class="icon-book-open"></i>
-                        </div>
-                        <div class="exam-card-title-wrap">
-                            <div class="exam-card-title">
-                                {{ exam.custom_name|default:exam.title }}
-                            </div>
-                            
-                        </div>
-                    </div>
-
-                    <div class="exam-stat-row">
-                        <div class="exam-stat-chip">
-                            <div class="sv">{{ exam.duration_minutes }}</div>
-                            <div class="sl">Minutes</div>
-                        </div>
-                        <div class="exam-stat-chip">
-                            <div class="sv">{{ exam.question_count }}</div>
-                            <div class="sl">Questions</div>
-                        </div>
-                        <div class="exam-stat-chip">
-                            <div class="sv">{{ exam.total_marks_val }}</div>
-                            <div class="sl">Marks</div>
-                        </div>
                     </div>
 
                 </div>
 
                 <div class="exam-card-footer">
-                    <span class="exam-students-label">
-                        <i class="icon-users"></i>
-                        {{ exam.attempt_count }} attempted
-                    </span>
+                    <div class="exam-footer-value">
+                        <span class="efv-num">{{ exam.total_marks_val }}</span>
+                        <span class="efv-label">Total Marks</span>
+                    </div>
                     {% if exam.in_progress_attempt %}
                     <button type="button"
                             class="btn-exam-action btn-exam-resume"
@@ -652,14 +829,16 @@
                 </div>
             </div>
 
+            </div>
         </div>
 
-        <!-- DETAIL MODAL (unchanged) -->
+        <!-- DETAIL MODAL -->
         <div class="modal fade exam-modal" id="examModal{{ exam.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
 
-                    <div class="modal-header">
+                    <div class="modal-header{% if exam.image %} has-image{% endif %}"
+                         {% if exam.image %}style="background-image: url('{{ exam.image.url }}');"{% endif %}>
                         <h5 class="modal-title">
                             <i class="icon-book-open me-2"></i>
                             {{ exam.custom_name|default:exam.title }}
@@ -727,7 +906,7 @@
 
                         {% if exam.description %}
                         <div class="em-label">About this exam</div>
-                        <p class="text-sm text-secondary-c mb-3">{{ exam.description }}</p>
+                        <div class="text-sm text-secondary-c mb-3">{{ exam.description|safe }}</div>
                         {% endif %}
 
                         {% if exam.subjects.all %}
@@ -828,7 +1007,7 @@
 {% endif %}
 
 
-<!-- CONFIRM MODAL (unchanged) -->
+<!-- CONFIRM MODAL -->
 <div class="modal fade" id="confirmStartModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 430px;">
         <div class="modal-content">
@@ -889,11 +1068,21 @@ function filterExams(filter, btn) {
         b.classList.remove('active');
     });
     btn.classList.add('active');
+
     document.querySelectorAll('.exam-type-section').forEach(function(section) {
-        if (filter === 'all' || section.dataset.section === filter) {
+        var shouldShow = (filter === 'all' || section.dataset.section === filter);
+
+        if (shouldShow) {
             section.classList.remove('hidden');
+            // allow the browser to register the display change, then fade in
+            requestAnimationFrame(function () {
+                section.classList.remove('fading');
+            });
         } else {
-            section.classList.add('hidden');
+            section.classList.add('fading');
+            setTimeout(function () {
+                section.classList.add('hidden');
+            }, 220);
         }
     });
 }

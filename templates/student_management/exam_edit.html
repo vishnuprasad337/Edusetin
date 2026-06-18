@@ -40,7 +40,7 @@
     </div>
     {% endif %}
 
-    <form method="post" action="{% url 'student_management:exam_edit' exam.pk %}" novalidate id="examForm">
+    <form method="post" action="{% url 'student_management:exam_edit' exam.pk %}" enctype="multipart/form-data" novalidate id="examForm">
         {% csrf_token %}
 
         <div class="row g-4">
@@ -73,6 +73,19 @@
                             <textarea id="id_description" name="description" rows="3"
                                       class="form-control uni-description"
                                       placeholder="Brief description of this exam…">{{ form.description.value|default:'' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_image" class="form-label fw-semibold">
+                                Exam Image <span class="text-muted small">(optional)</span>
+                            </label>
+                            {% if exam.image %}
+                            <div class="mb-2 d-flex align-items-center gap-2">
+                                <img src="{{ exam.image.url }}" alt="Current exam image"
+                                     class="rounded border" style="height:60px;width:60px;object-fit:cover;">
+                                <span class="text-muted small">Current image — upload a new file to replace it.</span>
+                            </div>
+                            {% endif %}
+                            <input type="file" id="id_image" name="image" accept="image/*" class="form-control">
                         </div>
                         <div class="mb-0">
                             <label for="id_exam_type" class="form-label fw-semibold">
@@ -463,6 +476,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const URL_SUBJECTS   = "{% url 'student_management:ajax_subjects_by_examtype' %}";
     const URL_QUESTIONS  = "{% url 'student_management:ajax_questions_by_filter' %}";
     const URL_SUBMODULES = "{% url 'student_management:submodules_by_subject_api' %}";
+    const CURRENT_EXAM_ID = "{{ exam.pk }}";
 
     /* ════════════════════════════════════════
        PRE-SAVED STATE  (from existing exam)
@@ -766,7 +780,13 @@ document.addEventListener('DOMContentLoaded', function () {
                            id="sg_selall_${groupId}" data-gid="${groupId}">
                     <label class="form-check-label small fw-semibold" for="sg_selall_${groupId}">Select all</label>
                 </div>
+                <input type="number" min="1" class="form-control form-control-sm sg-count-input"
+                       id="sg_count_${groupId}" style="width:70px;" placeholder="Count">
+                <button type="button" class="btn btn-sm btn-outline-primary sg-autopick-btn" id="sg_autopick_${groupId}">
+                    <i class="fas fa-magic me-1"></i>Auto-pick
+                </button>
             </div>
+            <div class="small mt-1" id="sg_availhint_${groupId}"></div>
             <div class="sg-question-list" id="sg_qlist_${groupId}">
                 <div class="sg-spinner">
                     <span class="spinner-border spinner-border-sm text-primary"></span>
@@ -782,6 +802,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Wire select all
         qSection.querySelector(".sg-selectall").addEventListener("change", function () {
             toggleSelectAllGroup(groupId, this.checked);
+        });
+        // Wire auto-pick
+        qSection.querySelector(".sg-autopick-btn").addEventListener("click", function () {
+            autoPickGroupQuestions(groupId);
         });
 
         // If subject already chosen (restored group), load its submodules
@@ -918,6 +942,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const params = new URLSearchParams();
         params.append("subject_ids", subjectId);
         submoduleIds.forEach(id => params.append("submodule_ids", id));
+        params.append("exclude_used", "1");
+        if (CURRENT_EXAM_ID) params.append("exam_id", CURRENT_EXAM_ID);
 
         fetch(`${URL_QUESTIONS}?${params.toString()}`, {
             headers: { "X-Requested-With": "XMLHttpRequest" }
@@ -1014,6 +1040,62 @@ document.addEventListener('DOMContentLoaded', function () {
             if (checked) { checkedQuestionIds.add(qid);    item.classList.add("checked"); }
             else         { checkedQuestionIds.delete(qid); item.classList.remove("checked"); }
         });
+        updateGroupBadge(groupId);
+        updateGlobalCount();
+        refreshHiddenInputs();
+    }
+
+    /* ────────────────────────────────────────
+       Auto-pick N random unused questions
+       within a group's currently visible list
+    ──────────────────────────────────────── */
+    function autoPickGroupQuestions(groupId) {
+        const countInput = document.getElementById("sg_count_" + groupId);
+        const hint = document.getElementById("sg_availhint_" + groupId);
+        const n = parseInt(countInput.value, 10);
+        if (!n || n < 1) {
+            hint.textContent = "Enter how many questions to auto-pick.";
+            hint.className = "small text-danger mt-1";
+            return;
+        }
+
+        const qList = document.getElementById("sg_qlist_" + groupId);
+        const candidates = [...qList.querySelectorAll(".sg-question-item")]
+            .filter(item => item.style.display !== "none")
+            .map(item => Number(item.dataset.qid))
+            .filter(qid => !checkedQuestionIds.has(qid));
+
+        if (candidates.length === 0) {
+            hint.textContent = "No unused questions available for this selection.";
+            hint.className = "small text-danger mt-1";
+            return;
+        }
+
+        // Fisher-Yates shuffle
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        const picked = candidates.slice(0, n);
+
+        picked.forEach(qid => {
+            checkedQuestionIds.add(qid);
+            const item = qList.querySelector(`.sg-question-item[data-qid="${qid}"]`);
+            if (item) {
+                item.classList.add("checked");
+                const cb = item.querySelector(".sg-qcb");
+                if (cb) cb.checked = true;
+            }
+        });
+
+        if (picked.length < n) {
+            hint.textContent = `Only ${picked.length} unused question(s) were available (you asked for ${n}).`;
+            hint.className = "small text-warning mt-1";
+        } else {
+            hint.textContent = `${picked.length} question(s) auto-selected.`;
+            hint.className = "small text-success mt-1";
+        }
+
         updateGroupBadge(groupId);
         updateGlobalCount();
         refreshHiddenInputs();

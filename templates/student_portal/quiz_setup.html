@@ -2,609 +2,957 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
-/* ── Quiz Setup Page ── */
-.quiz-setup-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
+.qs-wrap {
+    --qs-primary:   #2563eb;
+    --qs-primary-d: #1d4ed8;
+    --qs-green:     #059669;
+    --qs-green-d:   #047857;
+    --qs-radius:    18px;
+    --qs-radius-sm: 12px;
+    --qs-card-bg:   var(--admio-card-bg, #fff);
+    --qs-bg:        var(--admio-bg, #f1f5f9);
+    --qs-border:    var(--admio-border-color, #e2e8f0);
+    --qs-text:      var(--admio-text-color, #1e293b);
+    --qs-muted:     #64748b;
+    --qs-heading:   var(--admio-heading-color, #0f172a);
+    --qs-ease:      cubic-bezier(0.22, 0.68, 0, 1.2);
+    font-family: inherit;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 4px 40px;
+    color: var(--qs-text);
 }
 
-/* Hero Section */
-.quiz-hero {
-  background: linear-gradient(135deg, #0066f5 0%, #0052cc 100%);
-  border-radius: 24px;
-  padding: 32px 40px;
-  color: #fff;
-  margin-bottom: 32px;
-  position: relative;
-  overflow: hidden;
+/* hero */
+.qs-hero {
+    background: var(--qs-primary);
+    border-radius: var(--qs-radius);
+    padding: 24px 28px;
+    color: #fff;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px;
+    position: relative; overflow: hidden;
 }
-.quiz-hero::after {
-  content: '';
-  position: absolute;
-  right: -40px; top: -40px;
-  width: 220px; height: 220px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.08);
-  pointer-events: none;
+.qs-hero::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events:none;
 }
-.quiz-hero-icon {
-  width: 48px; height: 48px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.18);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  margin-bottom: 12px;
+.qs-hero-ic {
+    width:52px; height:52px; border-radius:14px;
+    background:rgba(255,255,255,0.15);
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px; flex-shrink:0; position:relative; z-index:1;
 }
-.quiz-hero h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
-.quiz-hero p  { font-size: 1rem; opacity: .82; margin: 0; }
+.qs-hero h1 { font-size:1.35rem; font-weight:700; margin:0 0 2px; letter-spacing:-0.02em; position:relative; z-index:1; }
+.qs-hero p  { font-size:0.85rem; opacity:0.85; margin:0; position:relative; z-index:1; }
 
-/* ── Two Column Layout ── */
-.quiz-layout {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 28px;
-  align-items: start;
+/* stepper */
+.qs-stepper { display:flex; align-items:center; margin-bottom:20px; gap:0; }
+.qs-step { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+.qs-step-circle {
+    width:34px; height:34px; border-radius:50%;
+    border:2px solid var(--qs-border); background:var(--qs-card-bg);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.78rem; font-weight:700; color:#94a3b8;
+    transition:all 0.3s var(--qs-ease); flex-shrink:0;
 }
+.qs-step-label { font-size:0.8rem; font-weight:600; color:#94a3b8; transition:color 0.3s; white-space:nowrap; }
+.qs-step.active .qs-step-circle { background:var(--qs-primary); border-color:var(--qs-primary); color:#fff; box-shadow:0 0 0 5px rgba(37,99,235,0.12); }
+.qs-step.active .qs-step-label  { color:var(--qs-heading); }
+.qs-step.done  .qs-step-circle  { background:var(--qs-green); border-color:var(--qs-green); color:#fff; }
+.qs-step.done  .qs-step-label   { color:var(--qs-green); }
+.qs-step-line { flex:1; height:2px; border-radius:2px; background:var(--qs-border); transition:background 0.3s; margin:0 6px; min-width:16px; }
+.qs-step-line.done { background:var(--qs-green); }
 
-/* ── Left Column: Subject Grid ── */
-.quiz-form-card {
-  background: var(--admio-card-bg, #fff);
-  border: 1px solid var(--admio-border-color, #e5e7eb);
-  border-radius: 20px;
-  padding: 28px 32px;
-}
-
-.quiz-field-label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--admio-label-color, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 14px;
-  display: block;
+/* panel */
+.qs-panel {
+    background:var(--qs-card-bg);
+    border:1px solid var(--qs-border);
+    border-radius:var(--qs-radius);
+    overflow:hidden;
+    box-shadow:0 4px 24px rgba(0,0,0,0.05);
 }
 
-/* Subject Grid */
-.subject-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  margin-bottom: 0;
-}
-.subject-card {
-  border: 2px solid var(--admio-border-color, #e5e7eb);
-  border-radius: 14px;
-  padding: 16px 18px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  background: var(--admio-card-bg, #fff);
-}
-.subject-card:hover {
-  border-color: #0066f5;
-  background: rgba(0,102,245,.05);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,102,245,.08);
-}
-.subject-card.selected {
-  border-color: #0066f5;
-  background: rgba(0,102,245,.08);
-  box-shadow: 0 4px 16px rgba(0,102,245,.12);
-}
-.subject-card.selected::after {
-  content: '\2713';
-  position: absolute;
-  top: 10px; right: 12px;
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  background: #0066f5;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  line-height: 22px;
-  text-align: center;
-}
-.subject-card-name {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--admio-heading-color, #111);
-  margin-bottom: 3px;
-}
-.subject-card-count {
-  font-size: 0.82rem;
-  color: #9ca3af;
-}
-.subject-card input[type="radio"] { display: none; }
+/* sections */
+.qs-section { display:none; }
+.qs-section.active    { display:block; animation:qsFadeUp 0.35s var(--qs-ease); }
+.qs-section.slide-in  { animation:qsSlideIn 0.35s var(--qs-ease); }
+.qs-section.slide-back{ animation:qsSlideBack 0.35s var(--qs-ease); }
+@keyframes qsFadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes qsSlideIn  { from{opacity:0;transform:translateX(28px)}  to{opacity:1;transform:translateX(0)} }
+@keyframes qsSlideBack{ from{opacity:0;transform:translateX(-28px)} to{opacity:1;transform:translateX(0)} }
 
-/* ── Right Column: Side Widget ── */
-.quiz-side-widget {
-  background: var(--admio-card-bg, #fff);
-  border: 1px solid var(--admio-border-color, #e5e7eb);
-  border-radius: 20px;
-  padding: 28px 24px;
-  position: sticky;
-  top: 24px;
+.qs-inner { padding:24px 28px 18px; display:flex; flex-direction:column; min-height:360px; }
+.qs-section-label {
+    font-size:0.68rem; font-weight:700; color:var(--qs-muted);
+    text-transform:uppercase; letter-spacing:0.08em;
+    margin-bottom:18px; display:flex; align-items:center; gap:6px;
 }
+.qs-section-label i { font-size:16px; color:var(--qs-primary); }
 
-.widget-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--admio-label-color, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 16px;
+/* STEP 1 subject grid */
+.qs-subj-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+    gap:12px; flex:1; align-content:start;
+}
+.qs-subj-card {
+    border:2px solid var(--qs-border); border-radius:16px;
+    padding:18px 10px 14px; cursor:pointer;
+    transition:all 0.25s var(--qs-ease);
+    background:var(--qs-card-bg); text-align:center;
+    position:relative; animation:qsCardUp 0.5s ease both;
+}
+@keyframes qsCardUp { from{opacity:0;transform:translateY(18px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+.qs-subj-card:hover    { transform:translateY(-3px); border-color:var(--qs-primary); box-shadow:0 6px 20px rgba(37,99,235,0.10); }
+.qs-subj-card.selected { border-color:var(--qs-primary); background:rgba(37,99,235,0.04); box-shadow:0 4px 14px rgba(37,99,235,0.12); }
+.qs-ring {
+    width:66px; height:66px; border-radius:50%; margin:0 auto 10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px; border:2.5px solid transparent;
+    transition:transform 0.25s var(--qs-ease); position:relative;
+}
+.qs-subj-card:hover .qs-ring,
+.qs-subj-card.selected .qs-ring { transform:scale(1.07) rotate(-4deg); }
+.qs-ring .qs-check {
+    position:absolute; bottom:-2px; right:-2px;
+    width:22px; height:22px; border-radius:50%;
+    background:var(--qs-primary); color:#fff; font-size:11px;
+    display:none; align-items:center; justify-content:center;
+    border:2px solid var(--qs-card-bg);
+    animation:qsPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+.qs-subj-card.selected .qs-ring .qs-check { display:flex; }
+@keyframes qsPop { from{transform:scale(0)} to{transform:scale(1)} }
+.qs-subj-name { font-size:0.82rem; font-weight:700; color:var(--qs-heading); margin-bottom:2px; line-height:1.2; }
+.qs-subj-qty  { font-size:0.7rem; color:#94a3b8; }
+
+/* ═══════════════════════════════════════
+   STEP 2 — Duolingo bubble path, multi-select
+═══════════════════════════════════════ */
+.qs-s2-wrap {
+    display: flex;
+    flex-direction: column;
+    background: var(--qs-card-bg);
 }
 
-/* Selected Subject Display */
-.widget-selected {
-  background: rgba(0,102,245,.06);
-  border: 1px solid rgba(0,102,245,.15);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 20px;
+/* sticky subject header */
+.qs-s2-header {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--qs-border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--qs-card-bg);
 }
-.widget-selected-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: #9ca3af;
-  font-weight: 600;
+.qs-s2-icon {
+    width: 46px; height: 46px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+    border: 2.5px solid transparent;
 }
-.widget-selected-name {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--admio-heading-color, #111);
-  margin-top: 4px;
+.qs-s2-title  { font-size:1.05rem; font-weight:800; color:var(--qs-heading); margin:0 0 1px; }
+.qs-s2-hint   { font-size:0.74rem; color:var(--qs-muted); font-weight:500; margin:0; }
+
+/* selection pill bar */
+.qs-sel-bar {
+    margin: 14px 28px 0;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: rgba(37,99,235,0.05);
+    border: 1.5px solid rgba(37,99,235,0.18);
+    border-radius: 10px;
+    transition: all 0.3s;
 }
-.widget-selected-name i {
-  color: #0066f5;
-  margin-right: 6px;
+.qs-sel-bar-text { flex:1; font-size:0.8rem; font-weight:600; color:var(--qs-primary); }
+.qs-sel-bar-count {
+    background: var(--qs-primary); color: #fff;
+    padding: 2px 9px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700; min-width:26px; text-align:center;
 }
-.widget-selected-empty {
-  color: #9ca3af;
-  font-size: 0.9rem;
-  padding: 4px 0;
+.qs-sel-bar-clear {
+    background:none; border:none; cursor:pointer;
+    color:#94a3b8; font-size:0.72rem; font-weight:600;
+    padding:3px 8px; border-radius:7px; transition:all 0.2s;
+}
+.qs-sel-bar-clear:hover { background:rgba(239,68,68,0.08); color:#ef4444; }
+
+/* "All topics" chip */
+.qs-all-chip {
+    display: inline-flex; align-items:center; gap:5px;
+    padding:6px 16px;
+    border:2px solid var(--qs-border); border-radius:24px;
+    font-size:0.78rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s var(--qs-ease);
+    background:var(--qs-card-bg); color:var(--qs-muted);
+    margin: 14px 0 0 28px;
+    align-self:flex-start;
+}
+.qs-all-chip:hover { border-color:var(--qs-primary); color:var(--qs-primary); }
+.qs-all-chip.selected {
+    background:var(--qs-primary); color:#fff;
+    border-color:var(--qs-primary);
+    box-shadow:0 3px 12px rgba(37,99,235,0.25);
 }
 
-/* Submodule Selection */
-.widget-submodule-section {
-  margin-bottom: 20px;
-}
-.widget-submodule-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--admio-label-color, #6b7280);
-  margin-bottom: 10px;
-  display: block;
-}
-.widget-submodule-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.widget-submodule-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 2px solid var(--admio-border-color, #e5e7eb);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--admio-card-bg, #fff);
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--admio-text-color, #374151);
-}
-.widget-submodule-option:hover {
-  border-color: #0066f5;
-  background: rgba(0,102,245,.04);
-}
-.widget-submodule-option.selected {
-  border-color: #0066f5;
-  background: rgba(0,102,245,.08);
-  color: #0066f5;
-}
-.widget-submodule-option .check-mark {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid var(--admio-border-color, #e5e7eb);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-.widget-submodule-option.selected .check-mark {
-  border-color: #0066f5;
-  background: #0066f5;
-}
-.widget-submodule-option.selected .check-mark::after {
-  content: '\2713';
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-}
-.widget-submodule-option .sm-icon {
-  font-size: 14px;
-  color: #0066f5;
-  opacity: 0.6;
-}
-.widget-submodule-option.selected .sm-icon {
-  opacity: 1;
-}
-.widget-submodule-option input[type="radio"] { display: none; }
-
-/* Question Count */
-.widget-count-section {
-  margin-bottom: 20px;
-}
-.widget-count-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--admio-label-color, #6b7280);
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.widget-count-value {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #0066f5;
-  background: rgba(0,102,245,.1);
-  padding: 2px 12px;
-  border-radius: 8px;
-}
-.widget-count-slider {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 6px;
-  border-radius: 10px;
-  background: var(--admio-border-color, #e5e7eb);
-  outline: none;
-}
-.widget-count-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #0066f5;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,102,245,.35);
-}
-.widget-count-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #0066f5;
-  cursor: pointer;
-  border: none;
+/* ── Vertical bubble path ── */
+.qs-path-outer {
+    padding: 28px 0 20px;
+    overflow-y: auto;
+    max-height: 54vh;      /* scrollable bubble list */
+    position: relative;
 }
 
-/* CTA Button */
-.widget-start-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0,102,245,.25);
-}
-.widget-start-btn:hover {
-  background: linear-gradient(135deg, #0052cc 0%, #0066f5 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,102,245,.3);
-}
-.widget-start-btn:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-.widget-start-btn i {
-  font-size: 18px;
+.qs-path-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
 }
 
-/* Divider */
-.widget-divider {
-  height: 1px;
-  background: var(--admio-border-color, #e5e7eb);
-  margin: 16px 0;
+/* continuous spine */
+.qs-spine {
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 4px;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(
+        to bottom,
+        #e2e8f0 0px, #e2e8f0 8px,
+        transparent 8px, transparent 18px
+    );
+    border-radius: 2px;
+    z-index: 0;
 }
 
-/* No subscription */
-.quiz-no-sub {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--admio-text-muted, #9ca3af);
+/* each node row */
+.qs-bnode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(22px) scale(0.9);
 }
-.quiz-no-sub i { font-size: 48px; margin-bottom: 14px; display: block; }
-.quiz-no-sub h3 {
-  font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;
-  color: var(--admio-heading-color, #111);
-}
-
-/* ── Dark mode fixes ── */
-[data-theme="dark"] .quiz-form-card {
-  background: var(--admio-card-bg);
-  border-color: var(--admio-border-color);
-}
-[data-theme="dark"] .quiz-side-widget {
-  background: var(--admio-card-bg);
-  border-color: var(--admio-border-color);
-}
-[data-theme="dark"] .quiz-field-label {
-  color: #9ca3af;
-}
-[data-theme="dark"] .subject-card {
-  background: var(--admio-card-bg);
-  border-color: var(--admio-border-color);
-}
-[data-theme="dark"] .subject-card-name {
-  color: #f3f4f6;
-}
-[data-theme="dark"] .subject-card-count {
-  color: #6b7280;
-}
-[data-theme="dark"] .subject-card:hover {
-  background: rgba(0,102,245,.12);
-}
-[data-theme="dark"] .subject-card.selected {
-  background: rgba(0,102,245,.18);
-}
-[data-theme="dark"] .widget-selected {
-  background: rgba(0,102,245,.12);
-  border-color: rgba(0,102,245,.25);
-}
-[data-theme="dark"] .widget-selected-name {
-  color: #f3f4f6;
-}
-[data-theme="dark"] .widget-submodule-option {
-  background: var(--admio-card-bg);
-  border-color: var(--admio-border-color);
-  color: #c4c4d4;
-}
-[data-theme="dark"] .widget-submodule-option:hover {
-  border-color: #0066f5;
-  color: #4ea5ff;
-}
-[data-theme="dark"] .widget-submodule-option.selected {
-  background: rgba(0,102,245,.18);
-  color: #4ea5ff;
-}
-[data-theme="dark"] .widget-submodule-option .check-mark {
-  border-color: #4b5563;
-}
-[data-theme="dark"] .widget-count-slider {
-  background: #374151;
-}
-[data-theme="dark"] .widget-count-value {
-  background: rgba(0,102,245,.2);
-  color: #4ea5ff;
-}
-[data-theme="dark"] .widget-divider {
-  background: var(--admio-border-color);
-}
-[data-theme="dark"] .quiz-no-sub h3 {
-  color: #f3f4f6;
-}
-[data-theme="dark"] .quiz-no-sub {
-  color: #9ca3af;
+.qs-bnode.appeared {
+    opacity: 1; transform: translateY(0) scale(1);
+    transition: opacity 0.42s ease, transform 0.42s var(--qs-ease);
 }
 
-/* ── Mobile Responsive ── */
-@media (max-width: 992px) {
-  .quiz-layout {
-    grid-template-columns: 1fr;
-  }
-  .quiz-side-widget {
-    position: static;
-    order: -1;
-  }
+/* the big bubble button */
+.qs-bubble {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative;
+    transition: all 0.28s var(--qs-ease);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    overflow: visible;
+}
+.qs-bubble:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+}
+.qs-bubble.selected {
+    box-shadow: 0 10px 36px rgba(0,0,0,0.20);
+    transform: scale(1.06);
 }
 
-@media (max-width: 600px) {
-  .quiz-hero { padding: 24px 20px; }
-  .quiz-hero h1 { font-size: 1.4rem; }
-  .quiz-form-card { padding: 20px 16px; }
-  .quiz-side-widget { padding: 20px 16px; }
-  .subject-grid { grid-template-columns: 1fr; }
+/* ripple ring on select */
+.qs-bubble::after {
+    content:''; position:absolute; inset:-6px; border-radius:50%;
+    border:3px solid transparent;
+    transition: border-color 0.25s, transform 0.35s var(--qs-ease);
+    transform: scale(0.88);
+    pointer-events:none;
 }
+.qs-bubble.selected::after {
+    transform: scale(1);
+}
+
+/* icon inside bubble */
+.qs-bubble-icon {
+    font-size: 44px;
+    transition: transform 0.28s var(--qs-ease);
+    display: flex; align-items:center; justify-content:center;
+}
+.qs-bubble:hover .qs-bubble-icon,
+.qs-bubble.selected .qs-bubble-icon { transform: scale(1.12) rotate(-6deg); }
+.qs-bubble img {
+    width: 82px; height: 82px; border-radius: 50%; object-fit: cover;
+    transition: transform 0.28s var(--qs-ease);
+}
+.qs-bubble:hover img,
+.qs-bubble.selected img { transform: scale(1.08) rotate(-4deg); }
+
+/* check badge bottom-right of bubble */
+.qs-bubble-badge {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #cbd5e1; color: #fff;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 14px;
+    border: 3px solid var(--qs-card-bg);
+    transition: background 0.25s, transform 0.3s var(--qs-ease);
+}
+.qs-bubble.selected .qs-bubble-badge {
+    animation: qsBadgePop 0.38s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes qsBadgePop {
+    0%  { transform: scale(0) rotate(-180deg); }
+    100%{ transform: scale(1) rotate(0deg); }
+}
+
+/* label below bubble */
+.qs-bnode-label {
+    font-size: 0.9rem; font-weight: 800;
+    color: var(--qs-heading); text-align: center;
+    margin-top: 12px; max-width: 180px; line-height: 1.3;
+}
+.qs-bnode-sub {
+    font-size: 0.7rem; color: var(--qs-muted);
+    text-align: center; margin-top: 3px;
+}
+
+/* gap segment = spine shows through */
+.qs-bnode-gap { height: 44px; width: 4px; position:relative; z-index:2; }
+
+/* empty state */
+.qs-path-empty {
+    display: flex; flex-direction:column; align-items:center;
+    justify-content:center; text-align:center;
+    padding: 40px 20px; color: #94a3b8;
+}
+.qs-path-empty i { font-size:36px; color:#cbd5e1; margin-bottom:10px; }
+.qs-path-empty p { font-size:0.86rem; max-width:280px; margin:0; }
+
+/* ── sticky footer with short Continue ── */
+.qs-s2-footer {
+    border-top: 1px solid var(--qs-border);
+    padding: 12px 20px;
+    display: flex; gap: 10px; align-items: center;
+    background: var(--qs-bg);
+}
+
+/* STEP 3 */
+.qs-q-layout { display:grid; grid-template-columns:160px 1fr; gap:24px; align-items:start; }
+.qs-q-box {
+    background:rgba(37,99,235,0.05); border-radius:14px; padding:20px 14px;
+    text-align:center; border:1px solid rgba(37,99,235,0.10);
+}
+.qs-q-big { font-size:3.6rem; font-weight:800; color:var(--qs-primary); line-height:1; }
+.qs-q-big.bump { animation:qsBump 0.22s ease; }
+@keyframes qsBump { 0%{transform:scale(1)} 50%{transform:scale(1.16)} 100%{transform:scale(1)} }
+.qs-q-lbl { font-size:0.76rem; color:var(--qs-muted); margin-top:4px; font-weight:500; }
+.qs-presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.qs-preset {
+    padding:6px 16px; border:2px solid var(--qs-border); border-radius:24px;
+    font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s var(--qs-ease);
+    background:var(--qs-card-bg); color:var(--qs-muted);
+}
+.qs-preset:hover    { border-color:var(--qs-primary); color:var(--qs-primary); }
+.qs-preset.selected { background:var(--qs-primary); color:#fff; border-color:var(--qs-primary); box-shadow:0 3px 10px rgba(37,99,235,0.22); }
+.qs-slider {
+    width:100%; -webkit-appearance:none; appearance:none;
+    height:5px; border-radius:8px; background:var(--qs-border); outline:none; cursor:pointer;
+}
+.qs-slider::-webkit-slider-thumb {
+    -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+    background:var(--qs-primary); cursor:pointer; box-shadow:0 2px 10px rgba(37,99,235,0.30);
+    transition:transform 0.15s;
+}
+.qs-slider::-webkit-slider-thumb:hover { transform:scale(1.12); }
+.qs-slider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--qs-primary); border:none; cursor:pointer; }
+.qs-slider-lbls { display:flex; justify-content:space-between; font-size:0.68rem; color:#94a3b8; margin-top:5px; font-weight:500; }
+.qs-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:18px; }
+.qs-sum-item { background:var(--qs-bg); border-radius:10px; padding:10px 12px; border:1px solid var(--qs-border); }
+.qs-sum-label { font-size:0.62rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; margin-bottom:2px; }
+.qs-sum-val   { font-size:0.86rem; font-weight:700; color:var(--qs-heading); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:5px; }
+.qs-sum-icon  { width:22px; height:22px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+
+/* generic footer */
+.qs-footer {
+    background:var(--qs-bg); border-top:1px solid var(--qs-border);
+    padding:14px 28px; display:flex; gap:10px; align-items:center;
+}
+.qs-btn {
+    padding:11px 20px; border-radius:var(--qs-radius-sm);
+    font-size:0.86rem; font-weight:700; cursor:pointer;
+    transition:all 0.22s var(--qs-ease);
+    display:inline-flex; align-items:center; gap:7px;
+    border:none; background:transparent; color:var(--qs-text);
+}
+.qs-btn:active { transform:scale(0.97); }
+.qs-btn-back { border:2px solid var(--qs-border); background:var(--qs-card-bg); flex-shrink:0; }
+.qs-btn-back:hover { background:var(--qs-bg); border-color:#cbd5e1; }
+.qs-btn-next { flex:1; background:var(--qs-primary); color:#fff; justify-content:center; box-shadow:0 3px 14px rgba(37,99,235,0.18); }
+.qs-btn-next:hover { background:var(--qs-primary-d); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,0.22); }
+.qs-btn-next:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+.qs-btn-launch { background:var(--qs-green); box-shadow:0 3px 14px rgba(5,150,105,0.18); }
+.qs-btn-launch:hover { background:var(--qs-green-d); box-shadow:0 6px 20px rgba(5,150,105,0.22); }
+
+/* launch */
+.qs-launch { display:none; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px 52px; text-align:center; min-height:280px; }
+.qs-launch.visible { display:flex; animation:qsFadeUp 0.5s ease; }
+.qs-launch .spinner { width:60px; height:60px; border-radius:50%; border:3px solid rgba(37,99,235,0.10); border-top-color:var(--qs-primary); animation:qsSpin 0.75s linear infinite; margin-bottom:18px; }
+@keyframes qsSpin { to{transform:rotate(360deg)} }
+.qs-launch .launch-title { font-size:1.05rem; font-weight:700; color:var(--qs-heading); margin-bottom:4px; }
+.qs-launch .launch-sub   { font-size:0.84rem; color:var(--qs-muted); animation:qsPulse 1.6s ease-in-out infinite; }
+@keyframes qsPulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+
+/* no sub */
+.qs-nosub { text-align:center; padding:64px 20px 56px; color:#94a3b8; }
+.qs-nosub i { font-size:48px; color:#cbd5e1; margin-bottom:14px; display:block; }
+.qs-nosub h3 { font-size:1.15rem; font-weight:700; color:var(--qs-heading); margin-bottom:6px; }
+.qs-nosub p  { font-size:0.88rem; max-width:380px; margin:0 auto 18px; }
+.qs-nosub .btn-cta { display:inline-block; padding:11px 28px; border-radius:var(--qs-radius-sm); background:var(--qs-primary); color:#fff; font-weight:700; text-decoration:none; transition:all 0.2s var(--qs-ease); }
+.qs-nosub .btn-cta:hover { background:var(--qs-primary-d); transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,99,235,0.18); }
+
+/* step 3 topic pills */
+.qs-pills-wrap { display:flex; flex-wrap:wrap; gap:5px; margin-top:3px; }
+.qs-pill {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:2px 9px 2px 7px; border-radius:20px;
+    font-size:0.7rem; font-weight:700; white-space:nowrap;
+}
+
+/* responsive */
+@media (max-width:680px) {
+    .qs-hero { padding:18px; gap:12px; }
+    .qs-hero h1 { font-size:1.1rem; }
+    .qs-inner { padding:18px 14px 14px; min-height:300px; }
+    .qs-footer { padding:12px 14px; flex-wrap:wrap; }
+    .qs-subj-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+    .qs-subj-card { padding:14px 6px 10px; }
+    .qs-ring { width:54px; height:54px; font-size:22px; }
+    .qs-q-layout { grid-template-columns:1fr; gap:14px; }
+    .qs-summary { grid-template-columns:1fr 1fr; }
+    .qs-step-label { display:none; }
+    .qs-s2-header { padding:16px 16px 12px; }
+    .qs-sel-bar { margin:12px 16px 0; }
+    .qs-all-chip { margin-left:16px; }
+    .qs-bubble { width:100px; height:100px; }
+    .qs-bubble-icon { font-size:36px; }
+    .qs-bubble img { width:68px; height:68px; }
+    .qs-path-outer { max-height:50vh; }
+    .qs-s2-footer { padding:10px 14px; }
+}
+@media (max-width:380px) {
+    .qs-subj-grid { grid-template-columns:repeat(2,1fr); }
+    .qs-summary { grid-template-columns:1fr; }
+    .qs-bubble { width:88px; height:88px; }
+    .qs-bubble-icon { font-size:30px; }
+}
+
+[data-theme="dark"] .qs-subj-card.selected { background:rgba(37,99,235,0.12); }
+[data-theme="dark"] .qs-sum-item           { background:#1e293b; }
+[data-theme="dark"] .qs-q-box              { background:rgba(37,99,235,0.08); }
+[data-theme="dark"] .qs-all-chip:not(.selected) { background:#1e293b; }
+[data-theme="dark"] .qs-sel-bar            { background:rgba(37,99,235,0.08); }
+[data-theme="dark"] .qs-spine              { background: repeating-linear-gradient(to bottom,#334155 0px,#334155 8px,transparent 8px,transparent 18px); }
 </style>
 
-<div class="quiz-setup-wrap">
+<div class="qs-wrap">
 
-  <!-- Hero -->
-  <div class="quiz-hero">
-    <div class="quiz-hero-icon"><i class="icon-question-circle"></i></div>
-    <h1>Practice Quiz</h1>
-    <p>Generate an instant quiz from your subscribed subjects and submodules.</p>
-  </div>
-
-  {% if not has_subscription %}
-  <div class="quiz-form-card">
-    <div class="quiz-no-sub">
-      <i class="icon-lock"></i>
-      <h3>No active subscription</h3>
-      <p>Subscribe to a plan to unlock quiz practice on your subjects.</p>
-      <a href="{% url 'student_portal:plan_list' %}" class="btn-admio btn-primary mt-3">Browse Plans</a>
+    <div class="qs-hero">
+        <div class="qs-hero-ic"><i class="ti ti-bolt"></i></div>
+        <div>
+            <h1>Practice quiz</h1>
+            <p>Pick a subject · choose topics · set your question count — done.</p>
+        </div>
     </div>
-  </div>
-  {% else %}
 
-  <form method="POST" action="{% url 'student_portal:quiz_generate' %}" id="quizSetupForm">
-    {% csrf_token %}
-    <input type="hidden" name="subject_id"    id="hiddenSubjectId">
-    <input type="hidden" name="submodule_id"  id="hiddenSubmoduleId">
-    <input type="hidden" name="num_questions" id="hiddenNumQuestions" value="10">
-
-    <div class="quiz-layout">
-
-      <!-- LEFT: Subject Grid -->
-      <div class="quiz-form-card">
-        <label class="quiz-field-label">
-          <i class="icon-book-open" style="margin-right:6px"></i>Select a Subject
-        </label>
-        <div class="subject-grid" id="subjectGrid">
-          {% for subject in subjects %}
-          <div class="subject-card" data-subject-id="{{ subject.id }}"
-               onclick="selectSubject({{ subject.id }}, '{{ subject.name|escapejs }}')">
-            <div class="subject-card-name">{{ subject.name }}</div>
-            <div class="subject-card-count">{{ subject.questions.count }} questions</div>
-          </div>
-          {% empty %}
-          <p style="color:var(--admio-text-color,#9ca3af); grid-column: 1/-1;">No subjects available in your subscription.</p>
-          {% endfor %}
+    {% if not has_subscription %}
+    <div class="qs-panel">
+        <div class="qs-nosub">
+            <i class="ti ti-lock"></i>
+            <h3>No active subscription</h3>
+            <p>Subscribe to a plan to unlock quiz practice for your subjects.</p>
+            <a href="{% url 'student_portal:plan_list' %}" class="btn-cta">Browse plans</a>
         </div>
-      </div>
-
-      <!-- RIGHT: Side Widget -->
-      <div class="quiz-side-widget" id="sideWidget">
-        <div class="widget-title">
-          <i class="icon-settings" style="margin-right:6px"></i>Quiz Setup
-        </div>
-
-        <!-- Selected Subject -->
-        <div class="widget-selected">
-          <div class="widget-selected-label">Selected Subject</div>
-          <div class="widget-selected-name" id="selectedSubjectDisplay">
-            <i class="icon-book-open"></i>
-            <span style="color:#9ca3af;font-weight:400;">None selected</span>
-          </div>
-        </div>
-
-        <!-- Submodule Selection -->
-        <div class="widget-submodule-section" id="widgetSubmoduleSection" style="display:none;">
-          <div class="widget-divider"></div>
-          <label class="widget-submodule-label">
-            <i class="icon-layers" style="margin-right:6px"></i>Submodule
-            <span style="font-weight:400;font-size:0.75rem;color:#9ca3af;">(optional)</span>
-          </label>
-          <div class="widget-submodule-grid" id="widgetSubmoduleGrid">
-            <!-- populated by JS -->
-          </div>
-        </div>
-
-        <!-- Question Count -->
-        <div class="widget-count-section" id="widgetCountSection" style="display:none;">
-          <div class="widget-divider"></div>
-          <label class="widget-count-label">
-            <span><i class="icon-hash" style="margin-right:6px"></i>Questions</span>
-            <span class="widget-count-value" id="widgetCountBadge">10</span>
-          </label>
-          <input type="range" class="widget-count-slider" id="widgetCountSlider"
-                 min="5" max="50" step="5" value="10"
-                 oninput="updateCount(this.value)">
-        </div>
-
-        <!-- Start Button -->
-        <button type="submit" class="widget-start-btn" id="startBtn" disabled>
-          <i class="icon-zap"></i> Generate Quiz
-        </button>
-      </div>
-
     </div>
-  </form>
-  {% endif %}
+    {% else %}
 
+    <div class="qs-stepper" id="qsStepper">
+        <div class="qs-step active" data-step="1">
+            <div class="qs-step-circle" id="qsSc1">1</div>
+            <span class="qs-step-label">Subject</span>
+        </div>
+        <div class="qs-step-line" id="qsSl1"></div>
+        <div class="qs-step" data-step="2">
+            <div class="qs-step-circle" id="qsSc2">2</div>
+            <span class="qs-step-label">Topics</span>
+        </div>
+        <div class="qs-step-line" id="qsSl2"></div>
+        <div class="qs-step" data-step="3">
+            <div class="qs-step-circle" id="qsSc3">3</div>
+            <span class="qs-step-label">Questions</span>
+        </div>
+    </div>
+
+    <form method="POST" action="{% url 'student_portal:quiz_generate' %}" id="qsForm">
+        {% csrf_token %}
+        <input type="hidden" name="subject_id"    id="qsHSubj">
+        <input type="hidden" name="submodule_ids" id="qsHSm">
+        <input type="hidden" name="num_questions" id="qsHNum" value="10">
+
+        <div class="qs-panel" id="qsPanel">
+
+            <!-- ═══ STEP 1 ═══ -->
+            <div class="qs-section active" id="qsS1" data-step="1">
+                <div class="qs-inner">
+                    <div class="qs-section-label"><i class="ti ti-books"></i> Choose a subject</div>
+                    <div class="qs-subj-grid" id="qsSubjGrid">
+                        {% for subject in subjects %}
+                        <div class="qs-subj-card"
+                             data-id="{{ subject.id }}"
+                             data-name="{{ subject.name|escapejs }}"
+                             style="animation-delay:{{ forloop.counter0|add:1 }}00ms"
+                             onclick="qsPickS({{ subject.id }}, '{{ subject.name|escapejs }}', this)">
+                            <div class="qs-ring qs-auto-ring"
+                                 data-name="{{ subject.name|escapejs }}"
+                                 data-idx="{{ forloop.counter0 }}"
+                                 {% if subject.color %}style="background:{{ subject.color }};border-color:{{ subject.ring_color|default:subject.color }}"{% endif %}>
+                                {% if subject.image %}
+                                    <img src="{{ subject.image.url }}" alt="{{ subject.name }}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+                                {% elif subject.emoji %}
+                                    <span class="qs-subj-emoji">{{ subject.emoji }}</span>
+                                {% elif subject.icon %}
+                                    <i class="ti {{ subject.icon }} qs-auto-icon"></i>
+                                {% else %}
+                                    <i class="ti ti-bulb qs-auto-icon"></i>
+                                {% endif %}
+                                <span class="qs-check"><i class="ti ti-check" style="font-size:10px;"></i></span>
+                            </div>
+                            <div class="qs-subj-name">{{ subject.name }}</div>
+                            <div class="qs-subj-qty">{{ subject.questions.count }} questions</div>
+                        </div>
+                        {% empty %}
+                        <p style="color:#94a3b8;grid-column:1/-1;font-size:0.88rem;padding:20px 0;text-align:center;">
+                            No subjects available in your subscription.
+                        </p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="qs-footer">
+                    <button type="button" class="qs-btn qs-btn-next" id="qsBtn1" disabled onclick="qsGo(2,false)">
+                        Continue <i class="ti ti-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═══ STEP 2 — bubble path ═══ -->
+            <div class="qs-section" id="qsS2" data-step="2">
+                <div class="qs-s2-wrap">
+
+                    <!-- sticky subject header -->
+                    <div class="qs-s2-header">
+                        <div class="qs-s2-icon" id="qsS2Icon"></div>
+                        <div>
+                            <div class="qs-s2-title" id="qsS2Title">Subject</div>
+                            <div class="qs-s2-hint" id="qsS2Hint">Tap bubbles to select topics</div>
+                        </div>
+                    </div>
+
+                    <!-- selection bar -->
+                    <div class="qs-sel-bar">
+                        <i class="ti ti-checks" style="color:var(--qs-primary);font-size:17px;flex-shrink:0;"></i>
+                        <span class="qs-sel-bar-text" id="qsSelBarText">All topics selected</span>
+                        <span class="qs-sel-bar-count" id="qsSelBarCount">All</span>
+                        <button type="button" class="qs-sel-bar-clear" id="qsSelClearBtn" onclick="qsSelAll()" style="display:none;">
+                            <i class="ti ti-x" style="font-size:11px;vertical-align:-1px;"></i> Clear
+                        </button>
+                    </div>
+
+                    <!-- "All topics" chip -->
+                    <div class="qs-all-chip selected" id="qsAllChip" onclick="qsSelAll()">
+                        <i class="ti ti-grid-dots"></i> All topics
+                    </div>
+
+                    <!-- scrollable bubble path -->
+                    <div class="qs-path-outer" id="qsPathOuter">
+                        <div class="qs-path-center" id="qsPathCenter">
+                            <div class="qs-spine" id="qsSpine"></div>
+                            <div id="qsNodeList" style="width:100%;display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;"></div>
+                        </div>
+                    </div>
+
+                    <!-- compact footer -->
+                    <div class="qs-s2-footer">
+                        <button type="button" class="qs-btn qs-btn-back" onclick="qsGo(1,true)">
+                            <i class="ti ti-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="qs-btn qs-btn-next" onclick="qsGo(3,false)">
+                            Continue <i class="ti ti-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ STEP 3 ═══ -->
+            <div class="qs-section" id="qsS3" data-step="3">
+                <div class="qs-inner">
+                    <div class="qs-section-label"><i class="ti ti-hash"></i> How many questions?</div>
+                    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+                        <div class="qs-q-layout">
+                            <div class="qs-q-box">
+                                <div class="qs-q-big" id="qsBig">10</div>
+                                <div class="qs-q-lbl">questions</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.76rem;color:var(--qs-muted);margin-bottom:10px;font-weight:600;">Quick select</div>
+                                <div class="qs-presets" id="qsPresets"></div>
+                                <input type="range" class="qs-slider" id="qsSlider" min="5" max="50" step="5" value="10" oninput="qsSetQ(+this.value,false)">
+                                <div class="qs-slider-lbls"><span>5</span><span>25</span><span>50</span></div>
+                            </div>
+                        </div>
+                        <div class="qs-summary">
+                            <div class="qs-sum-item">
+                                <div class="qs-sum-label">Subject</div>
+                                <div class="qs-sum-val">
+                                    <span class="qs-sum-icon" id="qsSumIcon"></span>
+                                    <span id="qsSumS">—</span>
+                                </div>
+                            </div>
+                            <div class="qs-sum-item">
+                                <div class="qs-sum-label">Topics</div>
+                                <div id="qsSumMWrap"><span style="font-size:0.86rem;font-weight:700;color:var(--qs-heading);">All topics</span></div>
+                            </div>
+                            <div class="qs-sum-item">
+                                <div class="qs-sum-label">Questions</div>
+                                <div class="qs-sum-val" id="qsSumQ">10</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="qs-footer">
+                    <button type="button" class="qs-btn qs-btn-back" onclick="qsGo(2,true)">
+                        <i class="ti ti-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="qs-btn qs-btn-next qs-btn-launch" onclick="qsLaunch()">
+                        <i class="ti ti-bolt"></i> Generate quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- LAUNCH -->
+            <div class="qs-launch" id="qsLaunch">
+                <div class="spinner"></div>
+                <div class="launch-title">Building your quiz…</div>
+                <div class="launch-sub" id="qsLsub">Selecting questions…</div>
+            </div>
+
+        </div>
+    </form>
+    {% endif %}
 </div>
 
 <script>
-const subjectMap = {{ subject_submodules_json|safe }};
-let selectedSubjectId   = null;
-let selectedSubmoduleId = null;
+const QS_SM_MAP = {{ subject_submodules_json|safe }};
 
-function selectSubject(id, name) {
-  selectedSubjectId   = id;
-  selectedSubmoduleId = null;
-  document.getElementById('hiddenSubjectId').value   = id;
-  document.getElementById('hiddenSubmoduleId').value = '';
+let qsSId=null, qsSName='', qsSRing=null,
+    qsSelectedSmIds=new Set(),
+    qsCount=10, qsCurStep=1;
 
-  document.querySelectorAll('.subject-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector(`.subject-card[data-subject-id="${id}"]`).classList.add('selected');
+/* vivid bubble palettes — bg, border, icon, check, ring-after */
+const QS_PAL = [
+    {bg:'#eef2ff',bd:'#818cf8',ic:'#6366f1',ck:'#4f46e5',af:'rgba(99,102,241,0.25)'},
+    {bg:'#fff7ed',bd:'#fb923c',ic:'#f97316',ck:'#ea580c',af:'rgba(249,115,22,0.25)'},
+    {bg:'#ecfdf5',bd:'#34d399',ic:'#10b981',ck:'#059669',af:'rgba(16,185,129,0.25)'},
+    {bg:'#fdf2f8',bd:'#e879f9',ic:'#d946ef',ck:'#c026d3',af:'rgba(217,70,239,0.25)'},
+    {bg:'#eff6ff',bd:'#60a5fa',ic:'#3b82f6',ck:'#2563eb',af:'rgba(59,130,246,0.25)'},
+    {bg:'#fef9c3',bd:'#facc15',ic:'#eab308',ck:'#ca8a04',af:'rgba(234,179,8,0.25)'},
+    {bg:'#fff1f2',bd:'#fb7185',ic:'#f43f5e',ck:'#e11d48',af:'rgba(244,63,94,0.25)'},
+    {bg:'#f0fdfa',bd:'#2dd4bf',ic:'#14b8a6',ck:'#0d9488',af:'rgba(20,184,166,0.25)'},
+    {bg:'#f5f3ff',bd:'#a78bfa',ic:'#8b5cf6',ck:'#7c3aed',af:'rgba(139,92,246,0.25)'},
+    {bg:'#fef3c7',bd:'#fbbf24',ic:'#f59e0b',ck:'#d97706',af:'rgba(245,158,11,0.25)'},
+    {bg:'#ffe4e6',bd:'#f9a8d4',ic:'#ec4899',ck:'#db2777',af:'rgba(236,72,153,0.25)'},
+    {bg:'#e0f2fe',bd:'#38bdf8',ic:'#0ea5e9',ck:'#0284c7',af:'rgba(14,165,233,0.25)'},
+];
 
-  document.getElementById('selectedSubjectDisplay').innerHTML = `
-    <i class="icon-book-open"></i> ${name}
-  `;
-
-  const grid       = document.getElementById('widgetSubmoduleGrid');
-  const section    = document.getElementById('widgetSubmoduleSection');
-  const submodules = subjectMap[id] || [];
-
-  grid.innerHTML = '';
-
-  const allOption = document.createElement('label');
-  allOption.className = 'widget-submodule-option selected';
-  allOption.setAttribute('data-sm-id', '');
-  allOption.innerHTML = `
-    <span class="check-mark"></span>
-    <span class="sm-icon"><i class="icon-layers"></i></span>
-    All topics
-  `;
-  allOption.onclick = () => selectSubmodule('', allOption);
-  grid.appendChild(allOption);
-
-  submodules.forEach(sm => {
-    const option = document.createElement('label');
-    option.className = 'widget-submodule-option';
-    option.setAttribute('data-sm-id', sm.id);
-    option.innerHTML = `
-      <span class="check-mark"></span>
-      <span class="sm-icon"><i class="icon-folder"></i></span>
-      ${sm.name}
-    `;
-    option.onclick = () => selectSubmodule(sm.id, option);
-    grid.appendChild(option);
-  });
-
-  section.style.display = 'block';
-  document.getElementById('widgetCountSection').style.display = 'block';
-  document.getElementById('startBtn').disabled = false;
+const QS_ICONS = [
+    {k:['math','algebra','geometry','arithmetic','calculus','trigon'],i:'ti-calculator'},
+    {k:['physic'],i:'ti-atom-2'},{k:['chem'],i:'ti-flask'},
+    {k:['bio','botany','zoolog'],i:'ti-microscope'},
+    {k:['english','language','literat','grammar','writing'],i:'ti-abc'},
+    {k:['histor'],i:'ti-landmark'},{k:['geog'],i:'ti-world'},
+    {k:['comput','program','ict','code','informat','software'],i:'ti-code'},
+    {k:['econom','business','commerce','account','finan'],i:'ti-chart-line'},
+    {k:['art','draw','design','craft'],i:'ti-palette'},
+    {k:['music'],i:'ti-music'},
+    {k:['physical education','sport',' pe','games','gym'],i:'ti-run'},
+    {k:['civic','social stud','polity','politic'],i:'ti-scale'},
+    {k:['psycholog'],i:'ti-brain'},{k:['environ','ecology','climate'],i:'ti-leaf'},
+    {k:['statistic','data'],i:'ti-chart-bar'},{k:['astro','space'],i:'ti-rocket'},
+    {k:['moral','ethic','value'],i:'ti-heart'},
+    {k:['chapter','unit','module','topic','part','section'],i:'ti-book'},
+];
+function qsIcon(name){
+    const n=(name||'').toLowerCase();
+    for(const r of QS_ICONS){ if(r.k.some(k=>n.includes(k))) return r.i; }
+    return 'ti-bulb';
 }
 
-function selectSubmodule(id, el) {
-  selectedSubmoduleId = id;
-  document.getElementById('hiddenSubmoduleId').value = id;
-  document.querySelectorAll('.widget-submodule-option').forEach(p => p.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-function updateCount(val) {
-  document.getElementById('widgetCountBadge').textContent = val;
-  document.getElementById('hiddenNumQuestions').value = val;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const slider = document.getElementById('widgetCountSlider');
-  const badge = document.getElementById('widgetCountBadge');
-  if (slider && badge) {
-    slider.addEventListener('input', function() {
-      badge.textContent = this.value;
-      document.getElementById('hiddenNumQuestions').value = this.value;
+/* apply colors to step 1 subject rings */
+function qsApplyRings(){
+    document.querySelectorAll('.qs-auto-ring').forEach(ring=>{
+        const ic=ring.querySelector('.qs-auto-icon'); if(!ic) return;
+        const idx=+(ring.dataset.idx||0), pal=QS_PAL[idx%QS_PAL.length];
+        ic.className='ti '+qsIcon(ring.dataset.name||'')+' qs-auto-icon';
+        ic.style.fontSize='28px'; ic.style.color=pal.ic;
+        if(!ring.style.background){ ring.style.background=pal.bg; ring.style.borderColor=pal.bd; }
     });
-  }
-});
+}
+document.addEventListener('DOMContentLoaded',qsApplyRings);
+qsApplyRings();
 
-document.getElementById('quizSetupForm')?.addEventListener('submit', function (e) {
-  if (!selectedSubjectId) {
-    e.preventDefault();
-    alert('Please select a subject first.');
-  }
+/* presets */
+(function(){
+    const pp=document.getElementById('qsPresets'); if(!pp) return;
+    [5,10,15,20,30,50].forEach(v=>{
+        const b=document.createElement('button');
+        b.type='button'; b.className='qs-preset'+(v===10?' selected':'');
+        b.textContent=v; b.onclick=()=>qsSetQ(v,true); pp.appendChild(b);
+    });
+})();
+
+/* pick subject */
+function qsPickS(id,name,el){
+    qsSId=id; qsSName=name; qsSRing=el.querySelector('.qs-ring');
+    document.querySelectorAll('.qs-subj-card').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('qsBtn1').disabled=false;
+    document.getElementById('qsHSubj').value=id;
+    if(navigator.vibrate) navigator.vibrate(6);
+}
+
+/* update selection status bar */
+function qsUpdateBar(){
+    const n=qsSelectedSmIds.size;
+    const barT=document.getElementById('qsSelBarText');
+    const barC=document.getElementById('qsSelBarCount');
+    const clr =document.getElementById('qsSelClearBtn');
+    const chip=document.getElementById('qsAllChip');
+    if(n===0){
+        barT.textContent='All topics selected'; barC.textContent='All';
+        clr.style.display='none'; chip.classList.add('selected');
+    } else {
+        barT.textContent=n===1?'1 topic selected':`${n} topics selected`;
+        barC.textContent=n; clr.style.display=''; chip.classList.remove('selected');
+    }
+    document.getElementById('qsHSm').value=[...qsSelectedSmIds].join(',');
+}
+
+/* build bubble path */
+function qsBuildBubbles(){
+    const list=document.getElementById('qsNodeList');
+    list.innerHTML='';
+    qsSelectedSmIds.clear();
+    qsUpdateBar();
+
+    /* echo subject in header */
+    document.getElementById('qsS2Title').textContent=qsSName;
+    document.getElementById('qsS2Hint').textContent='Tap bubbles to select · tap again to deselect';
+    const hIcon=document.getElementById('qsS2Icon');
+    hIcon.innerHTML='';
+    if(qsSRing){
+        const img=qsSRing.querySelector('img');
+        const em=qsSRing.querySelector('.qs-subj-emoji');
+        const ic=qsSRing.querySelector('i.qs-auto-icon');
+        if(img){
+            const c=img.cloneNode(); c.style.cssText='width:42px;height:42px;border-radius:50%;object-fit:cover;';
+            hIcon.appendChild(c); hIcon.style.border='none'; hIcon.style.background='transparent';
+        } else if(em){
+            hIcon.textContent=em.textContent; hIcon.style.fontSize='24px';
+        } else if(ic){
+            const ci=ic.cloneNode(); ci.style.fontSize='20px'; ci.style.color=ic.style.color;
+            hIcon.appendChild(ci);
+            hIcon.style.background=qsSRing.style.background||'#eef2ff';
+            hIcon.style.borderColor=qsSRing.style.borderColor||'#818cf8';
+        }
+    }
+
+    const sms=QS_SM_MAP[qsSId]||[];
+    const spine=document.getElementById('qsSpine');
+
+    if(!sms.length){
+        spine.style.display='none';
+        list.innerHTML=`<div class="qs-path-empty"><i class="ti ti-mood-empty"></i><p>No topics yet — you can still quiz from all questions in this subject.</p></div>`;
+        return;
+    }
+    spine.style.display='block';
+
+    sms.forEach((sm,i)=>{
+        const pal=QS_PAL[i%QS_PAL.length];
+        const icon=qsIcon(sm.name);
+
+        /* gap between nodes */
+        if(i>0){
+            const gap=document.createElement('div');
+            gap.className='qs-bnode-gap';
+            list.appendChild(gap);
+        }
+
+        const row=document.createElement('div');
+        row.className='qs-bnode';
+
+        let innerContent;
+        if(sm.image){
+            innerContent=`<img src="${sm.image}" alt="${sm.name}">`;
+        } else {
+            innerContent=`<div class="qs-bubble-icon"><i class="ti ${icon}" style="color:${pal.ic};"></i></div>`;
+        }
+
+        row.innerHTML=`
+            <div class="qs-bubble" id="qsB_${sm.id}"
+                 style="background:${pal.bg};border-color:${pal.bd};">
+                ${innerContent}
+                <div class="qs-bubble-badge" id="qsBBadge_${sm.id}" style="background:#cbd5e1;">
+                    <i class="ti ti-check" style="font-size:13px;"></i>
+                </div>
+            </div>
+            <div class="qs-bnode-label">${sm.name}</div>
+            <div class="qs-bnode-sub">${sm.question_count!=null?sm.question_count+' questions':''}</div>`;
+
+        const btn=row.querySelector('.qs-bubble');
+        const badge=row.querySelector('.qs-bubble-badge');
+
+        /* style the ::after ring using a data attr + injected style */
+        btn.dataset.af=pal.af;
+        btn.dataset.bd=pal.bd;
+
+        btn.onclick=()=>{
+            if(qsSelectedSmIds.has(sm.id)){
+                qsSelectedSmIds.delete(sm.id);
+                btn.classList.remove('selected');
+                btn.style.borderColor=pal.bd;
+                badge.style.background='#cbd5e1';
+                btn.style.setProperty('--qs-af','transparent');
+            } else {
+                qsSelectedSmIds.add(sm.id);
+                btn.classList.add('selected');
+                btn.style.borderColor=pal.ck;
+                badge.style.background=pal.ck;
+                btn.style.setProperty('--qs-af',pal.af);
+            }
+            qsUpdateBar();
+            if(navigator.vibrate) navigator.vibrate(5);
+        };
+
+        list.appendChild(row);
+        setTimeout(()=>row.classList.add('appeared'), i*75+30);
+    });
+}
+
+function qsSelAll(){
+    qsSelectedSmIds.clear();
+    document.querySelectorAll('.qs-bubble').forEach(b=>{
+        b.classList.remove('selected');
+        const pal=QS_PAL[0]; /* reset colors - badge gray */
+        b.querySelector('.qs-bubble-badge').style.background='#cbd5e1';
+    });
+    /* reset each bubble's border to its own palette color */
+    const sms=QS_SM_MAP[qsSId]||[];
+    sms.forEach((sm,i)=>{
+        const b=document.getElementById('qsB_'+sm.id);
+        if(b) b.style.borderColor=QS_PAL[i%QS_PAL.length].bd;
+    });
+    qsUpdateBar();
+    if(navigator.vibrate) navigator.vibrate(3);
+}
+
+function qsSetQ(v,fromBtn){
+    qsCount=v;
+    document.getElementById('qsHNum').value=v;
+    const el=document.getElementById('qsBig');
+    el.textContent=v; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    document.getElementById('qsSumQ').textContent=v;
+    document.querySelectorAll('.qs-preset').forEach(b=>b.classList.toggle('selected',+b.textContent===v));
+    if(fromBtn) document.getElementById('qsSlider').value=v;
+}
+
+function qsGo(n,back){
+    if(n===2) qsBuildBubbles();
+    if(n===3){
+        document.getElementById('qsSumS').textContent=qsSName||'—';
+        document.getElementById('qsSumQ').textContent=qsCount;
+
+        const wrap=document.getElementById('qsSumMWrap');
+        wrap.innerHTML='';
+        if(qsSelectedSmIds.size===0){
+            wrap.innerHTML='<span style="font-size:0.86rem;font-weight:700;color:var(--qs-heading);">All topics</span>';
+        } else {
+            const sms=QS_SM_MAP[qsSId]||[];
+            const pw=document.createElement('div'); pw.className='qs-pills-wrap';
+            sms.forEach((sm,i)=>{
+                if(!qsSelectedSmIds.has(sm.id)) return;
+                const pal=QS_PAL[i%QS_PAL.length];
+                const p=document.createElement('span'); p.className='qs-pill';
+                p.style.cssText=`background:${pal.bg};color:${pal.ck};border:1.5px solid ${pal.bd};`;
+                p.innerHTML=`<i class="ti ti-check" style="font-size:9px;color:${pal.ck};"></i>${sm.name}`;
+                pw.appendChild(p);
+            });
+            wrap.appendChild(pw);
+        }
+
+        const chip=document.getElementById('qsSumIcon'); chip.innerHTML='';
+        if(qsSRing){
+            const img=qsSRing.querySelector('img');
+            const em=qsSRing.querySelector('.qs-subj-emoji');
+            const ic=qsSRing.querySelector('i.qs-auto-icon');
+            if(img){ const c=img.cloneNode(); c.style.cssText='width:20px;height:20px;border-radius:50%;object-fit:cover;'; chip.appendChild(c); }
+            else if(em){ chip.textContent=em.textContent; chip.style.fontSize='16px'; }
+            else if(ic){ const ci=ic.cloneNode(); ci.style.fontSize='15px'; ci.style.color=ic.style.color; chip.appendChild(ci); chip.style.background=qsSRing.style.background; chip.style.borderRadius='6px'; }
+        }
+    }
+
+    const cur=document.getElementById('qsS'+qsCurStep);
+    const nxt=document.getElementById('qsS'+n);
+    cur.style.cssText='opacity:0;transform:'+(back?'translateX(-18px)':'translateX(18px)')+';transition:opacity .22s,transform .28s cubic-bezier(.22,.68,0,1.2);';
+    setTimeout(()=>{
+        cur.classList.remove('active','slide-in','slide-back');
+        cur.style.display='none'; cur.style.cssText='';
+        nxt.style.display='block';
+        nxt.classList.add('active',back?'slide-back':'slide-in');
+        qsCurStep=n; qsUpdateStepper();
+        document.getElementById('qsPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    },240);
+}
+
+function qsUpdateStepper(){
+    [1,2,3].forEach(i=>{
+        const st=document.querySelector(`.qs-step[data-step="${i}"]`);
+        const sc=document.getElementById('qsSc'+i);
+        if(!st||!sc) return;
+        st.classList.toggle('active',i===qsCurStep);
+        st.classList.toggle('done',i<qsCurStep);
+        sc.innerHTML=(i<qsCurStep)?'<i class="ti ti-check" style="font-size:13px;"></i>':i;
+    });
+    document.getElementById('qsSl1').classList.toggle('done',qsCurStep>1);
+    document.getElementById('qsSl2').classList.toggle('done',qsCurStep>2);
+}
+
+function qsLaunch(){
+    if(!qsSId){ return; }
+    document.getElementById('qsS3').style.display='none';
+    const la=document.getElementById('qsLaunch'); la.classList.add('visible');
+    const msgs=['Selecting questions…','Shuffling order…','Almost ready…'];
+    let mi=0;
+    const t=setInterval(()=>{ mi++; if(mi<msgs.length) document.getElementById('qsLsub').textContent=msgs[mi]; else clearInterval(t); },680);
+    setTimeout(()=>document.getElementById('qsForm').submit(),2000);
+}
+
+(function(){ const s=document.createElement('style'); s.textContent=`@keyframes qsShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}`; document.head.appendChild(s); })();
+
+document.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ const b=document.querySelector('.qs-section.active .qs-btn-next:not(:disabled)'); if(b) b.click(); }
+    if(e.key==='Escape'){ const b=document.querySelector('.qs-section.active .qs-btn-back'); if(b) b.click(); }
 });
 </script>
-
 {% endblock %}

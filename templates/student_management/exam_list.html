@@ -3,6 +3,40 @@
 {% block title %}Exams | Student Management{% endblock %}
 
 {% block content %}
+<style>
+    .exam-table {
+        table-layout: fixed;
+        width: 100%;
+        min-width: 760px;
+    }
+    .exam-table thead th {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6c757d;
+        font-weight: 600;
+        border-bottom: 1px solid #dee2e6;
+        white-space: nowrap;
+        padding-top: 0.85rem;
+        padding-bottom: 0.85rem;
+    }
+    .exam-table tbody td {
+        padding-top: 0.7rem;
+        padding-bottom: 0.7rem;
+        vertical-align: middle;
+    }
+    .exam-table .btn-group .btn {
+        border-radius: 0;
+    }
+    .exam-table .btn-group .btn:first-child {
+        border-top-left-radius: 0.375rem;
+        border-bottom-left-radius: 0.375rem;
+    }
+    .exam-table .btn-group .btn:last-child {
+        border-top-right-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+    }
+</style>
 <div class="dashboard__form__wraper">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -31,64 +65,62 @@
         <div class="card-body p-0">
             {% if exams %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
+                <table class="table table-hover align-middle mb-0 exam-table">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-3" style="width:40px">#</th>
-                            <th>Title</th>
-                            <th style="width:110px">Exam Type</th>
-                            <th>Subjects</th>
-                            <th>Submodules</th>
-                            <th style="width:80px">Duration</th>
-                            <th style="width:80px">Questions</th>
-                            <th style="width:70px">Marks/Q</th>
-                            <th style="width:80px">Status</th>
-                            <th class="text-end pe-3" style="width:90px">Actions</th>
+                            <th class="ps-3 text-center" style="width:5%">#</th>
+                            <th style="width:26%">Title</th>
+                            <th class="text-center" style="width:13%">Exam Type</th>
+                            <th class="text-center" style="width:11%">Duration</th>
+                            <th class="text-center" style="width:11%">Questions</th>
+                            <th class="text-center" style="width:11%">Marks/Q</th>
+                            <th class="text-center" style="width:11%">Status</th>
+                            <th class="text-center pe-3" style="width:12%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for exam in exams %}
                         <tr>
-                            <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
+                            <td class="ps-3 text-center text-muted small">{{ forloop.counter }}</td>
                             <td>
                                 <span class="fw-semibold">{{ exam.title }}</span>
                                 {% if exam.custom_name %}
                                 <div class="text-muted small">{{ exam.custom_name }}</div>
                                 {% endif %}
                             </td>
-                            <td class="text-muted small">{{ exam.exam_type.name|default:"—" }}</td>
-                            <td class="text-muted small">
-                                {% for subject in exam.subjects.all %}
-                                    <span class="badge bg-light text-dark border me-1">{{ subject.name }}</span>
-                                {% empty %}—{% endfor %}
+                            <td class="text-center">
+                                <span class="badge bg-primary-subtle text-primary">{{ exam.exam_type.name|default:"—" }}</span>
                             </td>
-                            <td class="text-muted small">
-                                {% for submodule in exam.submodules.all %}
-                                    <span class="badge bg-light text-dark border me-1">{{ submodule.name }}</span>
-                                {% empty %}—{% endfor %}
-                            </td>
-                            <td class="text-muted small">{{ exam.duration_minutes }} min</td>
-                            <td class="text-muted small">{{ exam.total_questions }}</td>
-                            <td class="text-muted small">{{ exam.marks_per_question }}</td>
-                            <td>
+                            <td class="text-center text-muted small">{{ exam.duration_minutes }} min</td>
+                            <td class="text-center text-muted small">{{ exam.total_questions }}</td>
+                            <td class="text-center text-muted small">{{ exam.marks_per_question }}</td>
+                            <td class="text-center">
                                 {% if exam.is_active %}
                                     <span class="badge bg-success-subtle text-success">Active</span>
                                 {% else %}
                                     <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end pe-3">
-                                <a href="{% url 'student_management:exam_edit' exam.pk %}"
-                                   class="btn btn-outline-primary btn-sm me-1"
-                                   title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button class="btn btn-outline-danger btn-sm"
-                                        title="Delete"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal{{ exam.pk }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <td class="text-center pe-3">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-outline-secondary btn-sm"
+                                            title="View"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewModal{{ exam.pk }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="{% url 'student_management:exam_edit' exam.pk %}"
+                                       class="btn btn-outline-primary btn-sm"
+                                       title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            title="Delete"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ exam.pk }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -104,6 +136,47 @@
         </div>
     </div>
 </div>
+
+<!-- View Modals -->
+{% for exam in exams %}
+<div class="modal fade" id="viewModal{{ exam.pk }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-semibold">
+                    <i class="fas fa-eye me-2 text-secondary"></i>{{ exam.title }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="text-muted small fw-semibold mb-1">Subjects</div>
+                    <div>
+                        {% for subject in exam.subjects.all %}
+                            <span class="badge bg-light text-dark border me-1 mb-1">{{ subject.name }}</span>
+                        {% empty %}
+                            <span class="text-muted small">—</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-muted small fw-semibold mb-1">Submodules</div>
+                    <div>
+                        {% for submodule in exam.submodules.all %}
+                            <span class="badge bg-light text-dark border me-1 mb-1">{{ submodule.name }}</span>
+                        {% empty %}
+                            <span class="text-muted small">—</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 <!-- Delete Modals -->
 {% for exam in exams %}

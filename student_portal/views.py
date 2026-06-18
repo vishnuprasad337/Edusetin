@@ -1308,27 +1308,48 @@ def quiz_setup(request):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
- 
-    from student_management.models import Subject, SubModule
- 
-    subject_ids    = _get_accessible_subject_ids(student)
-    subjects       = Subject.objects.filter(id__in=subject_ids, is_active=True).order_by('name')
- 
-    # Build subject → submodules map (only accessible ones)
-    subject_submodules = {}
-    for subj in subjects:
-        accessible_sm_ids = _get_accessible_submodule_ids(student, subj.id)
-        sms = SubModule.objects.filter(id__in=accessible_sm_ids, is_active=True).order_by('order', 'name')
-        subject_submodules[subj.id] = list(sms.values('id', 'name'))
- 
+
+    from student_management.models import Subject, SubModule, SubscriptionPlan
+    from django.utils import timezone
     import json
+
+    # Get the student's currently active payment/plan
+    active_payment = student.payments.filter(
+        status='success',
+        expires_at__gt=timezone.now(),
+    ).select_related('plan').order_by('-expires_at').first()
+
+    if not active_payment:
+        return render(request, 'student_portal/quiz_setup.html', {
+            'subjects':                Subject.objects.none(),
+            'subject_submodules_json': json.dumps({}),
+            'has_subscription':        False,
+        })
+
+    plan = active_payment.plan
+
+    # Only subjects & submodules explicitly attached to their plan
+    plan_subjects   = plan.subjects.filter(is_active=True).order_by('name')
+    plan_submodules = plan.submodules.filter(is_active=True)
+
+    # Build subject → submodules map (only plan submodules, under plan subjects)
+    subject_submodules = {}
+    for subj in plan_subjects:
+        sms = plan_submodules.filter(subject=subj).order_by('order', 'name')
+        subject_submodules[subj.id] = [
+            {
+                'id':    sm.id,
+                'name':  sm.name,
+                'image': sm.image.url if sm.image else None,
+            }
+            for sm in sms
+        ]
+
     return render(request, 'student_portal/quiz_setup.html', {
-        'subjects':          subjects,
+        'subjects':                plan_subjects,
         'subject_submodules_json': json.dumps(subject_submodules),
-        'has_subscription':  bool(subject_ids),
+        'has_subscription':        True,
     })
- 
- 
 # ─────────────────────────────────────────────
 # QUIZ GENERATE  — POST: create attempt + questions
 # ─────────────────────────────────────────────

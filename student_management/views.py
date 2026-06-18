@@ -1852,13 +1852,14 @@ class ExamForm(forms.ModelForm):
             'duration_minutes', 'marks_per_question', 'negative_marks',
             'total_questions', 'pyq_years',
             'subjects', 'submodules', 'selected_questions',
-            'is_active',
+            'is_active', 'image',
         ]
         widgets = {
             'subjects': forms.CheckboxSelectMultiple(),
             'submodules': forms.CheckboxSelectMultiple(),
             'selected_questions': forms.CheckboxSelectMultiple(),
             'description': forms.Textarea(attrs={'rows': 3}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1933,7 +1934,7 @@ def exam_list(request):
     return render(request, 'student_management/exam_list.html', {'exams': exams})
 
 def exam_add(request):
-    form = ExamForm(request.POST or None)
+    form = ExamForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
         form.save()
         messages.success(request, 'Exam created.')
@@ -1943,7 +1944,7 @@ def exam_add(request):
 
 def exam_edit(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
-    form = ExamForm(request.POST or None, instance=exam)
+    form = ExamForm(request.POST or None, request.FILES or None, instance=exam)
     if request.method == 'POST' and form.is_valid():
         form.save()
         messages.success(request, 'Exam updated.')
@@ -1999,6 +2000,8 @@ def ajax_questions_by_filter(request):
     subject_ids = request.GET.getlist('subject_ids')
     submodule_ids = request.GET.getlist('submodule_ids')
     year_filters = request.GET.getlist('years')
+    exclude_used = request.GET.get('exclude_used')
+    exam_id = request.GET.get('exam_id')
 
     if subject_ids:
         questions = questions.filter(subject_id__in=subject_ids)
@@ -2006,6 +2009,12 @@ def ajax_questions_by_filter(request):
         questions = questions.filter(submodule_id__in=submodule_ids)
     if year_filters:
         questions = questions.filter(year__in=year_filters)
+
+    if exclude_used:
+        other_exams = Exam.objects.all()
+        if exam_id:
+            other_exams = other_exams.exclude(pk=exam_id)
+        questions = questions.exclude(exams__in=other_exams).distinct()
 
     data = [
         {
@@ -2019,7 +2028,6 @@ def ajax_questions_by_filter(request):
         for q in questions.order_by('subject__name', 'id')
     ]
     return JsonResponse({'questions': data})
-
 @login_required
 def submodule_list(request):
     empty_slug_submodules = SubModule.objects.filter(slug='')

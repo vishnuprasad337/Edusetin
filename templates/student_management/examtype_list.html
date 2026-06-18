@@ -45,11 +45,8 @@
                         <tr>
                             <td class="ps-4 text-muted small">{{ forloop.counter }}</td>
                             <td class="fw-semibold">
-                                {{ et }}
-                                {% if et.name == 'CUSTOM' and et.custom_name %}
-                                    <span class="badge bg-light text-dark border ms-1 small">Custom</span>
-                                {% endif %}
-                            </td>
+    {{ et }}
+</td>
                             <td>
                                 {% if et.is_active %}
                                     <span class="badge bg-success-subtle text-success">Active</span>

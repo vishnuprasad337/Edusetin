@@ -247,6 +247,8 @@ class ExamType(models.Model):
         ordering = ['name']
 
     def __str__(self):
+        if self.name == 'CUSTOM' and self.custom_name:
+            return self.custom_name
         return self.get_name_display()
 
 

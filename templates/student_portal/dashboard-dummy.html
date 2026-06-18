@@ -1,0 +1,236 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Admio{% endblock %}
+
+{% block content %}
+
+<!-- AI Banner -->
+<div class="ai-insight-banner mb-4">
+  <div class="ai-banner-icon"><i class="icon-bot"></i></div>
+  <div class="ai-banner-content">
+    <p class="ai-banner-title">AI Insight: Revenue up 24.5% this month</p>
+    <p class="ai-banner-text">3 churn risks detected · GPT-4 accuracy 97.2% · 48,300 AI requests this month</p>
+  </div>
+  <a href="#" class="ai-banner-action"><i class="icon-arrow-right"></i> View Analysis</a>
+  <button class="ai-banner-close"><i class="icon-x"></i></button>
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Main Dashboard</h1>
+    <p class="page-subtitle">Welcome back — here's your platform overview for today</p>
+  </div>
+  <div class="page-header-actions">
+    <select class="form-control-admio form-select-admio w-select-sm">
+      <option>Last 30 Days</option>
+      <option>Last 7 Days</option>
+      <option>This Month</option>
+      <option>This Year</option>
+    </select>
+    <button class="btn-admio btn-ai btn-sm"><i class="icon-wand-sparkles"></i> AI Report</button>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon purple admio-bg-purple"><i class="icon-network"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> 24.5%</span>
+      </div>
+      <div class="stat-value" data-target="128640" data-prefix="$">$0</div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-primary mh-40 op-30"></div><div class="mini-bar bar-primary mh-60 op-40"></div>
+        <div class="mini-bar bar-primary mh-45 op-50"></div><div class="mini-bar bar-primary mh-75 op-60"></div>
+        <div class="mini-bar bar-primary mh-55 op-70"></div><div class="mini-bar bar-primary mh-90 op-85"></div>
+        <div class="mini-bar bar-primary mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon cyan admio-bg-cyan"><i class="icon-bot"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> 340%</span>
+      </div>
+      <div class="stat-value" data-target="48300">0</div>
+      <div class="stat-label">AI Requests / Month</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-secondary mh-30 op-30"></div><div class="mini-bar bar-secondary mh-50 op-40"></div>
+        <div class="mini-bar bar-secondary mh-40 op-50"></div><div class="mini-bar bar-secondary mh-70 op-60"></div>
+        <div class="mini-bar bar-secondary mh-85 op-75"></div><div class="mini-bar bar-secondary mh-75 op-85"></div>
+        <div class="mini-bar bar-secondary mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon green admio-bg-green"><i class="icon-users"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> 12%</span>
+      </div>
+      <div class="stat-value" data-target="24840">0</div>
+      <div class="stat-label">Active Users</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-success mh-35 op-30"></div><div class="mini-bar bar-success mh-55 op-40"></div>
+        <div class="mini-bar bar-success mh-45 op-50"></div><div class="mini-bar bar-success mh-65 op-60"></div>
+        <div class="mini-bar bar-success mh-80 op-75"></div><div class="mini-bar bar-success mh-70 op-85"></div>
+        <div class="mini-bar bar-success mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon orange admio-bg-orange"><i class="icon-target"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> 2.1%</span>
+      </div>
+      <div class="stat-value" data-target="97.2" data-suffix="%">0%</div>
+      <div class="stat-label">AI Accuracy</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-warning mh-60 op-30"></div><div class="mini-bar bar-warning mh-75 op-40"></div>
+        <div class="mini-bar bar-warning mh-65 op-50"></div><div class="mini-bar bar-warning mh-85 op-60"></div>
+        <div class="mini-bar bar-warning mh-70 op-75"></div><div class="mini-bar bar-warning mh-90 op-85"></div>
+        <div class="mini-bar bar-warning mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Revenue vs AI Revenue</h2>
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+          <span class="d-flex align-items-center gap-1 text-xs"><span class="legend-rect legend-primary"></span>Revenue</span>
+          <span class="d-flex align-items-center gap-1 text-xs"><span class="legend-rect legend-secondary"></span>AI Revenue</span>
+          <a href="#" class="btn-admio btn-ghost btn-sm">Full Report</a>
+        </div>
+      </div>
+      <div class="admio-card-body chart-h-lg"><canvas id="revenueChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header"><h2 class="card-title mb-0">AI Request Types</h2></div>
+      <div class="admio-card-body chart-h-md"><canvas id="aiRequestsChart"></canvas></div>
+      <div class="admio-card-body admio-card-body-sm pt-0-i">
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between"><span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-primary"></span>Chat (GPT-4)</span><span class="fw-700 text-xs">38%</span></div>
+          <div class="d-flex justify-content-between"><span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-secondary"></span>Code Gen</span><span class="fw-700 text-xs">24%</span></div>
+          <div class="d-flex justify-content-between"><span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-success"></span>Analysis</span><span class="fw-700 text-xs">18%</span></div>
+          <div class="d-flex justify-content-between"><span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-warning"></span>Image Gen</span><span class="fw-700 text-xs">12%</span></div>
+          <div class="d-flex justify-content-between"><span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-info"></span>Other</span><span class="fw-700 text-xs">8%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Middle Row -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header"><h2 class="card-title mb-0">Weekly AI Activity</h2></div>
+      <div class="admio-card-body chart-h-sm"><canvas id="weeklyChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Top AI Models</h2>
+        <a href="#" class="btn-admio btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="admio-card-body admio-card-body-sm">
+        <div class="d-flex flex-column gap-3">
+          <div><div class="d-flex justify-content-between mb-1"><span class="text-sm fw-600">GPT-4 Turbo</span><span class="text-sm fw-700">18,940</span></div><div class="progress-admio"><div class="progress-fill progress-purple w-78"></div></div></div>
+          <div><div class="d-flex justify-content-between mb-1"><span class="text-sm fw-600">Claude 3 Opus</span><span class="text-sm fw-700">13,820</span></div><div class="progress-admio"><div class="progress-fill progress-cyan w-57"></div></div></div>
+          <div><div class="d-flex justify-content-between mb-1"><span class="text-sm fw-600">Gemini Ultra</span><span class="text-sm fw-700">9,240</span></div><div class="progress-admio"><div class="progress-fill progress-blue w-38"></div></div></div>
+          <div><div class="d-flex justify-content-between mb-1"><span class="text-sm fw-600">Llama 3 70B</span><span class="text-sm fw-700">6,300</span></div><div class="progress-admio"><div class="progress-fill progress-orange w-26"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">System Status</h2>
+        <span class="badge-admio badge-green badge-dot">All Operational</span>
+      </div>
+      <div class="admio-card-body admio-card-body-sm">
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex justify-content-between"><span class="text-sm">Chat API</span><span class="badge-admio badge-green badge-dot text-xs">Online</span></div>
+          <div class="d-flex justify-content-between"><span class="text-sm">GPT-4 Endpoint</span><span class="badge-admio badge-green badge-dot text-xs">Online</span></div>
+          <div class="d-flex justify-content-between"><span class="text-sm">Claude API</span><span class="badge-admio badge-green badge-dot text-xs">Online</span></div>
+          <div class="d-flex justify-content-between"><span class="text-sm">Vector Database</span><span class="badge-admio badge-orange badge-dot text-xs">Degraded</span></div>
+          <div class="d-flex justify-content-between"><span class="text-sm">Image Gen (DALL-E)</span><span class="badge-admio badge-green badge-dot text-xs">Online</span></div>
+          <div class="d-flex justify-content-between"><span class="text-sm">Webhooks</span><span class="badge-admio badge-green badge-dot text-xs">Online</span></div>
+        </div>
+      </div>
+      <div class="admio-card-footer"><a href="#" class="text-xs text-primary-c"><i class="icon-arrow-right"></i> View full status</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Top Countries by AI Usage</h2>
+        <span class="badge-admio badge-purple text-xs">This Month</span>
+      </div>
+      <div class="admio-card-body admio-card-body-sm">
+        <div class="country-row"><span class="country-flag">🇺🇸</span><span class="country-name">United States</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-purple w-84"></div></div></div><span class="country-pct">84%</span><span class="country-val">20,412</span></div>
+        <div class="country-row"><span class="country-flag">🇬🇧</span><span class="country-name">United Kingdom</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-cyan w-62"></div></div></div><span class="country-pct text-cyan-c">62%</span><span class="country-val">7,840</span></div>
+        <div class="country-row"><span class="country-flag">🇮🇳</span><span class="country-name">India</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-green w-54"></div></div></div><span class="country-pct text-success-c">54%</span><span class="country-val">6,480</span></div>
+        <div class="country-row"><span class="country-flag">🇩🇪</span><span class="country-name">Germany</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-orange w-38"></div></div></div><span class="country-pct text-orange-dark-c">38%</span><span class="country-val">4,200</span></div>
+        <div class="country-row"><span class="country-flag">🇨🇦</span><span class="country-name">Canada</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-blue w-29"></div></div></div><span class="country-pct text-blue-dark-c">29%</span><span class="country-val">3,120</span></div>
+        <div class="country-row"><span class="country-flag">🇦🇺</span><span class="country-name">Australia</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-pink w-22"></div></div></div><span class="country-pct text-pink-c">22%</span><span class="country-val">2,480</span></div>
+        <div class="country-row"><span class="country-flag">🇯🇵</span><span class="country-name">Japan</span><div class="country-bar"><div class="progress-admio"><div class="progress-fill progress-purple-dark w-18"></div></div></div><span class="country-pct text-purple-dark-c">18%</span><span class="country-val">1,948</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Recent AI Requests</h2>
+        <div class="d-flex gap-2">
+          <div class="topbar-search max-w-search"><i class="icon-search search-icon"></i><input type="text" class="search-input" placeholder="Search..." data-table-search="recentTable"></div>
+          <a href="#" class="btn-admio btn-outline btn-sm">View All</a>
+        </div>
+      </div>
+      <div class="admio-table-wrapper">
+        <table class="admio-table admio-table-checkable" id="recentTable">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="form-check-input select-all-cb"></th>
+              <th>Request ID</th><th>Model</th><th>User</th><th>Tokens</th><th>Cost</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><input type="checkbox" class="form-check-input"></td><td class="mono fw-600">#req_8xJ2</td><td><span class="badge-admio badge-purple text-xs">GPT-4</span></td><td class="text-sm">James M.</td><td class="mono">2,840</td><td class="fw-700">$0.085</td><td><span class="badge-admio badge-green badge-dot text-xs">OK</span></td></tr>
+            <tr><td><input type="checkbox" class="form-check-input"></td><td class="mono fw-600">#req_9mN4</td><td><span class="badge-admio badge-cyan text-xs">Claude 3</span></td><td class="text-sm">Sarah C.</td><td class="mono">5,120</td><td class="fw-700">$0.154</td><td><span class="badge-admio badge-green badge-dot text-xs">OK</span></td></tr>
+            <tr><td><input type="checkbox" class="form-check-input"></td><td class="mono fw-600">#req_3kR8</td><td><span class="badge-admio badge-purple text-xs">GPT-4</span></td><td class="text-sm">Emma W.</td><td class="mono">3,480</td><td class="fw-700">$0.104</td><td><span class="badge-admio badge-green badge-dot text-xs">OK</span></td></tr>
+            <tr><td><input type="checkbox" class="form-check-input"></td><td class="mono fw-600">#req_7pL2</td><td><span class="badge-admio badge-blue text-xs">Gemini</span></td><td class="text-sm">Alex K.</td><td class="mono">1,200</td><td class="fw-700">$0.036</td><td><span class="badge-admio badge-orange badge-dot text-xs">Wait</span></td></tr>
+            <tr><td><input type="checkbox" class="form-check-input"></td><td class="mono fw-600">#req_5nH6</td><td><span class="badge-admio badge-purple text-xs">GPT-4</span></td><td class="text-sm">Lin Z.</td><td class="mono">800</td><td class="fw-700">$0.008</td><td><span class="badge-admio badge-red badge-dot text-xs">Fail</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-toolbar mx-3 mb-2">
+        <span class="table-toolbar-count">0 rows selected</span>
+        <div class="d-flex gap-2">
+          <button class="btn-admio btn-outline btn-sm"><i class="icon-download"></i> Export</button>
+          <button class="btn-admio btn-danger btn-sm"><i class="icon-trash-2"></i> Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -5,10 +5,112 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'student_management/css/dashboard.css' %}">
+<style>
+  .welcome-banner {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 55%, #0ea5e9 100%);
+    border-radius: 16px;
+    padding: 26px 30px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -70px; right: 100px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .welcome-text { position: relative; z-index: 1; }
+  .welcome-text h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 5px;
+    letter-spacing: -0.02em;
+  }
+  .welcome-text p {
+    font-size: 0.84rem;
+    color: rgba(255,255,255,0.72);
+    margin: 0 0 8px;
+  }
+  .welcome-date {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+  }
+  .welcome-pills {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .welcome-pill {
+    background: rgba(255,255,255,0.13);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    min-width: 72px;
+  }
+  .welcome-pill .val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .welcome-pill .lbl {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.65);
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  @media (max-width: 600px) {
+    .welcome-banner { flex-direction: column; align-items: flex-start; }
+    .welcome-pills { justify-content: flex-start; }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-    <!-- Stats Grid -->
+
+    <!-- ── WELCOME BANNER ── -->
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <h2>Welcome back, Admin! 👋</h2>
+        <p>Here's what's happening with your education platform today.</p>
+        <div class="welcome-date" id="js-date"></div>
+      </div>
+      <div class="welcome-pills">
+        
+        
+        <div class="welcome-pill">
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLATFORM STATS ── -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-header">
@@ -30,42 +132,58 @@
 
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-title">Questions</div>
-                <div class="stat-icon icon-purple"><i class="icon">❓</i></div>
-            </div>
-            <div class="stat-value">{{ total_questions }}</div>
-            <div class="stat-change"><span class="text-muted">Total questions</span></div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-title">PYQs</div>
-                <div class="stat-icon icon-orange"><i class="icon">📝</i></div>
-            </div>
-            <div class="stat-value">{{ total_pyqs }}</div>
-            <div class="stat-change"><span class="text-muted">Previous year questions</span></div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
                 <div class="stat-title">Active Questions</div>
                 <div class="stat-icon icon-green"><i class="icon">✅</i></div>
             </div>
             <div class="stat-value">{{ active_questions }}</div>
-            <div class="stat-change"><span class="text-muted">Currently active</span></div>
+            <div class="stat-change"><span class="text-muted">Visible to students</span></div>
+        </div>
+    </div>
+
+    <!-- ── REVENUE & SUBSCRIPTIONS ── -->
+    <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;margin:28px 0 14px;display:flex;align-items:center;gap:10px;">
+        Revenue &amp; Subscriptions
+        <span style="flex:1;height:1px;background:#f1f5f9;"></span>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Total Revenue</div>
+                <div class="stat-icon icon-green"><i class="icon">💰</i></div>
+            </div>
+            <div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div>
+            <div class="stat-change"><span class="text-muted">All successful payments</span></div>
         </div>
 
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-title">Inactive Questions</div>
-                <div class="stat-icon icon-blue"><i class="icon">⏸️</i></div>
+                <div class="stat-title">This Month</div>
+                <div class="stat-icon icon-blue"><i class="icon">📅</i></div>
             </div>
-            <div class="stat-value">{{ inactive_questions }}</div>
-            <div class="stat-change"><span class="text-muted">Currently inactive</span></div>
+            <div class="stat-value">₹{{ monthly_revenue|floatformat:0 }}</div>
+            <div class="stat-change"><span class="text-muted">Current month revenue</span></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Active Subscriptions</div>
+                <div class="stat-icon icon-purple"><i class="icon">🔑</i></div>
+            </div>
+            <div class="stat-value">{{ active_subscriptions }}</div>
+            <div class="stat-change"><span class="text-muted">Not yet expired</span></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-title">Pending Payments</div>
+                <div class="stat-icon icon-orange"><i class="icon">⏳</i></div>
+            </div>
+            <div class="stat-value">{{ pending_payments }}</div>
+            <div class="stat-change"><span class="text-muted">Awaiting confirmation</span></div>
         </div>
     </div>
 
-    <!-- Charts -->
+    <!-- ── CHARTS ── -->
     <div class="charts-container">
         <div class="chart-card">
             <div class="chart-header">
@@ -84,10 +202,29 @@
                 <canvas id="questionBankChart"></canvas>
             </div>
         </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">Payment Status</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="paymentStatusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">Monthly Revenue</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
     </div>
 
-    <!-- Recent Data Grids -->
+    <!-- ── RECENT ACTIVITY ── -->
     <div class="data-grid">
+
         <!-- Recent Students -->
         <div class="data-card">
             <div class="data-header">
@@ -100,7 +237,7 @@
                     <div class="data-icon">👤</div>
                     <div class="data-content">
                         <p><strong>{{ student.full_name }}</strong> registered</p>
-                        <div class="data-time">{{ student.created_at|timesince }} ago</div>
+                        <div class="data-time">{{ student.created_at|timesince }} ago · {{ student.user.email }}</div>
                     </div>
                     {% if forloop.first %}
                     <span class="badge badge-primary">New</span>
@@ -109,6 +246,36 @@
                 {% empty %}
                 <li class="data-item">
                     <div class="data-content"><p class="text-muted">No students yet.</p></div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="data-card">
+            <div class="data-header">
+                <div class="data-title">Recent Payments</div>
+                <a href="{% url 'student_management:payment_list' %}" class="card-action" style="font-size:13px;">View All</a>
+            </div>
+            <ul class="data-list">
+                {% for payment in recent_payments %}
+                <li class="data-item">
+                    <div class="data-icon">💳</div>
+                    <div class="data-content">
+                        <p><strong>{{ payment.student.full_name }}</strong> — ₹{{ payment.amount }}</p>
+                        <div class="data-time">{{ payment.created_at|timesince }} ago · {{ payment.plan.name }}</div>
+                    </div>
+                    {% if payment.status == 'success' %}
+                    <span class="badge" style="background:#d1fae5;color:#065f46;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Paid</span>
+                    {% elif payment.status == 'pending' %}
+                    <span class="badge" style="background:#fef3c7;color:#92400e;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Pending</span>
+                    {% else %}
+                    <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Failed</span>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="data-item">
+                    <div class="data-content"><p class="text-muted">No payments yet.</p></div>
                 </li>
                 {% endfor %}
             </ul>
@@ -129,14 +296,42 @@
                         <div class="data-time">{{ subject.created_at|timesince }} ago</div>
                     </div>
                     {% if subject.is_active %}
-                    <span class="badge" style="background:#10b981;color:#fff;font-size:11px;padding:3px 8px;border-radius:12px;">Active</span>
+                    <span class="badge" style="background:#d1fae5;color:#065f46;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Active</span>
                     {% else %}
-                    <span class="badge" style="background:#ef4444;color:#fff;font-size:11px;padding:3px 8px;border-radius:12px;">Inactive</span>
+                    <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Inactive</span>
                     {% endif %}
                 </li>
                 {% empty %}
                 <li class="data-item">
                     <div class="data-content"><p class="text-muted">No subjects yet.</p></div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Active Plans -->
+        <div class="data-card">
+            <div class="data-header">
+                <div class="data-title">Active Plans</div>
+                <a href="{% url 'student_management:plan_list' %}" class="card-action" style="font-size:13px;">View All</a>
+            </div>
+            <ul class="data-list">
+                {% for plan in recent_plans %}
+                <li class="data-item">
+                    <div class="data-icon">📦</div>
+                    <div class="data-content">
+                        <p><strong>{{ plan.name }}</strong> — ₹{{ plan.price }}</p>
+                        <div class="data-time">{{ plan.duration_days }} days · {{ plan.created_at|timesince }} ago</div>
+                    </div>
+                    {% if plan.is_active %}
+                    <span class="badge" style="background:#d1fae5;color:#065f46;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Active</span>
+                    {% else %}
+                    <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Off</span>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="data-item">
+                    <div class="data-content"><p class="text-muted">No plans yet.</p></div>
                 </li>
                 {% endfor %}
             </ul>
@@ -156,6 +351,11 @@
                         <p><strong>{{ question.subject.name }}</strong> — {{ question.question_text|truncatechars:50 }}</p>
                         <div class="data-time">{{ question.created_at|timesince }} ago{% if question.source %} · {{ question.source }}{% endif %}</div>
                     </div>
+                    {% if question.is_active %}
+                    <span class="badge" style="background:#d1fae5;color:#065f46;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Active</span>
+                    {% else %}
+                    <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:700;">Off</span>
+                    {% endif %}
                 </li>
                 {% empty %}
                 <li class="data-item">
@@ -164,12 +364,25 @@
                 {% endfor %}
             </ul>
         </div>
+
     </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Live date in banner
+    (function() {
+        var el = document.getElementById('js-date');
+        if (el) {
+            el.textContent = new Date().toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+        }
+    })();
+
+    // ── Student Registrations bar ──
     var ctx1 = document.getElementById('registrationsChart');
     if (ctx1) {
         new Chart(ctx1.getContext('2d'), {
@@ -179,9 +392,10 @@
                 datasets: [{
                     label: 'New Registrations',
                     data: [12, 19, 15, 22, 28, 24],
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(54,162,235,0.6)',
+                    borderColor: 'rgba(54,162,235,1)',
+                    borderWidth: 1,
+                    borderRadius: 5
                 }]
             },
             options: {
@@ -192,21 +406,81 @@
         });
     }
 
+    // ── Question Bank doughnut ──
     var ctx2 = document.getElementById('questionBankChart');
     if (ctx2) {
         new Chart(ctx2.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Active', 'Inactive'],
+                labels: ['Active', 'Inactive', 'PYQs'],
                 datasets: [{
-                    data: [{{ active_questions }}, {{ inactive_questions }}],
-                    backgroundColor: ['rgba(46, 204, 113, 0.8)', 'rgba(239, 68, 68, 0.8)'],
-                    borderWidth: 2
+                    data: [{{ active_questions }}, {{ inactive_questions }}, {{ total_pyqs }}],
+                    backgroundColor: ['rgba(46,204,113,0.85)', 'rgba(239,68,68,0.85)', 'rgba(245,158,11,0.85)'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: true, position: 'bottom' } }
+                cutout: '65%',
+                plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true } } }
+            }
+        });
+    }
+
+    // ── Payment Status bar ──
+    var ctx3 = document.getElementById('paymentStatusChart');
+    if (ctx3) {
+        var success = Math.max(0, {{ total_payments }} - {{ pending_payments }} - {{ failed_payments }});
+        new Chart(ctx3.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Successful', 'Pending', 'Failed'],
+                datasets: [{
+                    label: 'Payments',
+                    data: [success, {{ pending_payments }}, {{ failed_payments }}],
+                    backgroundColor: ['rgba(16,185,129,0.8)', 'rgba(245,158,11,0.8)', 'rgba(239,68,68,0.8)'],
+                    borderWidth: 0,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // ── Monthly Revenue line ──
+    var ctx4 = document.getElementById('revenueChart');
+    if (ctx4) {
+        new Chart(ctx4.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: [4200, 5800, 3900, 7100, 6500, {{ monthly_revenue }}],
+                    borderColor: 'rgba(99,102,241,1)',
+                    backgroundColor: 'rgba(99,102,241,0.08)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(99,102,241,1)',
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
             }
         });
     }

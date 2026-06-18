@@ -1,41 +1,551 @@
+{% extends 'student_portal/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | EdusetIn</title>
-    <!-- Use existing Bootstrap CSS -->
-    <link rel="stylesheet" href="{% static 'admin-static/assets/css/bootstrap.min.css' %}">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .dashboard-container {
-            max-width: 800px;
-            margin: 4rem auto;
-            padding: 2rem;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
 
-<div class="dashboard-container">
-    {% if student %}
-        <h1>Welcome, {{ student.full_name }}!</h1>
-    {% else %}
-        <h1>Welcome, {{ request.user.email }}!</h1>
-    {% endif %}
-    <p class="text-muted mt-3">This is your student portal dashboard placeholder.</p>
-    <div class="mt-4">
-        <a href="{% url 'student_portal:logout' %}" class="btn btn-outline-danger">Logout</a>
-    </div>
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Banner -->
+<div class="ai-insight-banner mb-4">
+  <div class="ai-banner-icon"><i class="icon-chart-bar"></i></div>
+  <div class="ai-banner-content">
+    <p class="ai-banner-title">Welcome back, {{ student.full_name }}!</p>
+    <p class="ai-banner-text">
+      {% if has_active_subscription %}
+        {% with active_payments|first as plan %}
+          <span class="banner-plan-pill"><i class="icon-shield-check"></i> {{ plan.plan.name }}</span>
+          &nbsp;·&nbsp; Valid till <strong>{{ plan.expires_at|date:"d M Y" }}</strong>
+          {% if plan.days_until_expiry is not None and plan.days_until_expiry <= 30 %}
+            &nbsp;·&nbsp;
+            <span class="banner-expiry-warn
+              {% if plan.days_until_expiry <= 7 %}banner-expiry-urgent{% endif %}">
+              {{ plan.days_until_expiry }} day{{ plan.days_until_expiry|pluralize }} left
+            </span>
+          {% endif %}
+        {% endwith %}
+      {% else %}
+        No active subscription — browse plans to unlock exams and quizzes.
+      {% endif %}
+    </p>
+  </div>
+  <a href="{% url 'student_portal:plan_list' %}" class="ai-banner-action"><i class="icon-shield-check"></i> Browse Plans</a>
+  <button class="ai-banner-close"><i class="icon-x"></i></button>
 </div>
 
-<script src="{% static 'admin-static/assets/js/bootstrap.min.js' %}"></script>
-</body>
-</html>
+<style>
+/* ── Brand blue sampled pixel-for-pixel from the reference button (left
+   edge #0066f5 -> right edge #4ea5ff). Navy (#012863) is only the thin
+   utility strip on that site, not a hero/surface color, so it's left out
+   here to match the actual button gradient exactly. ── */
+.ai-insight-banner {
+  background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
+  color: #fff;
+}
+.ai-banner-icon {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+.ai-banner-action {
+  background: #ffffff;
+  color: #0066f5;
+  font-weight: 700;
+  border: none;
+}
+.ai-banner-action:hover {
+  background: #eaf1ff;
+  color: #0052cc;
+}
+.ai-banner-close {
+  color: rgba(255,255,255,0.75);
+}
+.banner-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  padding: 1px 10px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.banner-expiry-warn {
+  font-weight: 700;
+  font-size: 0.78rem;
+  background: rgba(253,230,138,0.25);
+  border: 1px solid rgba(253,230,138,0.5);
+  border-radius: 20px;
+  padding: 1px 8px;
+  color: #fef9c3;
+}
+.banner-expiry-urgent {
+  background: rgba(254,202,202,0.25);
+  border-color: rgba(254,202,202,0.5);
+  color: #fee2e2;
+}
+
+/* "AI" themed buttons (Start Quiz / Practice a New Quiz) -> same exact blue */
+.btn-admio.btn-ai {
+  background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
+  border-color: transparent;
+  color: #fff;
+}
+.btn-admio.btn-ai:hover {
+  background: linear-gradient(135deg, #0052cc 0%, #0066f5 100%);
+  color: #fff;
+}
+
+/* Neutral state for the Accuracy Rate trend pill when there aren't yet
+   2 attempts to compare (recent half vs earlier half) */
+.stat-trend.flat {
+  background: rgba(148,163,184,0.18);
+  color: #64748b;
+  font-weight: 600;
+}
+</style>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Student Dashboard</h1>
+    <p class="page-subtitle">Your learning progress and performance at a glance</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'student_portal:quiz_setup' %}" class="btn-admio btn-ai btn-sm"><i class="icon-wand-sparkles"></i> Start Quiz</a>
+    <a href="{% url 'student_portal:exam_list' %}" class="btn-admio btn-outline btn-sm"><i class="icon-clipboard-check"></i> All Exams</a>
+  </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon purple admio-bg-purple"><i class="icon-target"></i></div>
+        {% if has_trend_data %}
+          {% if accuracy_trend >= 0 %}
+            <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> {{ accuracy_trend|floatformat:1 }}%</span>
+          {% else %}
+            <span class="stat-trend down admio-bg-red"><i class="icon-trending-down"></i> {{ accuracy_trend|floatformat:1 }}%</span>
+          {% endif %}
+        {% else %}
+          <span class="stat-trend flat">No data yet</span>
+        {% endif %}
+      </div>
+      <div class="stat-value">{{ accuracy_rate|floatformat:1 }}%</div>
+      <div class="stat-label">Accuracy Rate</div>
+      <div class="mini-chart-bar">
+        {% for bar in score_sparkline %}
+        <div class="mini-bar bar-primary" style="height:{{ bar }}%; opacity:{{ forloop.counter|divisibleby:7|yesno:'1.0,0.6' }}"></div>
+        {% empty %}
+        <div class="mini-bar bar-primary mh-40 op-30"></div>
+        <div class="mini-bar bar-primary mh-60 op-50"></div>
+        <div class="mini-bar bar-primary mh-80 op-70"></div>
+        <div class="mini-bar bar-primary mh-100 op-100"></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon cyan admio-bg-cyan"><i class="icon-clipboard-check"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> {{ exams_this_month }} this month</span>
+      </div>
+      <div class="stat-value" data-target="{{ total_exam_attempts }}">{{ total_exam_attempts }}</div>
+      <div class="stat-label">Exams Attempted</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-secondary mh-30 op-30"></div>
+        <div class="mini-bar bar-secondary mh-55 op-50"></div>
+        <div class="mini-bar bar-secondary mh-70 op-70"></div>
+        <div class="mini-bar bar-secondary mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon green admio-bg-green"><i class="icon-puzzle"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> {{ quizzes_this_month }} this month</span>
+      </div>
+      <div class="stat-value">{{ total_quiz_attempts }}</div>
+      <div class="stat-label">Quizzes Completed</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-success mh-35 op-30"></div>
+        <div class="mini-bar bar-success mh-60 op-50"></div>
+        <div class="mini-bar bar-success mh-75 op-70"></div>
+        <div class="mini-bar bar-success mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card pb-0">
+      <div class="stat-card-header">
+        <div class="stat-icon orange admio-bg-orange"><i class="icon-trophy"></i></div>
+        <span class="stat-trend up admio-bg-green"><i class="icon-trending-up"></i> Top {{ rank_percentile }}%</span>
+      </div>
+      <div class="stat-value">#{{ rank }}</div>
+      <div class="stat-label">Platform Rank</div>
+      <div class="mini-chart-bar">
+        <div class="mini-bar bar-warning mh-50 op-30"></div>
+        <div class="mini-bar bar-warning mh-65 op-50"></div>
+        <div class="mini-bar bar-warning mh-80 op-70"></div>
+        <div class="mini-bar bar-warning mh-100 op-100"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Score Trend</h2>
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+          <span class="d-flex align-items-center gap-1 text-xs"><span class="legend-rect legend-primary"></span>Exam scores</span>
+          <span class="d-flex align-items-center gap-1 text-xs"><span class="legend-rect legend-secondary"></span>Quiz scores</span>
+          <a href="{% url 'student_portal:exam_history' %}" class="btn-admio btn-ghost btn-sm">Full History</a>
+        </div>
+      </div>
+      <div class="admio-card-body chart-h-lg">
+        <canvas id="scoreTrendChart"
+          data-exam-labels="{{ exam_trend_labels_json }}"
+          data-exam-scores="{{ exam_trend_scores_json }}"
+          data-quiz-labels="{{ quiz_trend_labels_json }}"
+          data-quiz-scores="{{ quiz_trend_scores_json }}">
+        </canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header"><h2 class="card-title mb-0">Answer Breakdown</h2></div>
+      <div class="admio-card-body chart-h-md">
+        <canvas id="answerDonutChart"
+          data-correct="{{ total_correct }}"
+          data-wrong="{{ total_wrong }}"
+          data-skipped="{{ total_skipped }}">
+        </canvas>
+      </div>
+      <div class="admio-card-body admio-card-body-sm pt-0-i">
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between">
+            <span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-success"></span>Correct</span>
+            <span class="fw-700 text-xs">{{ total_correct }} ({{ correct_pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-danger"></span>Wrong</span>
+            <span class="fw-700 text-xs">{{ total_wrong }} ({{ wrong_pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="d-flex align-items-center gap-2 text-xs"><span class="legend-dot legend-secondary"></span>Skipped</span>
+            <span class="fw-700 text-xs">{{ total_skipped }} ({{ skipped_pct }}%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Middle Row -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Subject Performance</h2>
+        <a href="{% url 'student_portal:quiz_setup' %}" class="btn-admio btn-ghost btn-sm">Practice</a>
+      </div>
+      <div class="admio-card-body admio-card-body-sm">
+        <div class="d-flex flex-column gap-3">
+          {% for subj in subject_performance %}
+          <div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-sm fw-600">{{ subj.name }}</span>
+              <span class="text-sm fw-700">{{ subj.avg_score|floatformat:0 }}%</span>
+            </div>
+            <div class="progress-admio">
+              <div class="progress-fill
+                {% if subj.avg_score >= 80 %}progress-green
+                {% elif subj.avg_score >= 60 %}progress-cyan
+                {% else %}progress-orange{% endif %}"
+                style="width: {{ subj.avg_score|floatformat:0 }}%">
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-sm text-muted">No subject data yet. Attempt an exam or quiz to see your performance here.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">You vs. Platform</h2>
+        <span class="badge-admio badge-purple text-xs">All subjects</span>
+      </div>
+      <div class="admio-card-body admio-card-body-sm">
+        {% for subj in subject_comparison %}
+        <div class="country-row">
+          <span class="country-name">{{ subj.name }}</span>
+          <div class="country-bar">
+            <div class="progress-admio" title="You: {{ subj.your_score }}%">
+              <div class="progress-fill progress-purple" style="width: {{ subj.your_score|floatformat:0 }}%"></div>
+            </div>
+          </div>
+          <span class="country-pct">{{ subj.your_score|floatformat:0 }}%</span>
+          <span class="country-val text-xs text-muted">avg {{ subj.avg_score|floatformat:0 }}%</span>
+        </div>
+        {% empty %}
+        <p class="text-sm text-muted">Complete at least one exam to see how you compare.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Available Exams</h2>
+        <a href="{% url 'student_portal:exam_list' %}" class="btn-admio btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="admio-card-body admio-card-body-sm">
+        <div class="d-flex flex-column gap-3">
+          {% for type_name, type_exams in exams_by_type.items %}
+          <div>
+            <p class="text-xs text-muted mb-1" style="text-transform:uppercase;letter-spacing:.06em;">{{ type_name }}</p>
+            {% for exam in type_exams|slice:":3" %}
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom-light">
+              <span class="text-sm">{{ exam.title }}</span>
+              <a href="{% url 'student_portal:exam_list' %}" class="btn-admio btn-ghost btn-sm py-0 px-2" style="font-size:11px;">
+                {% if exam.last_attempt %}Retry{% else %}Start{% endif %}
+              </a>
+            </div>
+            {% endfor %}
+            {% if type_exams|length > 3 %}
+            <a href="{% url 'student_portal:exam_list' %}" class="text-xs text-primary-c mt-1 d-block">+{{ type_exams|length|add:"-3" }} more</a>
+            {% endif %}
+          </div>
+          {% empty %}
+          {% if has_active_subscription %}
+          <p class="text-sm text-muted">No exams in your plan yet.</p>
+          {% else %}
+          <p class="text-sm text-muted"><a href="{% url 'student_portal:plan_list' %}">Subscribe to a plan</a> to unlock exams.</p>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Recent Exam Attempts</h2>
+        <a href="{% url 'student_portal:exam_history' %}" class="btn-admio btn-outline btn-sm">View All</a>
+      </div>
+      <div class="admio-table-wrapper">
+        <table class="admio-table" id="recentExamsTable">
+          <thead>
+            <tr>
+              <th>Exam</th>
+              <th>Date</th>
+              <th>Score</th>
+              <th>Correct</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attempt in recent_exam_attempts %}
+            <tr>
+              <td class="fw-600 text-sm">{{ attempt.exam.title }}</td>
+              <td class="text-sm text-muted">{{ attempt.submitted_at|date:"d M" }}</td>
+              <td class="fw-700">{{ attempt.percentage|floatformat:1 }}%</td>
+              <td class="mono">{{ attempt.correct_count }}/{{ attempt.total_questions }}</td>
+              <td>
+                {% if attempt.percentage >= 80 %}
+                  <span class="badge-admio badge-green badge-dot text-xs">Excellent</span>
+                {% elif attempt.percentage >= 60 %}
+                  <span class="badge-admio badge-cyan badge-dot text-xs">Good</span>
+                {% elif attempt.percentage >= 40 %}
+                  <span class="badge-admio badge-orange badge-dot text-xs">Average</span>
+                {% else %}
+                  <span class="badge-admio badge-red badge-dot text-xs">Practice more</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'student_portal:exam_result' slug=attempt.slug  %}" class="btn-admio btn-ghost btn-sm py-0 px-2" style="font-size:11px;">Review</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted text-sm py-4">No exam attempts yet. <a href="{% url 'student_portal:exam_list' %}">Take your first exam →</a></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="admio-card h-100">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0">Recent Quizzes</h2>
+        <a href="{% url 'student_portal:quiz_history' %}" class="btn-admio btn-outline btn-sm">View All</a>
+      </div>
+      <div class="admio-table-wrapper">
+        <table class="admio-table" id="recentQuizzesTable">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Score</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attempt in recent_quiz_attempts %}
+            <tr>
+              <td>
+                <span class="text-sm fw-600">{{ attempt.subject.name }}</span>
+                {% if attempt.submodule %}
+                  <br><span class="text-xs text-muted">{{ attempt.submodule.name }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="fw-700
+                  {% if attempt.percentage >= 80 %}text-success-c
+                  {% elif attempt.percentage >= 60 %}text-cyan-c
+                  {% else %}text-orange-dark-c{% endif %}">
+                  {{ attempt.percentage|floatformat:0 }}%
+                </span>
+              </td>
+              <td class="text-sm text-muted">{{ attempt.submitted_at|date:"d M" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted text-sm py-4">No quizzes yet. <a href="{% url 'student_portal:quiz_setup' %}">Start one →</a></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="admio-card-footer">
+        <a href="{% url 'student_portal:quiz_setup' %}" class="btn-admio btn-ai btn-sm w-100">
+          <i class="icon-wand-sparkles"></i> Practice a New Quiz
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ── Score Trend Chart ──────────────────────────────────────────────────────
+  const trendCanvas = document.getElementById('scoreTrendChart');
+  if (trendCanvas) {
+    let examLabels = [], examScores = [], quizScores = [];
+    try {
+      examLabels = JSON.parse(trendCanvas.dataset.examLabels || '[]');
+      examScores = JSON.parse(trendCanvas.dataset.examScores || '[]');
+      quizScores = JSON.parse(trendCanvas.dataset.quizScores || '[]');
+    } catch(e) {}
+
+    if (examLabels.length === 0) {
+      examLabels = ['—'];
+      examScores = [0];
+      quizScores = [0];
+    }
+
+    new Chart(trendCanvas, {
+      type: 'line',
+      data: {
+        labels: examLabels,
+        datasets: [
+          {
+            label: 'Exam',
+            data: examScores,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.08)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: '#6366f1',
+            borderWidth: 2,
+          },
+          {
+            label: 'Quiz',
+            data: quizScores,
+            borderColor: '#22d3ee',
+            backgroundColor: 'rgba(34,211,238,0.06)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 3,
+            pointBackgroundColor: '#22d3ee',
+            borderWidth: 2,
+            borderDash: [5,3],
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            min: 0, max: 100,
+            ticks: { callback: v => v + '%', font: { size: 11 } },
+            grid: { color: 'rgba(150,150,150,0.1)' }
+          },
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // ── Answer Donut Chart ─────────────────────────────────────────────────────
+  const donutCanvas = document.getElementById('answerDonutChart');
+  if (donutCanvas) {
+    const correct  = parseInt(donutCanvas.dataset.correct  || 0);
+    const wrong    = parseInt(donutCanvas.dataset.wrong    || 0);
+    const skipped  = parseInt(donutCanvas.dataset.skipped  || 0);
+    const total    = correct + wrong + skipped;
+
+    new Chart(donutCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Correct', 'Wrong', 'Skipped'],
+        datasets: [{
+          data: total > 0 ? [correct, wrong, skipped] : [1, 0, 0],
+          backgroundColor: ['#22c55e', '#ef4444', '#94a3b8'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+                return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+});
+</script>
+{% endblock %}

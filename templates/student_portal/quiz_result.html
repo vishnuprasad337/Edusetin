@@ -1,0 +1,394 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* ── Quiz Result Page ── */
+.quiz-result-wrap { max-width: 860px; margin: 0 auto; }
+
+/* Score card */
+.quiz-score-card {
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 32px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  {% if percentage >= 80 %}
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  {% elif percentage >= 60 %}
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  {% elif percentage >= 40 %}
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  {% else %}
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  {% endif %}
+}
+.quiz-score-card::after {
+  content: '';
+  position: absolute; right: -60px; top: -60px;
+  width: 260px; height: 260px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  pointer-events: none;
+}
+.quiz-score-grade {
+  font-size: 0.88rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; opacity: .8; margin-bottom: 6px;
+}
+.quiz-score-pct {
+  font-size: 4.5rem; font-weight: 900; line-height: 1; margin-bottom: 6px;
+}
+.quiz-score-sub { font-size: 1rem; opacity: .82; margin-bottom: 28px; }
+.quiz-score-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+.quiz-score-stat  { display: flex; flex-direction: column; gap: 2px; }
+.quiz-score-stat-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.quiz-score-stat-lbl {
+  font-size: 0.78rem; opacity: .72; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.quiz-score-actions { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+.quiz-score-btn {
+  padding: 11px 22px; border-radius: 12px; border: none;
+  font-size: .95rem; font-weight: 700; cursor: pointer; text-decoration: none;
+  display: flex; align-items: center; gap: 7px;
+  transition: opacity .12s, transform .1s;
+}
+.quiz-score-btn:hover { opacity: .88; transform: translateY(-1px); text-decoration: none; }
+.quiz-score-btn.white { background: rgba(255,255,255,.22); color: #fff; }
+.quiz-score-btn.solid { background: #fff; color: #111; }
+
+/* Filter row */
+.quiz-filter-row {
+  display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap;
+}
+.quiz-filter-btn {
+  padding: 8px 18px; border-radius: 40px;
+  border: 2px solid var(--admio-border-color,#e5e7eb);
+  background: var(--admio-card-bg,#fff);
+  font-size: .88rem; font-weight: 700;
+  color: var(--admio-text-color,#374151);
+  cursor: pointer; transition: all .12s;
+}
+.quiz-filter-btn:hover        { border-color: #7C3AED; background: rgba(124,58,237,.08); color: #7C3AED; }
+.quiz-filter-btn.active       { border-color: #7C3AED; background: rgba(124,58,237,.08); color: #7C3AED; }
+.quiz-filter-btn.active-green { border-color: #16a34a; background: rgba(22,163,74,.08);  color: #16a34a; }
+.quiz-filter-btn.active-green.active { border-color: #16a34a; background: rgba(22,163,74,.15); color: #16a34a; }
+.quiz-filter-btn.active-blue   { border-color: #2563eb; background: rgba(37,99,235,.08);  color: #2563eb; }
+.quiz-filter-btn.active-blue.active   { border-color: #2563eb; background: rgba(37,99,235,.15); color: #2563eb; }
+
+/* Review cards */
+.quiz-review-card {
+  background: var(--admio-card-bg,#fff);
+  border: 2px solid var(--admio-border-color,#e5e7eb);
+  border-radius: 18px;
+  padding: 26px 30px;
+  margin-bottom: 16px;
+  transition: border-color .15s;
+}
+.quiz-review-card.correct { border-left: 5px solid #22c55e; }
+.quiz-review-card.wrong   { border-left: 5px solid #2563eb; }
+.quiz-review-card.skipped { border-left: 5px solid #f59e0b; }
+
+.quiz-review-header {
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;
+}
+.quiz-review-badge {
+  flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800;
+}
+.quiz-review-badge.correct { background: rgba(34,197,94,.15);  color: #16a34a; }
+.quiz-review-badge.wrong   { background: rgba(37,99,235,.15);  color: #2563eb; }
+.quiz-review-badge.skipped { background: rgba(245,158,11,.15); color: #d97706; }
+
+.quiz-review-q-num {
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: #9ca3af; margin-bottom: 4px;
+}
+.quiz-review-q-text {
+  font-size: 1.02rem; font-weight: 600; line-height: 1.5;
+  color: var(--admio-heading-color,#111);
+}
+
+/* Reduced image size for review cards */
+.quiz-review-q-image {
+  max-width: 320px; max-height: 200px;
+  width: auto; height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  display: block;
+  border: 1px solid var(--admio-border-color,#e5e7eb);
+  cursor: zoom-in;
+}
+
+/* Option rows in review */
+.quiz-review-options { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.quiz-review-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px; border-radius: 11px;
+  font-size: .97rem; font-weight: 500;
+  border: 2px solid transparent;
+  background: var(--admio-input-bg,#f9fafb);
+  color: var(--admio-text-color,#374151);
+  transition: background .1s;
+}
+.quiz-review-option.is-correct {
+  border-color: #22c55e;
+  background: rgba(34,197,94,.09);
+  color: #15803d; font-weight: 700;
+}
+.quiz-review-option.is-wrong {
+  border-color: #2563eb;
+  background: rgba(37,99,235,.09);
+  color: #1d4ed8; font-weight: 700;
+}
+.quiz-review-option-key {
+  min-width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .82rem; font-weight: 800;
+  background: rgba(0,0,0,.06); color: #374151; flex-shrink: 0;
+}
+.quiz-review-option.is-correct .quiz-review-option-key { background: #22c55e; color: #fff; }
+.quiz-review-option.is-wrong   .quiz-review-option-key { background: #2563eb; color: #fff; }
+
+.quiz-review-icon         { font-size: 14px; margin-left: auto; }
+.quiz-review-icon.correct { color: #22c55e; }
+.quiz-review-icon.wrong   { color: #2563eb; }
+
+/* Explanation */
+.quiz-explanation {
+  margin-top: 12px; padding: 12px 16px;
+  background: rgba(124,58,237,.07);
+  border-radius: 10px;
+  font-size: .9rem;
+  color: var(--admio-text-color,#374151);
+  border-left: 3px solid #7C3AED;
+}
+.quiz-explanation strong {
+  color: #7C3AED; font-size: .78rem; text-transform: uppercase;
+  letter-spacing: .06em; display: block; margin-bottom: 4px;
+}
+
+/* Skipped message */
+.quiz-skipped-note {
+  font-size: .9rem; color: #d97706;
+  font-weight: 600; margin-top: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Section heading */
+.quiz-review-section-title {
+  font-size: 1.25rem; font-weight: 800;
+  color: var(--admio-heading-color, #111);
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] .quiz-review-card {
+  background: var(--admio-card-bg);
+  border-color: var(--admio-border-color);
+}
+[data-theme="dark"] .quiz-review-q-text  { color: #f3f4f6; }
+[data-theme="dark"] .quiz-review-section-title { color: #f3f4f6; }
+
+[data-theme="dark"] .quiz-filter-btn {
+  background: var(--admio-card-bg);
+  border-color: var(--admio-border-color);
+  color: #c4c4d4;
+}
+[data-theme="dark"] .quiz-filter-btn:hover {
+  border-color: #7C3AED;
+  background: rgba(124,58,237,.15);
+  color: #a78bfa;
+}
+[data-theme="dark"] .quiz-filter-btn.active {
+  border-color: #7C3AED;
+  background: rgba(124,58,237,.18);
+  color: #a78bfa;
+}
+[data-theme="dark"] .quiz-filter-btn.active-green {
+  border-color: #16a34a;
+  background: rgba(22,163,74,.12);
+  color: #4ade80;
+}
+[data-theme="dark"] .quiz-filter-btn.active-green.active {
+  background: rgba(22,163,74,.2);
+}
+[data-theme="dark"] .quiz-filter-btn.active-blue {
+  border-color: #2563eb;
+  background: rgba(37,99,235,.12);
+  color: #60a5fa;
+}
+[data-theme="dark"] .quiz-filter-btn.active-blue.active {
+  background: rgba(37,99,235,.2);
+}
+
+[data-theme="dark"] .quiz-review-option {
+  background: #252535;
+  color: #c4c4d4;
+  border-color: transparent;
+}
+[data-theme="dark"] .quiz-review-option-key {
+  background: rgba(255,255,255,.08);
+  color: #9ca3af;
+}
+[data-theme="dark"] .quiz-review-option.is-correct {
+  background: rgba(34,197,94,.12);
+  color: #4ade80;
+  border-color: #22c55e;
+}
+[data-theme="dark"] .quiz-review-option.is-wrong {
+  background: rgba(37,99,235,.12);
+  color: #60a5fa;
+  border-color: #2563eb;
+}
+
+[data-theme="dark"] .quiz-explanation {
+  background: rgba(124,58,237,.12);
+  color: #c4c4d4;
+}
+
+[data-theme="dark"] .quiz-review-q-image {
+  border-color: var(--admio-border-color);
+  opacity: .9;
+}
+
+[data-theme="dark"] .quiz-score-btn.solid {
+  background: rgba(255,255,255,.95);
+  color: #111;
+}
+
+/* ── Mobile ── */
+@media (max-width:600px) {
+  .quiz-score-card  { padding: 28px 22px; }
+  .quiz-score-pct   { font-size: 3rem; }
+  .quiz-review-card { padding: 20px 16px; }
+  .quiz-review-q-image { max-width: 100%; max-height: 160px; }
+}
+</style>
+
+<div class="quiz-result-wrap">
+
+  <!-- Score Card -->
+  <div class="quiz-score-card">
+    <div class="quiz-score-grade">{{ attempt.grade }}</div>
+    <div class="quiz-score-pct">{{ attempt.percentage|floatformat:1 }}%</div>
+    <div class="quiz-score-sub">
+      {{ attempt.subject.name }}{% if attempt.submodule %} — {{ attempt.submodule.name }}{% endif %}
+      &nbsp;·&nbsp; {{ attempt.total_questions }} questions
+    </div>
+    <div class="quiz-score-stats">
+      <div class="quiz-score-stat">
+        <div class="quiz-score-stat-val">{{ attempt.marks_earned|floatformat:2 }}/{{ attempt.total_marks|floatformat:0 }}</div>
+        <div class="quiz-score-stat-lbl">Marks</div>
+      </div>
+      <div class="quiz-score-stat">
+        <div class="quiz-score-stat-val">{{ attempt.correct_count }}</div>
+        <div class="quiz-score-stat-lbl">Correct</div>
+      </div>
+      <div class="quiz-score-stat">
+        <div class="quiz-score-stat-val">{{ attempt.wrong_count }}</div>
+        <div class="quiz-score-stat-lbl">Wrong</div>
+      </div>
+      <div class="quiz-score-stat">
+        <div class="quiz-score-stat-val">{{ attempt.skipped_count }}</div>
+        <div class="quiz-score-stat-lbl">Skipped</div>
+      </div>
+    </div>
+    <div class="quiz-score-actions">
+      <a href="{% url 'student_portal:quiz_setup' %}" class="quiz-score-btn solid">
+        <i class="icon-refresh-cw"></i> New Quiz
+      </a>
+      <a href="{% url 'student_portal:quiz_history' %}" class="quiz-score-btn white">
+        <i class="icon-clock"></i> Quiz History
+      </a>
+    </div>
+  </div>
+
+  <!-- Section heading -->
+  <div class="admio-card-header" style="padding:0;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <h2 class="quiz-review-section-title mb-0">Answer Review</h2>
+    <div class="quiz-filter-row" style="margin:0">
+      <button class="quiz-filter-btn active"       onclick="filterCards('all', this)">All ({{ attempt.total_questions }})</button>
+      <button class="quiz-filter-btn active-green" onclick="filterCards('correct', this)">✓ Correct ({{ attempt.correct_count }})</button>
+      <button class="quiz-filter-btn active-blue"   onclick="filterCards('wrong', this)">✗ Wrong ({{ attempt.wrong_count }})</button>
+      <button class="quiz-filter-btn" onclick="filterCards('skipped', this)" style="border-color:#f59e0b;color:#d97706;">— Skipped ({{ attempt.skipped_count }})</button>
+    </div>
+  </div>
+
+  <!-- Review list -->
+  <div id="reviewList">
+    {% for item in enriched %}
+    <div class="quiz-review-card {% if item.is_skipped %}skipped{% elif item.is_correct %}correct{% else %}wrong{% endif %}"
+         data-status="{% if item.is_skipped %}skipped{% elif item.is_correct %}correct{% else %}wrong{% endif %}">
+
+      <div class="quiz-review-header">
+        <div class="quiz-review-badge {% if item.is_skipped %}skipped{% elif item.is_correct %}correct{% else %}wrong{% endif %}">
+          {% if item.is_correct %}✓{% elif item.is_skipped %}—{% else %}✗{% endif %}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="quiz-review-q-num">Question {{ forloop.counter }}</div>
+
+          {% for media in item.question.media_files.all %}
+            {% if media.media_type == 'QUESTION' %}
+              <img src="{{ media.effective_image.url }}" alt="" class="quiz-review-q-image"
+                   onclick="window.open(this.src, '_blank')">
+            {% endif %}
+          {% endfor %}
+
+          <div class="quiz-review-q-text">{{ item.question.question_text }}</div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="quiz-review-options">
+        {% for key, text in item.options.items %}
+        <div class="quiz-review-option
+          {% if key == item.correct_answer %}is-correct
+          {% elif key == item.selected and not item.is_correct %}is-wrong
+          {% endif %}">
+          <div class="quiz-review-option-key">{{ key }}</div>
+          <span>{{ text }}</span>
+          {% if key == item.correct_answer %}
+            <i class="icon-circle-check quiz-review-icon correct" style="margin-left:auto"></i>
+          {% elif key == item.selected and not item.is_correct %}
+            <i class="icon-circle-x quiz-review-icon wrong" style="margin-left:auto"></i>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if item.is_skipped %}
+      <div class="quiz-skipped-note">
+        <i class="icon-minus-circle"></i> You skipped this question. Correct answer: <strong>{{ item.correct_answer }}</strong>
+      </div>
+      {% endif %}
+
+      {% if item.question.explanation %}
+      <div class="quiz-explanation">
+        <strong><i class="icon-lightbulb"></i> Explanation</strong>
+        {{ item.question.explanation }}
+      </div>
+      {% endif %}
+
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:40px;color:#9ca3af;">No responses recorded.</div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function filterCards(status, btn) {
+  document.querySelectorAll('.quiz-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.quiz-review-card').forEach(card => {
+    card.style.display = (status === 'all' || card.dataset.status === status) ? '' : 'none';
+  });
+}
+</script>
+
+{% endblock %}

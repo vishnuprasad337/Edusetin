@@ -1,0 +1,1550 @@
+{% extends "student_management/base.html" %}
+{% block title %}Add Exam | Student Management{% endblock %}
+
+{% block content %}
+<div class="dashboard__form__wraper">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_management:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_management:exam_list' %}">Exams</a></li>
+            <li class="breadcrumb-item active">Add Exam</li>
+        </ol>
+    </nav>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors %}
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong><i class="fas fa-exclamation-circle me-1"></i>Please fix the following:</strong>
+        <ul class="mb-0 mt-1">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                <li>{% if field != '__all__' %}<strong>{{ field|title }}:</strong> {% endif %}{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <!-- ── Step indicator ── -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body py-3 px-4">
+            <div class="d-flex align-items-center gap-0" id="stepIndicator">
+                <div class="step-item active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Exam Details</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-item" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Questions</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-item" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Settings</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-item" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Preview</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'student_management:exam_add' %}" novalidate id="examForm">
+        {% csrf_token %}
+
+        <!-- ════════════════════════════════════
+             STEP 1 — Exam Details
+        ════════════════════════════════════ -->
+        <div class="step-panel" id="step1">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom pt-3 pb-2">
+                    <h6 class="mb-0 fw-semibold"><i class="fas fa-info-circle me-2 text-primary"></i>Exam Details</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                        <input type="text" id="id_title" name="title"
+                               class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                               placeholder="e.g. Physics Mock Test 1"
+                               value="{{ form.title.value|default:'' }}" required>
+                        {% if form.title.errors %}<div class="invalid-feedback">{{ form.title.errors|join:", " }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label fw-semibold">
+                            Description <span class="text-muted small">(optional)</span>
+                        </label>
+                        <textarea id="id_description" name="description" rows="3"
+                                  class="form-control uni-description"
+                                  placeholder="Brief description of this exam…">{{ form.description.value|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-0">
+                        <label for="id_exam_type" class="form-label fw-semibold">Exam Type <span class="text-danger">*</span></label>
+                        <select id="id_exam_type" name="exam_type"
+                                class="form-select {% if form.exam_type.errors %}is-invalid{% endif %}" required>
+                            <option value="">-- Select Exam Type --</option>
+                            {% for value, label in form.exam_type.field.choices %}
+                                {% if value %}
+                                <option value="{{ value }}"
+                                    data-name="{{ label|lower }}"
+                                    {% if form.exam_type.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.exam_type.errors %}<div class="invalid-feedback">{{ form.exam_type.errors|join:", " }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-primary px-4" id="step1Next">
+                    Next <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+             STEP 2 — Questions (Group Box UI)
+        ════════════════════════════════════ -->
+        <div class="step-panel d-none" id="step2">
+
+            <!-- PYQ mode: year selector (shown only for PYQ exam types) -->
+            <div class="card shadow-sm border-0 mb-4" id="pyqYearCard" style="display:none !important;">
+                <div class="card-header bg-white border-bottom pt-3 pb-2 d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-semibold">Select PYQ Years <span class="text-danger">*</span></h6>
+                    <span id="pyqYearSpinner" class="spinner-border spinner-border-sm text-primary" style="display:none !important;"></span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-2" id="pyqYearCheckboxes"></div>
+                    <div id="pyqYearEmpty" class="text-muted small mt-1" style="display:none">No PYQ years found.</div>
+                </div>
+            </div>
+
+            <!-- PYQ mode: question list (shown only for PYQ exam types) -->
+            <div class="card shadow-sm border-0 mb-4" id="pyqQuestionsCard" style="display:none !important;">
+                <div class="card-header bg-white border-bottom pt-3 pb-2 d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-semibold">
+                        Questions
+                        <span class="badge bg-secondary ms-2" id="pyqQuestionCount">0 selected</span>
+                    </h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="pyqRefreshBtn">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+                        <input type="text" id="pyqQuestionSearch" class="form-control form-control-sm"
+                               placeholder="Search questions…" style="max-width:320px">
+                        <div class="form-check mb-0 ms-1">
+                            <input class="form-check-input" type="checkbox" id="pyqSelectAll">
+                            <label class="form-check-label small fw-semibold" for="pyqSelectAll">Select all</label>
+                        </div>
+                    </div>
+                    <div style="max-height:340px;overflow-y:auto;" class="border rounded p-3" id="pyqQuestionList">
+                        <div class="text-muted small">Select years above to load questions.</div>
+                    </div>
+                    <span id="pyqQuestionSpinner" class="d-block text-center mt-2" style="display:none !important;">
+                        <span class="spinner-border spinner-border-sm text-primary"></span>
+                        <span class="small ms-1">Loading…</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Non-PYQ mode: Subject group boxes container -->
+            <div id="subjectGroupsWrapper" style="display:none !important;">
+
+                <!-- Header bar showing total selected -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fas fa-layer-group me-2 text-primary"></i>Subject Groups
+                        </h6>
+                        <div class="text-muted small mt-1">Each box is one subject. Add more boxes to mix subjects.</div>
+                    </div>
+                    <span class="badge bg-primary px-3 py-2 fs-6" id="globalQuestionCount">0 selected</span>
+                </div>
+
+                <!-- Groups are dynamically injected here -->
+                <div id="subjectGroupsContainer"></div>
+
+                <!-- Add group button -->
+                <button type="button" class="btn btn-outline-secondary w-100 mb-4 add-group-dashed" id="addGroupBtn">
+                    <i class="fas fa-plus me-2"></i> Add Subject Group
+                </button>
+
+            </div>
+
+            <div id="step2InitSpinner" class="text-center py-5" style="display:none !important;">
+                <div class="spinner-border text-primary"></div>
+                <div class="text-muted small mt-2">Loading subjects…</div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-2">
+                <button type="button" class="btn btn-outline-secondary px-4" id="step2Back">
+                    <i class="fas fa-arrow-left me-2"></i> Back
+                </button>
+                <button type="button" class="btn btn-primary px-4" id="step2Next">
+                    Next <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+             STEP 3 — Settings
+        ════════════════════════════════════ -->
+        <div class="step-panel d-none" id="step3">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom pt-3 pb-2">
+                    <h6 class="mb-0 fw-semibold"><i class="fas fa-sliders-h me-2 text-primary"></i>Exam Settings</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_duration_minutes" class="form-label fw-semibold">
+                                Duration (minutes) <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" id="id_duration_minutes" name="duration_minutes"
+                                   class="form-control {% if form.duration_minutes.errors %}is-invalid{% endif %}"
+                                   placeholder="e.g. 60" min="1"
+                                   value="{{ form.duration_minutes.value|default:'' }}" required>
+                            {% if form.duration_minutes.errors %}<div class="invalid-feedback">{{ form.duration_minutes.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_total_questions" class="form-label fw-semibold">Total Questions</label>
+                            <input type="number" id="id_total_questions" name="total_questions"
+                                   class="form-control {% if form.total_questions.errors %}is-invalid{% endif %}"
+                                   placeholder="e.g. 50" min="1"
+                                   value="{{ form.total_questions.value|default:'' }}">
+                            {% if form.total_questions.errors %}<div class="invalid-feedback">{{ form.total_questions.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_marks_per_question" class="form-label fw-semibold">
+                                Marks per Question <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" id="id_marks_per_question" name="marks_per_question"
+                                   class="form-control {% if form.marks_per_question.errors %}is-invalid{% endif %}"
+                                   placeholder="e.g. 4" step="0.01" min="0"
+                                   value="{{ form.marks_per_question.value|default:'' }}" required>
+                            {% if form.marks_per_question.errors %}<div class="invalid-feedback">{{ form.marks_per_question.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_negative_marks" class="form-label fw-semibold">
+                                Negative Marks <span class="text-muted small">(optional)</span>
+                            </label>
+                            <input type="number" id="id_negative_marks" name="negative_marks"
+                                   class="form-control {% if form.negative_marks.errors %}is-invalid{% endif %}"
+                                   placeholder="e.g. 1" step="0.01" min="0"
+                                   value="{{ form.negative_marks.value|default:'' }}">
+                            <div class="form-text text-muted">e.g. <strong>1</strong> deducts 1 mark per wrong answer.</div>
+                            {% if form.negative_marks.errors %}<div class="invalid-feedback">{{ form.negative_marks.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="id_is_active"
+                                       name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="id_is_active">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary px-4" id="step3Back">
+                    <i class="fas fa-arrow-left me-2"></i> Back
+                </button>
+                <button type="button" class="btn btn-primary px-4" id="step3Next">
+                    Preview <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+             STEP 4 — Preview & Submit
+        ════════════════════════════════════ -->
+        <div class="step-panel d-none" id="step4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom pt-3 pb-2">
+                    <h6 class="mb-0 fw-semibold"><i class="fas fa-eye me-2 text-primary"></i>Exam Summary</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3" id="previewSummary"></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom pt-3 pb-2 d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-semibold">
+                        Selected Questions
+                        <span class="badge bg-primary ms-2" id="previewCount">0</span>
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="previewSearch" class="form-control form-control-sm"
+                               placeholder="Search…" style="max-width:220px">
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="clearAllPreviewBtn">
+                            <i class="fas fa-trash-alt me-1"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="border-bottom px-4 pt-3 pb-0" id="previewSubjectTabs"></div>
+                <div class="card-body p-0">
+                    <div style="max-height:420px;overflow-y:auto;" class="p-4" id="previewList">
+                        <div class="text-muted small">No questions selected yet.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary px-4" id="step4Back">
+                    <i class="fas fa-arrow-left me-2"></i> Back
+                </button>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'student_management:exam_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5">
+                        <i class="fas fa-check me-2"></i> Create Exam
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<!-- ════════════════════════════════════
+     STYLES
+════════════════════════════════════ -->
+<style>
+/* ── Step indicator ── */
+#stepIndicator { display:flex; align-items:center; }
+.step-item { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.step-circle {
+    width:34px; height:34px; border-radius:50%;
+    background:#e9ecef; color:#6c757d;
+    font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .25s; border:2px solid #dee2e6;
+}
+.step-item.active .step-circle { background:#0d6efd; color:#fff; border-color:#0d6efd; }
+.step-item.done  .step-circle  { background:#198754; color:#fff; border-color:#198754; }
+.step-label { font-size:11px; color:#6c757d; margin-top:4px; white-space:nowrap; font-weight:500; }
+.step-item.active .step-label  { color:#0d6efd; font-weight:600; }
+.step-item.done   .step-label  { color:#198754; }
+.step-line {
+    flex:1; height:2px; background:#dee2e6;
+    margin:0 8px; margin-bottom:20px; transition:background .25s;
+}
+.step-line.done { background:#198754; }
+
+/* ── Add group dashed button ── */
+.add-group-dashed {
+    border:2px dashed #ced4da !important;
+    background:transparent;
+    color:#6c757d;
+    padding:12px;
+    border-radius:10px;
+    transition:all .2s;
+}
+.add-group-dashed:hover {
+    border-color:#0d6efd !important;
+    color:#0d6efd;
+    background:#f0f5ff;
+}
+
+/* ── Subject group card ── */
+.subject-group-card {
+    border:1.5px solid #dee2e6;
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:16px;
+    transition:border-color .2s;
+}
+.subject-group-card.has-selection {
+    border-color:#0d6efd;
+}
+.subject-group-card .sg-header {
+    background:#f8f9fa;
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid #dee2e6;
+    cursor:pointer;
+    user-select:none;
+}
+.subject-group-card .sg-header:hover { background:#f0f5ff; }
+.sg-header-title { font-size:14px; font-weight:600; flex:1; }
+.sg-header-badge {
+    font-size:11px; font-weight:600;
+    background:#e7f1ff; color:#0d6efd;
+    border-radius:20px; padding:2px 10px;
+}
+.sg-header-badge.has-q {
+    background:#d1f0e0; color:#198754;
+}
+.sg-collapse-icon { color:#6c757d; font-size:13px; transition:transform .2s; }
+.sg-collapse-icon.collapsed { transform:rotate(-90deg); }
+.sg-remove-btn {
+    background:none; border:none; color:#adb5bd;
+    padding:2px 6px; border-radius:4px; cursor:pointer;
+    font-size:13px; transition:color .15s, background .15s;
+}
+.sg-remove-btn:hover { color:#dc3545; background:#fdecea; }
+
+/* ── Group body sections ── */
+.sg-body { padding:16px; }
+.sg-section { margin-bottom:16px; }
+.sg-section:last-child { margin-bottom:0; }
+.sg-section-label {
+    font-size:11px; font-weight:700; color:#6c757d;
+    text-transform:uppercase; letter-spacing:.06em;
+    margin-bottom:8px;
+}
+.sg-section-hint { font-size:11px; color:#adb5bd; font-weight:400; margin-left:4px; }
+
+/* ── Subject chips ── */
+.subject-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.subject-chip {
+    font-size:12px; font-weight:500;
+    padding:5px 14px; border-radius:20px;
+    border:1.5px solid #dee2e6;
+    background:#fff; color:#495057;
+    cursor:pointer; transition:all .15s;
+    user-select:none;
+}
+.subject-chip:hover:not(.disabled) {
+    border-color:#0d6efd; color:#0d6efd; background:#f0f5ff;
+}
+.subject-chip.active {
+    border-color:#0d6efd; background:#0d6efd; color:#fff;
+}
+.subject-chip.disabled {
+    opacity:.38; cursor:not-allowed;
+}
+
+/* ── Submodule chips ── */
+.submodule-chip {
+    font-size:12px; font-weight:500;
+    padding:4px 12px; border-radius:20px;
+    border:1.5px solid #dee2e6;
+    background:#fff; color:#495057;
+    cursor:pointer; transition:all .15s;
+    user-select:none;
+}
+.submodule-chip:hover { border-color:#6f42c1; color:#6f42c1; background:#f8f3ff; }
+.submodule-chip.active { border-color:#6f42c1; background:#6f42c1; color:#fff; }
+
+/* ── Question list inside group ── */
+.sg-question-list {
+    border:1px solid #dee2e6; border-radius:8px;
+    max-height:260px; overflow-y:auto;
+}
+.sg-question-item {
+    display:flex; align-items:flex-start; gap:10px;
+    padding:9px 12px; border-bottom:1px solid #f0f2f5;
+    cursor:pointer; transition:background .1s;
+}
+.sg-question-item:last-child { border-bottom:none; }
+.sg-question-item:hover { background:#f8f9fa; }
+.sg-question-item.checked { background:#f0f5ff; }
+.sg-question-item input[type="checkbox"] { margin-top:2px; flex-shrink:0; }
+.sg-question-text { font-size:12px; line-height:1.5; color:#212529; }
+.sg-question-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+.sg-question-tags .tag {
+    font-size:10px; padding:1px 7px; border-radius:10px;
+    border:1px solid #dee2e6; color:#6c757d; background:#fff;
+}
+.sg-question-tags .tag-submodule { color:#6f42c1; border-color:#d8c5f0; background:#f8f3ff; }
+.sg-question-tags .tag-year      { color:#0d6efd; border-color:#b8d4ff; background:#f0f5ff; }
+.sg-question-tags .tag-source    { color:#856404; border-color:#fce8b2; background:#fffbec; }
+
+/* ── Q search + select all bar ── */
+.sg-q-toolbar {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-bottom:8px;
+}
+.sg-q-toolbar input[type="text"] { max-width:260px; font-size:12px; }
+
+/* ── Empty/loading states ── */
+.sg-empty { padding:16px 12px; text-align:center; color:#adb5bd; font-size:12px; }
+.sg-spinner { text-align:center; padding:12px; }
+
+/* ── Preview tabs ── */
+.preview-tab {
+    display:inline-block; padding:6px 14px;
+    font-size:12px; font-weight:600; cursor:pointer;
+    border-bottom:2px solid transparent; color:#6c757d; transition:all .2s;
+}
+.preview-tab.active { color:#0d6efd; border-bottom-color:#0d6efd; }
+
+/* ── CKEditor description field ── */
+.ck.ck-editor__editable {
+    min-height:120px;
+    max-height:300px;
+    overflow-y:auto;
+}
+.ck.ck-editor__editable::-webkit-scrollbar { width:6px; }
+.ck.ck-editor__editable::-webkit-scrollbar-track { background:#f1f1f1; border-radius:10px; }
+.ck.ck-editor__editable::-webkit-scrollbar-thumb { background:#c1c1c1; border-radius:10px; }
+.ck.ck-editor__editable::-webkit-scrollbar-thumb:hover { background:#a8a8a8; }
+</style>
+
+<!-- ════════════════════════════════════
+     CKEDITOR
+════════════════════════════════════ -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var descTextarea = document.getElementById('id_description');
+    if (descTextarea && !descTextarea.classList.contains('ckeditor-applied')) {
+        ClassicEditor
+            .create(descTextarea, {
+                toolbar: [
+                    'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+                    '|', 'insertTable', 'blockQuote', 'undo', 'redo', 'imageUpload'
+                ]
+            })
+            .then(function (editor) {
+                descTextarea.classList.add('ckeditor-applied');
+
+                editor.plugins.get('FileRepository').createUploadAdapter = function (loader) {
+                    return {
+                        upload: function () {
+                            return loader.file.then(function (file) {
+                                return new Promise(function (resolve, reject) {
+                                    var reader = new FileReader();
+                                    reader.onload = function () { resolve({ default: reader.result }); };
+                                    reader.onerror = function (error) { reject(error); };
+                                    reader.readAsDataURL(file);
+                                });
+                            });
+                        },
+                        abort: function () {}
+                    };
+                };
+            })
+            .catch(function (error) { console.error(error); });
+    }
+});
+</script>
+
+<!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
+<script>
+(function () {
+    "use strict";
+
+    const URL_SUBJECTS   = "{% url 'student_management:ajax_subjects_by_examtype' %}";
+    const URL_QUESTIONS  = "{% url 'student_management:ajax_questions_by_filter' %}";
+    const URL_SUBMODULES = "{% url 'student_management:submodules_by_subject_api' %}";
+
+    /* ════════════════════════════════════════
+       SHARED STATE
+    ════════════════════════════════════════ */
+    // All checked question IDs (across all groups)
+    const checkedQuestionIds = new Set();
+    // Full question data by id
+    const questionDataMap    = new Map();
+    // All available subjects loaded from server
+    let availableSubjects    = [];
+    // Group state array: [{id, subjectId, subjectName, submoduleIds, collapsed}]
+    let groups               = [];
+    let groupCounter         = 0;
+    let currentStep          = 1;
+    let step2Inited          = false;
+
+    /* ════════════════════════════════════════
+       DOM REFS
+    ════════════════════════════════════════ */
+    const examTypeEl            = document.getElementById("id_exam_type");
+    const step2InitSpinner      = document.getElementById("step2InitSpinner");
+    const subjectGroupsWrapper  = document.getElementById("subjectGroupsWrapper");
+    const subjectGroupsContainer= document.getElementById("subjectGroupsContainer");
+    const globalQuestionCount   = document.getElementById("globalQuestionCount");
+    const addGroupBtn           = document.getElementById("addGroupBtn");
+
+    // PYQ refs
+    const pyqYearCard       = document.getElementById("pyqYearCard");
+    const pyqYearCheckboxes = document.getElementById("pyqYearCheckboxes");
+    const pyqYearEmpty      = document.getElementById("pyqYearEmpty");
+    const pyqYearSpinner    = document.getElementById("pyqYearSpinner");
+    const pyqQuestionsCard  = document.getElementById("pyqQuestionsCard");
+    const pyqQuestionList   = document.getElementById("pyqQuestionList");
+    const pyqQuestionCount  = document.getElementById("pyqQuestionCount");
+    const pyqQuestionSpinner= document.getElementById("pyqQuestionSpinner");
+    const pyqRefreshBtn     = document.getElementById("pyqRefreshBtn");
+    const pyqQuestionSearch = document.getElementById("pyqQuestionSearch");
+    const pyqSelectAll      = document.getElementById("pyqSelectAll");
+
+    // Preview refs
+    const previewList        = document.getElementById("previewList");
+    const previewCount       = document.getElementById("previewCount");
+    const previewSearch      = document.getElementById("previewSearch");
+    const previewSummary     = document.getElementById("previewSummary");
+    const previewSubjectTabs = document.getElementById("previewSubjectTabs");
+    const clearAllPreviewBtn = document.getElementById("clearAllPreviewBtn");
+
+    /* ════════════════════════════════════════
+       HELPERS
+    ════════════════════════════════════════ */
+    function showEl(el)  { el.style.removeProperty("display"); el.style.setProperty("display","block","important"); }
+    function hideEl(el)  { el.style.setProperty("display","none","important"); }
+
+    function isPYQ() {
+        const sel = examTypeEl.options[examTypeEl.selectedIndex];
+        return sel && sel.dataset.name && sel.dataset.name.includes("pyq");
+    }
+
+    function selectedYears() {
+        return [...pyqYearCheckboxes.querySelectorAll("input:checked")].map(c => c.value);
+    }
+
+    function updateGlobalCount() {
+        const n = checkedQuestionIds.size;
+        globalQuestionCount.textContent = n + " selected";
+        globalQuestionCount.className = n
+            ? "badge bg-success px-3 py-2 fs-6"
+            : "badge bg-primary px-3 py-2 fs-6";
+    }
+
+    function usedSubjectIds() {
+        return groups.filter(g => g.subjectId).map(g => g.subjectId);
+    }
+
+    /* ════════════════════════════════════════
+       STEP NAVIGATION
+    ════════════════════════════════════════ */
+    function goToStep(n) {
+        document.querySelectorAll(".step-panel").forEach((p, i) =>
+            p.classList.toggle("d-none", i + 1 !== n)
+        );
+        document.querySelectorAll(".step-item").forEach((el, i) => {
+            const s = i + 1;
+            el.classList.remove("active", "done");
+            if (s === n) el.classList.add("active");
+            if (s < n)  el.classList.add("done");
+        });
+        document.querySelectorAll(".step-line").forEach((el, i) =>
+            el.classList.toggle("done", i + 1 < n)
+        );
+        currentStep = n;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.getElementById("step1Next").addEventListener("click", function () {
+        const title    = document.getElementById("id_title").value.trim();
+        const examType = examTypeEl.value;
+        if (!title)    { alert("Please enter a title."); return; }
+        if (!examType) { alert("Please select an exam type."); return; }
+        goToStep(2);
+        initStep2();
+    });
+
+    document.getElementById("step2Back").addEventListener("click", () => goToStep(1));
+
+    document.getElementById("step2Next").addEventListener("click", function () {
+        if (checkedQuestionIds.size === 0) {
+            if (!confirm("No questions selected. Continue anyway?")) return;
+        }
+        goToStep(3);
+    });
+
+    document.getElementById("step3Back").addEventListener("click", () => goToStep(2));
+
+    document.getElementById("step3Next").addEventListener("click", function () {
+        const dur   = document.getElementById("id_duration_minutes").value;
+        const marks = document.getElementById("id_marks_per_question").value;
+        if (!dur)   { alert("Please enter duration."); return; }
+        if (!marks) { alert("Please enter marks per question."); return; }
+        goToStep(4);
+        renderPreviewStep();
+    });
+
+    document.getElementById("step4Back").addEventListener("click", () => goToStep(3));
+
+    /* ════════════════════════════════════════
+       STEP 2 — INIT
+    ════════════════════════════════════════ */
+    function initStep2() {
+        if (step2Inited) return;
+        step2Inited = true;
+        const examTypeId = examTypeEl.value;
+        if (!examTypeId) return;
+
+        if (isPYQ()) {
+            loadPYQYears();
+        } else {
+            showEl(step2InitSpinner);
+            loadAvailableSubjects(examTypeId, function () {
+                hideEl(step2InitSpinner);
+                showEl(subjectGroupsWrapper);
+                addGroup(); // start with one empty group
+            });
+        }
+    }
+
+    /* ── Load all subjects for this exam type ── */
+    function loadAvailableSubjects(examTypeId, cb) {
+        fetch(`${URL_SUBJECTS}?exam_type_id=${examTypeId}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(r => r.json())
+        .then(data => {
+            availableSubjects = data.subjects || [];
+            cb();
+        })
+        .catch(() => {
+            hideEl(step2InitSpinner);
+            showEl(subjectGroupsWrapper);
+            subjectGroupsContainer.innerHTML =
+                '<div class="alert alert-danger">Failed to load subjects. Please refresh.</div>';
+        });
+    }
+
+    /* ════════════════════════════════════════
+       GROUP MANAGEMENT
+    ════════════════════════════════════════ */
+    function addGroup() {
+        const id = ++groupCounter;
+        groups.push({ id, subjectId: null, subjectName: "", submoduleIds: [], collapsed: false });
+        renderGroup(id);
+        updateAddGroupBtn();
+    }
+
+    function removeGroup(groupId) {
+        const g = groups.find(x => x.id === groupId);
+        if (g && g.subjectId) {
+            // Remove all question selections that belonged to this group's subject
+            // (only if no other group has the same subject — edge case protection)
+            const otherHasSameSubject = groups.some(x => x.id !== groupId && x.subjectId === g.subjectId);
+            if (!otherHasSameSubject) {
+                questionDataMap.forEach((q, qid) => {
+                    if (q._groupId === groupId) checkedQuestionIds.delete(qid);
+                });
+            }
+        }
+        groups = groups.filter(x => x.id !== groupId);
+        document.getElementById("sgcard_" + groupId)?.remove();
+        updateGlobalCount();
+        updateAddGroupBtn();
+        refreshHiddenInputs();
+        updateAllGroupHeaders();
+    }
+
+    function updateAddGroupBtn() {
+        const usedCount = groups.filter(g => g.subjectId).length;
+        const allUsed   = usedCount >= availableSubjects.length;
+        addGroupBtn.disabled = allUsed;
+        addGroupBtn.title    = allUsed ? "All available subjects are already added." : "";
+    }
+
+    /* ════════════════════════════════════════
+       RENDER A GROUP CARD
+    ════════════════════════════════════════ */
+    function renderGroup(groupId) {
+        // Remove old card if re-render
+        document.getElementById("sgcard_" + groupId)?.remove();
+
+        const g = groups.find(x => x.id === groupId);
+        if (!g) return;
+
+        const card = document.createElement("div");
+        card.className = "subject-group-card" + (g.subjectId ? " has-selection" : "");
+        card.id = "sgcard_" + groupId;
+
+        const qCount = countGroupQuestions(groupId);
+
+        // ── Header ──
+        const header = document.createElement("div");
+        header.className = "sg-header";
+        header.innerHTML = `
+            <i class="fas fa-grip-vertical text-muted" style="font-size:12px;"></i>
+            <span class="sg-header-title">
+                ${g.subjectName
+                    ? `<i class="fas fa-book-open me-2 text-primary" style="font-size:12px;"></i>${g.subjectName}`
+                    : `<span class="text-muted">Group ${groupId} — pick a subject below</span>`}
+            </span>
+            <span class="sg-header-badge ${qCount ? 'has-q' : ''}" id="sg_badge_${groupId}">
+                ${qCount ? qCount + ' selected' : 'No questions yet'}
+            </span>
+            <i class="fas fa-chevron-down sg-collapse-icon ${g.collapsed ? 'collapsed' : ''}" id="sg_colicon_${groupId}"></i>
+            ${groups.length > 1 ? `<button type="button" class="sg-remove-btn" data-gid="${groupId}" title="Remove this group"><i class="fas fa-times"></i></button>` : ''}
+        `;
+        card.appendChild(header);
+
+        // Toggle collapse on header click (not on remove btn)
+        header.addEventListener("click", function (e) {
+            if (e.target.closest(".sg-remove-btn")) return;
+            g.collapsed = !g.collapsed;
+            const body   = document.getElementById("sg_body_" + groupId);
+            const icon   = document.getElementById("sg_colicon_" + groupId);
+            if (body) body.style.display = g.collapsed ? "none" : "";
+            if (icon) icon.classList.toggle("collapsed", g.collapsed);
+        });
+
+        // Remove button
+        const removeBtn = header.querySelector(".sg-remove-btn");
+        if (removeBtn) {
+            removeBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                if (confirm("Remove this subject group and deselect its questions?")) {
+                    removeGroup(groupId);
+                }
+            });
+        }
+
+        // ── Body ──
+        const body = document.createElement("div");
+        body.className = "sg-body";
+        body.id = "sg_body_" + groupId;
+        body.style.display = g.collapsed ? "none" : "";
+
+        // -- Subject chips section --
+        const subjSection = document.createElement("div");
+        subjSection.className = "sg-section";
+        subjSection.innerHTML = `<div class="sg-section-label">Subject <span class="text-danger">*</span></div>`;
+
+        const chipsRow = document.createElement("div");
+        chipsRow.className = "subject-chips";
+        chipsRow.id = "sg_subjectchips_" + groupId;
+
+        if (!availableSubjects.length) {
+            chipsRow.innerHTML = '<span class="text-muted small">No subjects available.</span>';
+        } else {
+            availableSubjects.forEach(s => {
+                const usedByOther = groups.some(x => x.id !== groupId && x.subjectId == s.id);
+                const isActive    = g.subjectId == s.id;
+                const chip = document.createElement("span");
+                chip.className = "subject-chip" + (isActive ? " active" : "") + (usedByOther ? " disabled" : "");
+                chip.textContent = s.name;
+                chip.dataset.sid  = s.id;
+                chip.dataset.name = s.name;
+                if (!usedByOther) {
+                    chip.addEventListener("click", () => onSubjectChipClick(groupId, s.id, s.name));
+                }
+                chipsRow.appendChild(chip);
+            });
+        }
+
+        subjSection.appendChild(chipsRow);
+        body.appendChild(subjSection);
+
+        // -- Submodule section (hidden until subject chosen) --
+        const smSection = document.createElement("div");
+        smSection.className = "sg-section";
+        smSection.id = "sg_smsection_" + groupId;
+        smSection.style.display = g.subjectId ? "" : "none";
+        smSection.innerHTML = `
+            <div class="sg-section-label">
+                Filter by Submodule
+                <span class="sg-section-hint">(optional — all included if none selected)</span>
+            </div>
+            <div class="subject-chips" id="sg_smchips_${groupId}">
+                <span class="text-muted small">Loading submodules…</span>
+            </div>`;
+        body.appendChild(smSection);
+
+        // -- Questions section (hidden until subject chosen) --
+        const qSection = document.createElement("div");
+        qSection.className = "sg-section";
+        qSection.id = "sg_qsection_" + groupId;
+        qSection.style.display = g.subjectId ? "" : "none";
+        qSection.innerHTML = `
+            <div class="sg-section-label">Questions</div>
+            <div class="sg-q-toolbar">
+                <input type="text" class="form-control form-control-sm sg-qsearch"
+                       id="sg_qsearch_${groupId}" placeholder="Search questions…">
+                <div class="form-check mb-0">
+                    <input class="form-check-input sg-selectall" type="checkbox"
+                           id="sg_selall_${groupId}" data-gid="${groupId}">
+                    <label class="form-check-label small fw-semibold" for="sg_selall_${groupId}">Select all</label>
+                </div>
+            </div>
+            <div class="sg-question-list" id="sg_qlist_${groupId}">
+                <div class="sg-spinner">
+                    <span class="spinner-border spinner-border-sm text-primary"></span>
+                    <span class="small ms-1 text-muted">Loading…</span>
+                </div>
+            </div>`;
+        body.appendChild(qSection);
+
+        card.appendChild(body);
+        subjectGroupsContainer.appendChild(card);
+
+        // Wire up search
+        const searchEl = qSection.querySelector(".sg-qsearch");
+        searchEl.addEventListener("input", function () {
+            applyGroupSearch(groupId);
+        });
+
+        // Wire up select all
+        const selAllEl = qSection.querySelector(".sg-selectall");
+        selAllEl.addEventListener("change", function () {
+            toggleSelectAllGroup(groupId, this.checked);
+        });
+
+        // If subject already chosen (re-render), load its data
+        if (g.subjectId) {
+            loadGroupSubmodules(groupId, g.subjectId);
+        }
+    }
+
+    /* ────────────────────────────────────────
+       Subject chip click
+    ──────────────────────────────────────── */
+    function onSubjectChipClick(groupId, subjectId, subjectName) {
+        const g = groups.find(x => x.id === groupId);
+        if (!g) return;
+
+        // Deselect → same subject clicked again
+        if (g.subjectId == subjectId) {
+            // Remove this group's q selections
+            questionDataMap.forEach((q, qid) => {
+                if (q._groupId === groupId) checkedQuestionIds.delete(qid);
+            });
+            g.subjectId    = null;
+            g.subjectName  = "";
+            g.submoduleIds = [];
+            renderGroup(groupId);
+            updateGlobalCount();
+            updateAddGroupBtn();
+            refreshHiddenInputs();
+            updateAllGroupHeaders();
+            return;
+        }
+
+        // New subject selected
+        // Clear prior questions for this group
+        questionDataMap.forEach((q, qid) => {
+            if (q._groupId === groupId) checkedQuestionIds.delete(qid);
+        });
+
+        g.subjectId    = subjectId;
+        g.subjectName  = subjectName;
+        g.submoduleIds = [];
+
+        // Update header immediately
+        const badge = document.getElementById("sg_badge_" + groupId);
+        if (badge) { badge.textContent = "No questions yet"; badge.className = "sg-header-badge"; }
+        const titleEl = document.querySelector(`#sgcard_${groupId} .sg-header-title`);
+        if (titleEl) titleEl.innerHTML =
+            `<i class="fas fa-book-open me-2 text-primary" style="font-size:12px;"></i>${subjectName}`;
+        document.getElementById("sgcard_" + groupId)?.classList.add("has-selection");
+
+        // Highlight active chip
+        document.querySelectorAll(`#sg_subjectchips_${groupId} .subject-chip`).forEach(c => {
+            c.classList.toggle("active", c.dataset.sid == subjectId);
+        });
+
+        // Show submodule and question sections
+        const smSection = document.getElementById("sg_smsection_" + groupId);
+        const qSection  = document.getElementById("sg_qsection_"  + groupId);
+        if (smSection) smSection.style.display = "";
+        if (qSection)  qSection.style.display  = "";
+
+        updateGlobalCount();
+        updateAddGroupBtn();
+        updateAllGroupHeaders(); // refresh disabled states in other groups
+
+        // Sync hidden inputs so subject is registered even before questions are checked
+        refreshHiddenInputs();
+
+        // Load submodules
+        loadGroupSubmodules(groupId, subjectId);
+    }
+
+    /* ────────────────────────────────────────
+       Load submodules for a group
+    ──────────────────────────────────────── */
+    function loadGroupSubmodules(groupId, subjectId) {
+        const smChips = document.getElementById("sg_smchips_" + groupId);
+        if (!smChips) return;
+        smChips.innerHTML = '<span class="text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Loading…</span>';
+
+        fetch(`${URL_SUBMODULES}?subject_id=${encodeURIComponent(subjectId)}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(r => r.json())
+        .then(data => {
+            smChips.innerHTML = "";
+            const submodules = data.submodules || [];
+            if (!submodules.length) {
+                smChips.innerHTML = '<span class="text-muted small">No submodules — all questions will be shown.</span>';
+            } else {
+                submodules.forEach(sm => {
+                    const g = groups.find(x => x.id === groupId);
+                    const isActive = g && g.submoduleIds.includes(String(sm.id));
+                    const chip = document.createElement("span");
+                    chip.className  = "submodule-chip" + (isActive ? " active" : "");
+                    chip.textContent = sm.name;
+                    chip.dataset.smid = sm.id;
+                    chip.addEventListener("click", () => onSubmoduleChipClick(groupId, String(sm.id)));
+                    smChips.appendChild(chip);
+                });
+            }
+            // Load questions (no submodule filter initially)
+            loadGroupQuestions(groupId, subjectId, []);
+        })
+        .catch(() => {
+            smChips.innerHTML = '<span class="text-danger small">Failed to load submodules.</span>';
+            loadGroupQuestions(groupId, subjectId, []);
+        });
+    }
+
+    /* ────────────────────────────────────────
+       Submodule chip click
+    ──────────────────────────────────────── */
+    function onSubmoduleChipClick(groupId, smId) {
+        const g = groups.find(x => x.id === groupId);
+        if (!g) return;
+
+        const idx = g.submoduleIds.indexOf(smId);
+        if (idx >= 0) g.submoduleIds.splice(idx, 1);
+        else          g.submoduleIds.push(smId);
+
+        // Update chip UI
+        document.querySelectorAll(`#sg_smchips_${groupId} .submodule-chip`).forEach(c => {
+            c.classList.toggle("active", g.submoduleIds.includes(String(c.dataset.smid)));
+        });
+
+        // Sync hidden inputs for submodules
+        refreshHiddenInputs();
+
+        // Reload questions with new submodule filter
+        loadGroupQuestions(groupId, g.subjectId, g.submoduleIds);
+    }
+
+    /* ────────────────────────────────────────
+       Load questions for a group
+    ──────────────────────────────────────── */
+    function loadGroupQuestions(groupId, subjectId, submoduleIds) {
+        const qList = document.getElementById("sg_qlist_" + groupId);
+        if (!qList) return;
+
+        qList.innerHTML = `
+            <div class="sg-spinner">
+                <span class="spinner-border spinner-border-sm text-primary"></span>
+                <span class="small ms-1 text-muted">Loading questions…</span>
+            </div>`;
+
+        const params = new URLSearchParams();
+        params.append("subject_ids", subjectId);
+        submoduleIds.forEach(id => params.append("submodule_ids", id));
+
+        fetch(`${URL_QUESTIONS}?${params.toString()}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const questions = data.questions || [];
+            // Store with group ownership tag
+            questions.forEach(q => {
+                q._groupId = groupId;
+                questionDataMap.set(q.id, q);
+            });
+            renderGroupQuestions(groupId, questions);
+        })
+        .catch(() => {
+            qList.innerHTML = '<div class="sg-empty text-danger">Failed to load questions.</div>';
+        });
+    }
+
+    /* ────────────────────────────────────────
+       Render question list inside a group
+    ──────────────────────────────────────── */
+    function renderGroupQuestions(groupId, questions) {
+        const qList = document.getElementById("sg_qlist_" + groupId);
+        if (!qList) return;
+        qList.innerHTML = "";
+
+        if (!questions.length) {
+            qList.innerHTML = '<div class="sg-empty">No questions found for the selected filters.</div>';
+            updateGroupBadge(groupId);
+            return;
+        }
+
+        questions.forEach(q => {
+            const item = document.createElement("div");
+            item.className  = "sg-question-item" + (checkedQuestionIds.has(q.id) ? " checked" : "");
+            item.dataset.qid  = q.id;
+            item.dataset.text = (q.text || "").toLowerCase();
+
+            item.innerHTML = `
+                <input class="sg-qcb" type="checkbox" name="selected_questions"
+                       value="${q.id}" ${checkedQuestionIds.has(q.id) ? "checked" : ""}
+                       data-gid="${groupId}" style="margin-top:2px;flex-shrink:0;">
+                <div>
+                    <div class="sg-question-text">${q.text}</div>
+                    <div class="sg-question-tags">
+                        ${q.subject   ? `<span class="tag">${q.subject}</span>` : ""}
+                        ${q.submodule ? `<span class="tag tag-submodule">${q.submodule}</span>` : ""}
+                        ${q.year      ? `<span class="tag tag-year">${q.year}</span>` : ""}
+                        ${q.source    ? `<span class="tag tag-source">${q.source}</span>` : ""}
+                    </div>
+                </div>`;
+
+            // Click row = toggle checkbox
+            item.addEventListener("click", function (e) {
+                if (e.target.tagName === "INPUT") return;
+                const cb = item.querySelector(".sg-qcb");
+                cb.checked = !cb.checked;
+                onGroupQuestionChange(groupId, q.id, cb.checked, item);
+            });
+
+            item.querySelector(".sg-qcb").addEventListener("change", function () {
+                onGroupQuestionChange(groupId, q.id, this.checked, item);
+            });
+
+            qList.appendChild(item);
+        });
+
+        updateGroupBadge(groupId);
+        applyGroupSearch(groupId);
+    }
+
+    function onGroupQuestionChange(groupId, qid, checked, itemEl) {
+        if (checked) checkedQuestionIds.add(qid);
+        else         checkedQuestionIds.delete(qid);
+        itemEl.classList.toggle("checked", checked);
+        updateGroupBadge(groupId);
+        updateGlobalCount();
+        refreshHiddenInputs();
+    }
+
+    /* ────────────────────────────────────────
+       Select all within a group
+    ──────────────────────────────────────── */
+    function toggleSelectAllGroup(groupId, checked) {
+        const qList = document.getElementById("sg_qlist_" + groupId);
+        if (!qList) return;
+        qList.querySelectorAll(".sg-question-item").forEach(item => {
+            if (item.style.display === "none") return; // skip hidden (filtered)
+            const cb = item.querySelector(".sg-qcb");
+            if (!cb) return;
+            const qid = Number(cb.value);
+            cb.checked = checked;
+            if (checked) { checkedQuestionIds.add(qid); item.classList.add("checked"); }
+            else         { checkedQuestionIds.delete(qid); item.classList.remove("checked"); }
+        });
+        updateGroupBadge(groupId);
+        updateGlobalCount();
+        refreshHiddenInputs();
+    }
+
+    /* ────────────────────────────────────────
+       Search within a group
+    ──────────────────────────────────────── */
+    function applyGroupSearch(groupId) {
+        const searchEl = document.getElementById("sg_qsearch_" + groupId);
+        const qList    = document.getElementById("sg_qlist_"   + groupId);
+        if (!searchEl || !qList) return;
+        const term = searchEl.value.toLowerCase().trim();
+        qList.querySelectorAll(".sg-question-item").forEach(item => {
+            item.style.display = (!term || item.dataset.text.includes(term)) ? "" : "none";
+        });
+    }
+
+    /* ────────────────────────────────────────
+       Update group badge
+    ──────────────────────────────────────── */
+    function countGroupQuestions(groupId) {
+        let n = 0;
+        questionDataMap.forEach((q, qid) => {
+            if (q._groupId === groupId && checkedQuestionIds.has(qid)) n++;
+        });
+        return n;
+    }
+
+    function updateGroupBadge(groupId) {
+        const badge = document.getElementById("sg_badge_" + groupId);
+        if (!badge) return;
+        const n = countGroupQuestions(groupId);
+        badge.textContent = n ? n + " selected" : "No questions yet";
+        badge.className   = "sg-header-badge" + (n ? " has-q" : "");
+    }
+
+    /* ────────────────────────────────────────
+       Refresh subject chip disabled states
+       across all groups (after add/remove)
+    ──────────────────────────────────────── */
+    function updateAllGroupHeaders() {
+        groups.forEach(g => {
+            const chipsRow = document.getElementById("sg_subjectchips_" + g.id);
+            if (!chipsRow) return;
+            chipsRow.querySelectorAll(".subject-chip").forEach(chip => {
+                const usedByOther = groups.some(x => x.id !== g.id && x.subjectId == chip.dataset.sid);
+                chip.classList.toggle("disabled", usedByOther);
+                if (usedByOther) chip.style.pointerEvents = "none";
+                else             chip.style.pointerEvents = "";
+            });
+        });
+    }
+
+    /* ────────────────────────────────────────
+       Keep hidden inputs in sync for form POST
+       Posts: selected_questions, subjects, submodules
+    ──────────────────────────────────────── */
+    function refreshHiddenInputs() {
+        document.querySelectorAll(".sg-hidden-q, .sg-hidden-subj, .sg-hidden-sm").forEach(el => el.remove());
+        const form = document.getElementById("examForm");
+
+        // 1. selected_questions — all checked IDs across all groups
+        checkedQuestionIds.forEach(qid => {
+            const h = document.createElement("input");
+            h.type = "hidden"; h.name = "selected_questions";
+            h.value = qid; h.className = "sg-hidden-q";
+            form.appendChild(h);
+        });
+
+        // 2. subjects — one entry per group that has a chosen subject
+        const postedSubjects = new Set();
+        groups.forEach(g => {
+            if (!g.subjectId || postedSubjects.has(g.subjectId)) return;
+            postedSubjects.add(g.subjectId);
+            const h = document.createElement("input");
+            h.type = "hidden"; h.name = "subjects";
+            h.value = g.subjectId; h.className = "sg-hidden-subj";
+            form.appendChild(h);
+        });
+
+        // 3. submodules — all selected submodule IDs across all groups
+        const postedSM = new Set();
+        groups.forEach(g => {
+            (g.submoduleIds || []).forEach(smId => {
+                if (postedSM.has(smId)) return;
+                postedSM.add(smId);
+                const h = document.createElement("input");
+                h.type = "hidden"; h.name = "submodules";
+                h.value = smId; h.className = "sg-hidden-sm";
+                form.appendChild(h);
+            });
+        });
+    }
+
+    /* ════════════════════════════════════════
+       ADD GROUP BUTTON
+    ════════════════════════════════════════ */
+    addGroupBtn.addEventListener("click", function () {
+        addGroup();
+        updateAllGroupHeaders();
+    });
+
+    /* ════════════════════════════════════════
+       PYQ MODE
+    ════════════════════════════════════════ */
+    function loadPYQYears() {
+        showEl(pyqYearCard);
+        showEl(pyqYearSpinner);
+        hideEl(pyqYearEmpty);
+        pyqYearCheckboxes.innerHTML = "";
+
+        fetch(`${URL_QUESTIONS}?years_only=1`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(r => r.json())
+        .then(data => {
+            hideEl(pyqYearSpinner);
+            const years = data.years || [];
+            if (!years.length) { showEl(pyqYearEmpty); return; }
+            years.forEach(y => {
+                const col = document.createElement("div");
+                col.className = "col-auto";
+                col.innerHTML = `
+                    <div class="form-check border rounded px-3 py-2">
+                        <input class="form-check-input year-cb" type="checkbox"
+                               value="${y}" id="year_${y}" checked>
+                        <label class="form-check-label small fw-semibold" for="year_${y}">${y}</label>
+                    </div>`;
+                pyqYearCheckboxes.appendChild(col);
+            });
+            pyqYearCheckboxes.querySelectorAll(".year-cb").forEach(cb =>
+                cb.addEventListener("change", () => loadPYQQuestions(selectedYears()))
+            );
+            loadPYQQuestions(years.map(String));
+        })
+        .catch(() => { hideEl(pyqYearSpinner); showEl(pyqYearEmpty); });
+    }
+
+    function loadPYQQuestions(years, isRefresh) {
+        if (isRefresh) {
+            // sync checked state from visible checkboxes before refresh
+            pyqQuestionList.querySelectorAll(".sg-qcb").forEach(cb => {
+                const id = Number(cb.value);
+                if (cb.checked) checkedQuestionIds.add(id);
+                else            checkedQuestionIds.delete(id);
+            });
+        }
+
+        showEl(pyqQuestionsCard);
+        showEl(pyqQuestionSpinner);
+        pyqQuestionList.innerHTML = "";
+
+        const params = new URLSearchParams();
+        years.forEach(y => params.append("years", y));
+
+        fetch(`${URL_QUESTIONS}?${params.toString()}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(r => r.json())
+        .then(data => {
+            hideEl(pyqQuestionSpinner);
+            const questions = data.questions || [];
+            questions.forEach(q => questionDataMap.set(q.id, q));
+            renderPYQQuestions(questions);
+        })
+        .catch(() => {
+            hideEl(pyqQuestionSpinner);
+            pyqQuestionList.innerHTML = '<div class="text-danger small p-3">Failed to load questions.</div>';
+        });
+    }
+
+    function renderPYQQuestions(questions) {
+        pyqQuestionList.innerHTML = "";
+        if (!questions.length) {
+            pyqQuestionList.innerHTML = '<div class="sg-empty">No questions found for selected years.</div>';
+            updatePYQCount(); return;
+        }
+        questions.forEach(q => {
+            const item = document.createElement("div");
+            item.className  = "sg-question-item" + (checkedQuestionIds.has(q.id) ? " checked" : "");
+            item.dataset.qid  = q.id;
+            item.dataset.text = (q.text || "").toLowerCase();
+            item.innerHTML = `
+                <input class="sg-qcb" type="checkbox" name="selected_questions"
+                       value="${q.id}" ${checkedQuestionIds.has(q.id) ? "checked" : ""}
+                       style="margin-top:2px;flex-shrink:0;">
+                <div>
+                    <div class="sg-question-text">${q.text}</div>
+                    <div class="sg-question-tags">
+                        ${q.subject   ? `<span class="tag">${q.subject}</span>` : ""}
+                        ${q.submodule ? `<span class="tag tag-submodule">${q.submodule}</span>` : ""}
+                        ${q.year      ? `<span class="tag tag-year">${q.year}</span>` : ""}
+                        ${q.source    ? `<span class="tag tag-source">${q.source}</span>` : ""}
+                    </div>
+                </div>`;
+
+            item.addEventListener("click", function (e) {
+                if (e.target.tagName === "INPUT") return;
+                const cb = item.querySelector(".sg-qcb");
+                cb.checked = !cb.checked;
+                onPYQChange(q.id, cb.checked, item);
+            });
+            item.querySelector(".sg-qcb").addEventListener("change", function () {
+                onPYQChange(q.id, this.checked, item);
+            });
+            pyqQuestionList.appendChild(item);
+        });
+        updatePYQCount();
+        applyPYQSearch();
+    }
+
+    function onPYQChange(qid, checked, itemEl) {
+        if (checked) checkedQuestionIds.add(qid);
+        else         checkedQuestionIds.delete(qid);
+        itemEl.classList.toggle("checked", checked);
+        updatePYQCount();
+        refreshHiddenInputs();
+    }
+
+    function updatePYQCount() {
+        const n = checkedQuestionIds.size;
+        pyqQuestionCount.textContent = n + " selected";
+    }
+
+    pyqRefreshBtn.addEventListener("click", () => loadPYQQuestions(selectedYears(), true));
+
+    pyqQuestionSearch.addEventListener("input", applyPYQSearch);
+    function applyPYQSearch() {
+        const term = pyqQuestionSearch.value.toLowerCase().trim();
+        pyqQuestionList.querySelectorAll(".sg-question-item").forEach(item => {
+            item.style.display = (!term || item.dataset.text.includes(term)) ? "" : "none";
+        });
+    }
+
+    pyqSelectAll.addEventListener("change", function () {
+        pyqQuestionList.querySelectorAll(".sg-question-item").forEach(item => {
+            if (item.style.display === "none") return;
+            const cb  = item.querySelector(".sg-qcb");
+            const qid = Number(cb.value);
+            cb.checked = this.checked;
+            if (this.checked) { checkedQuestionIds.add(qid); item.classList.add("checked"); }
+            else              { checkedQuestionIds.delete(qid); item.classList.remove("checked"); }
+        });
+        updatePYQCount();
+        refreshHiddenInputs();
+    });
+
+    /* ════════════════════════════════════════
+       STEP 4 — PREVIEW
+    ════════════════════════════════════════ */
+    function renderPreviewStep() {
+        const title    = document.getElementById("id_title").value;
+        const examType = examTypeEl.options[examTypeEl.selectedIndex].text;
+        const dur      = document.getElementById("id_duration_minutes").value;
+        const total    = document.getElementById("id_total_questions").value;
+        const marks    = document.getElementById("id_marks_per_question").value;
+        const neg      = document.getElementById("id_negative_marks").value;
+        const active   = document.getElementById("id_is_active").checked;
+
+        previewSummary.innerHTML = `
+            <div class="col-sm-6 col-lg-3">
+                <div class="p-3 bg-light rounded">
+                    <div class="text-muted small mb-1">Title</div>
+                    <div class="fw-semibold">${title}</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="p-3 bg-light rounded">
+                    <div class="text-muted small mb-1">Exam Type</div>
+                    <div class="fw-semibold">${examType}</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="p-3 bg-light rounded">
+                    <div class="text-muted small mb-1">Duration</div>
+                    <div class="fw-semibold">${dur} min</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="p-3 bg-light rounded">
+                    <div class="text-muted small mb-1">Questions</div>
+                    <div class="fw-semibold">${checkedQuestionIds.size} selected${total ? ' / ' + total + ' set' : ''}</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="p-3 bg-light rounded">
+                    <div class="text-muted small mb-1">Marks / Q</div>
+                    <div class="fw-semibold">${marks}${neg ? ' (−' + neg + ' neg)' : ''}</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="p-3 bg-light rounded">
+                    <div class="text-muted small mb-1">Status</div>
+                    <div class="fw-semibold">${active
+                        ? '<span class="badge bg-success-subtle text-success">Active</span>'
+                        : '<span class="badge bg-secondary-subtle text-secondary">Inactive</span>'}</div>
+                </div>
+            </div>`;
+
+        renderPreviewQuestions(null);
+    }
+
+    let activePreviewSubject = null;
+
+    function renderPreviewQuestions(filterSubject) {
+        activePreviewSubject = filterSubject;
+        const total = checkedQuestionIds.size;
+        previewCount.textContent = total;
+
+        // Build subject buckets
+        const subjectBuckets = {};
+        checkedQuestionIds.forEach(id => {
+            const q    = questionDataMap.get(id);
+            const subj = (q && q.subject) ? q.subject : "Other";
+            if (!subjectBuckets[subj]) subjectBuckets[subj] = [];
+            subjectBuckets[subj].push(id);
+        });
+        const subjects = Object.keys(subjectBuckets);
+
+        // Tabs
+        previewSubjectTabs.innerHTML = "";
+        if (subjects.length > 1) {
+            const allTab = document.createElement("span");
+            allTab.className = "preview-tab" + (!filterSubject ? " active" : "");
+            allTab.textContent = `All (${total})`;
+            allTab.addEventListener("click", () => renderPreviewQuestions(null));
+            previewSubjectTabs.appendChild(allTab);
+            subjects.forEach(s => {
+                const tab = document.createElement("span");
+                tab.className = "preview-tab" + (filterSubject === s ? " active" : "");
+                tab.textContent = `${s} (${subjectBuckets[s].length})`;
+                tab.addEventListener("click", () => renderPreviewQuestions(s));
+                previewSubjectTabs.appendChild(tab);
+            });
+        }
+
+        // List
+        const term = previewSearch.value.toLowerCase().trim();
+        previewList.innerHTML = "";
+        let rendered = 0;
+
+        checkedQuestionIds.forEach(id => {
+            const q    = questionDataMap.get(id);
+            const text = q ? q.text : `Question #${id}`;
+            const subj = (q && q.subject) ? q.subject : "Other";
+            if (filterSubject && subj !== filterSubject) return;
+            if (term && !text.toLowerCase().includes(term)) return;
+            rendered++;
+
+            const row = document.createElement("div");
+            row.className = "d-flex align-items-start gap-3 py-2 border-bottom";
+            row.innerHTML = `
+                <div class="flex-grow-1">
+                    <div class="small" style="line-height:1.5;">${text}</div>
+                    <div class="d-flex gap-1 flex-wrap mt-1">
+                        ${q && q.subject   ? `<span class="badge bg-light text-secondary border" style="font-size:10px;">${q.subject}</span>` : ""}
+                        ${q && q.submodule ? `<span class="badge bg-light border" style="font-size:10px;color:#5b21b6;">${q.submodule}</span>` : ""}
+                        ${q && q.year      ? `<span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:10px;">${q.year}</span>` : ""}
+                        ${q && q.source    ? `<span class="badge bg-warning bg-opacity-15 text-warning-emphasis" style="font-size:10px;">${q.source}</span>` : ""}
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-preview-btn flex-shrink-0"
+                        data-id="${id}" style="padding:2px 7px;font-size:11px;">
+                    <i class="fas fa-times"></i>
+                </button>`;
+            previewList.appendChild(row);
+        });
+
+        if (rendered === 0) {
+            previewList.innerHTML = `<div class="text-muted small py-3">${
+                term ? "No matching questions." : "No questions selected."
+            }</div>`;
+        }
+
+        previewList.querySelectorAll(".remove-preview-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const id = Number(this.dataset.id);
+                checkedQuestionIds.delete(id);
+                // Uncheck in group UI
+                document.querySelectorAll(`.sg-qcb[value="${id}"]`).forEach(cb => {
+                    cb.checked = false;
+                    cb.closest(".sg-question-item")?.classList.remove("checked");
+                });
+                // Update group badge
+                const q = questionDataMap.get(id);
+                if (q && q._groupId) updateGroupBadge(q._groupId);
+                updateGlobalCount();
+                refreshHiddenInputs();
+                renderPreviewQuestions(filterSubject);
+            });
+        });
+    }
+
+    clearAllPreviewBtn.addEventListener("click", function () {
+        checkedQuestionIds.clear();
+        document.querySelectorAll(".sg-qcb").forEach(cb => {
+            cb.checked = false;
+            cb.closest(".sg-question-item")?.classList.remove("checked");
+        });
+        groups.forEach(g => updateGroupBadge(g.id));
+        updateGlobalCount();
+        refreshHiddenInputs();
+        renderPreviewQuestions(null);
+    });
+
+    previewSearch.addEventListener("input", () => renderPreviewQuestions(activePreviewSubject));
+
+})();
+</script>
+{% endblock %}

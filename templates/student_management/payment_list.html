@@ -1,0 +1,356 @@
+{% extends "student_management/base.html" %}
+
+{% block title %}Payments | Student Management{% endblock %}
+
+{% block content %}
+<div class="dashboard__form__wraper">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_management:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Payments</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="mb-0">Payments</h4>
+        <button id="exportExcelBtn" class="btn btn-success btn-sm">
+            <i class="fas fa-file-excel me-1"></i> Download Excel
+        </button>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-3">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-sm-4">
+                    <input type="text" name="search" value="{{ search }}"
+                           class="form-control form-control-sm" placeholder="Search student, plan, transaction…">
+                </div>
+                <div class="col-sm-3">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-3">
+                    <select name="plan" class="form-select form-select-sm">
+                        <option value="">All Plans</option>
+                        {% for plan in plans %}
+                        <option value="{{ plan.id }}" {% if selected_plan == plan.id|stringformat:"s" %}selected{% endif %}>{{ plan.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+                    <a href="{% url 'student_management:payment_list' %}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            {% if payments %}
+
+            <!-- Pagination controls ABOVE table -->
+            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="perPageSelectTop" class="text-muted small mb-0 text-nowrap">Rows per page:</label>
+                    <select id="perPageSelectTop" class="form-select form-select-sm" style="width:80px;">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-muted small mb-0 text-nowrap" id="paginationInfoTop"></span>
+                </div>
+                <nav aria-label="Payments pagination top">
+                    <ul class="pagination pagination-sm mb-0" id="paginationControlsTop"></ul>
+                </nav>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="paymentsTable" style="min-width: 900px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width:40px">#</th>
+                            <th>Student</th>
+                            <th>Plan</th>
+                            <th style="width:110px">Amount (₹)</th>
+                            <th style="width:100px">Status</th>
+                            <th>Transaction ID</th>
+                            <th style="width:130px">Paid At</th>
+                            <th style="width:130px">Expires At</th>
+                            <th class="text-end pe-3" style="width:110px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr
+                            data-student="{{ payment.student.full_name }}"
+                            data-email="{{ payment.student.user.email }}"
+                            data-plan="{{ payment.plan.name }}"
+                            data-amount="{{ payment.amount }}"
+                            data-status="{{ payment.status }}"
+                            data-txn="{{ payment.transaction_id|default:'' }}"
+                            data-paid="{{ payment.paid_at|date:'d M Y, H:i'|default:'' }}"
+                            data-expires="{{ payment.expires_at|date:'d M Y'|default:'' }}"
+                        >
+                            <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
+                            <td>
+                                <span class="fw-semibold">{{ payment.student.full_name }}</span>
+                                <div class="text-muted small">{{ payment.student.user.email }}</div>
+                            </td>
+                            <td class="text-muted small">{{ payment.plan.name }}</td>
+                            <td class="fw-semibold">₹{{ payment.amount }}</td>
+                            <td>
+                                {% if payment.status == 'success' %}
+                                    <span class="badge bg-success-subtle text-success">Success</span>
+                                {% elif payment.status == 'pending' %}
+                                    <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ payment.transaction_id|default:"—" }}</td>
+                            <td class="text-muted small">{{ payment.paid_at|date:"d M Y, H:i"|default:"—" }}</td>
+                            <td class="text-muted small">
+                                {% if payment.expires_at %}
+                                    {% if payment.is_active %}
+                                        <span class="text-success">{{ payment.expires_at|date:"d M Y" }}</span>
+                                    {% else %}
+                                        <span class="text-danger">{{ payment.expires_at|date:"d M Y" }}</span>
+                                    {% endif %}
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="{% url 'student_management:payment_detail' payment.id %}"
+                                       class="btn btn-outline-secondary btn-sm" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            title="Delete"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal"
+                                            data-payment-id="{{ payment.id }}"
+                                            data-student-name="{{ payment.student.full_name }}"
+                                            data-amount="₹{{ payment.amount }}"
+                                            data-plan="{{ payment.plan.name }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination controls BELOW table -->
+            <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top flex-wrap gap-2">
+                <span class="text-muted small" id="paginationInfoBottom"></span>
+                <nav aria-label="Payments pagination bottom">
+                    <ul class="pagination pagination-sm mb-0" id="paginationControlsBottom"></ul>
+                </nav>
+            </div>
+
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-receipt fa-2x mb-3 d-block"></i>
+                No payments found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Payment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <p class="mb-2">Are you sure you want to permanently delete this payment record?</p>
+                <div class="bg-light rounded p-3 small">
+                    <div class="mb-1"><span class="text-muted">Student:</span> <strong id="modal-student-name"></strong></div>
+                    <div class="mb-1"><span class="text-muted">Plan:</span> <span id="modal-plan"></span></div>
+                    <div><span class="text-muted">Amount:</span> <span id="modal-amount" class="fw-semibold"></span></div>
+                </div>
+                <p class="text-danger small mt-2 mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash-alt me-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    // ── Delete modal ──────────────────────────────────────────────────────────
+    document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
+        const btn = event.relatedTarget;
+        document.getElementById('modal-student-name').textContent = btn.getAttribute('data-student-name');
+        document.getElementById('modal-amount').textContent       = btn.getAttribute('data-amount');
+        document.getElementById('modal-plan').textContent         = btn.getAttribute('data-plan');
+        document.getElementById('deleteForm').action =
+            "{% url 'student_management:payment_delete' 0 %}".replace('/0/', '/' + btn.getAttribute('data-payment-id') + '/');
+    });
+
+    // ── Client-side pagination ────────────────────────────────────────────────
+    (function () {
+        const tbody       = document.querySelector('tbody');
+        const infoTop     = document.getElementById('paginationInfoTop');
+        const infoBottom  = document.getElementById('paginationInfoBottom');
+        const ctrlsTop    = document.getElementById('paginationControlsTop');
+        const ctrlsBottom = document.getElementById('paginationControlsBottom');
+        const perPageSel  = document.getElementById('perPageSelectTop');
+
+        if (!tbody) return;
+
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const total   = allRows.length;
+        let currentPage = 1;
+        let perPage     = parseInt(perPageSel.value, 10);
+
+        function totalPages() { return Math.max(1, Math.ceil(total / perPage)); }
+
+        function goTo(page) {
+            currentPage = Math.min(Math.max(1, page), totalPages());
+            const start = (currentPage - 1) * perPage;
+            const end   = start + perPage;
+
+            allRows.forEach(function (row, i) {
+                row.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+
+            const showingStart = total === 0 ? 0 : start + 1;
+            const showingEnd   = Math.min(end, total);
+            const infoText = 'Showing ' + showingStart + '–' + showingEnd + ' of ' + total + ' payments';
+            if (infoTop)    infoTop.textContent    = '· ' + infoText;
+            if (infoBottom) infoBottom.textContent = infoText;
+
+            renderControls(ctrlsTop);
+            renderControls(ctrlsBottom);
+        }
+
+        function renderControls(controls) {
+            if (!controls) return;
+            controls.innerHTML = '';
+            const pages = totalPages();
+            controls.style.display = pages <= 1 ? 'none' : '';
+
+            function li(label, page, disabled, active) {
+                const item = document.createElement('li');
+                item.className = 'page-item' +
+                    (disabled ? ' disabled' : '') +
+                    (active   ? ' active'   : '');
+                if (disabled || active) {
+                    item.innerHTML = '<span class="page-link">' + label + '</span>';
+                } else {
+                    const a = document.createElement('a');
+                    a.className = 'page-link';
+                    a.href      = '#';
+                    a.innerHTML = label;
+                    a.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        goTo(page);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    item.appendChild(a);
+                }
+                controls.appendChild(item);
+            }
+
+            li('&laquo;', currentPage - 1, currentPage === 1, false);
+            for (let n = 1; n <= pages; n++) {
+                if (n === 1 || n === pages || Math.abs(n - currentPage) <= 2) {
+                    li(n, n, false, n === currentPage);
+                } else if (Math.abs(n - currentPage) === 3) {
+                    li('&hellip;', null, true, false);
+                }
+            }
+            li('&raquo;', currentPage + 1, currentPage === pages, false);
+        }
+
+        perPageSel.addEventListener('change', function () {
+            perPage = parseInt(this.value, 10);
+            goTo(1);
+        });
+
+        goTo(1);
+    })();
+
+    // ── Excel export ──────────────────────────────────────────────────────────
+    document.getElementById('exportExcelBtn').addEventListener('click', function () {
+        const rows = document.querySelectorAll('#paymentsTable tbody tr');
+
+        const data = [['#', 'Student', 'Email', 'Plan', 'Amount (₹)', 'Status', 'Transaction ID', 'Paid At', 'Expires At']];
+
+        rows.forEach(function (row, i) {
+            data.push([
+                i + 1,
+                row.getAttribute('data-student')  || '',
+                row.getAttribute('data-email')    || '',
+                row.getAttribute('data-plan')     || '',
+                row.getAttribute('data-amount')   || '',
+                row.getAttribute('data-status')   || '',
+                row.getAttribute('data-txn')      || '',
+                row.getAttribute('data-paid')     || '',
+                row.getAttribute('data-expires')  || '',
+            ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+
+        // column widths
+        ws['!cols'] = [
+            { wch: 5 }, { wch: 24 }, { wch: 28 }, { wch: 18 },
+            { wch: 12 }, { wch: 10 }, { wch: 26 }, { wch: 18 }, { wch: 14 }
+        ];
+
+        // bold header row
+        const headerRange = XLSX.utils.decode_range(ws['!ref']);
+        for (let c = headerRange.s.c; c <= headerRange.e.c; c++) {
+            const cell = ws[XLSX.utils.encode_cell({ r: 0, c: c })];
+            if (cell) cell.s = { font: { bold: true } };
+        }
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Payments');
+
+        const today = new Date();
+        const dateStr = today.getFullYear() + '-' +
+            String(today.getMonth() + 1).padStart(2, '0') + '-' +
+            String(today.getDate()).padStart(2, '0');
+
+        XLSX.writeFile(wb, 'payments_' + dateStr + '.xlsx');
+    });
+</script>
+{% endblock %}

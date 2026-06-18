@@ -1051,6 +1051,11 @@
                                 </a>
                             </li>
                             <li>
+    <a href="{% url 'student_management:submodule_list' %}" class="{% if '/student-management/submodules/' in request.path %}active{% endif %}">
+        <i class="icofont-list"></i> Submodules
+    </a>
+</li>
+                            <li>
                                 <a href="{% url 'student_management:question_list' %}" class="{% if '/student-management/questions/' in request.path and 'import' not in request.path %}active{% endif %}">
                                     <i class="icofont-question-circle"></i> Questions
                                 </a>
@@ -1082,19 +1087,47 @@
                             </li>
                         </ul>
                     </li>
-
-                    <li>
-                        <a href="#">
-                            <i class="icofont-paper"></i>
-                            Mock Tests
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="icofont-chart-bar-graph"></i>
-                            Results
-                        </a>
-                    </li>
+                     <li class="has-dropdown {% if '/student-management/exams/' in request.path %}open{% endif %}">
+    <a href="#">
+        <i class="icofont-paper"></i>
+        Mock Tests
+    </a>
+    <ul class="submenu">
+        <li>
+      <a href="{% url 'student_management:exam_list' %}"
+       class="{% if request.resolver_match.url_name == 'exam_list' %}active{% endif %}">
+        <i class="icofont-list"></i> Exams
+       </a>
+      </li>
+        <li>
+            <a href="{% url 'student_management:examtype_list' %}" 
+               class="{% if '/student-management/exams/exam-types/' in request.path %}active{% endif %}">
+                <i class="icofont-settings"></i> Exam Types
+            </a>
+        </li>
+    </ul>
+</li>
+<li class="has-dropdown {% if '/student-management/plans/' in request.path or '/student-management/payments/' in request.path %}open{% endif %}">
+    <a href="#">
+        <i class="icofont-diamond"></i>
+        Subscription
+    </a>
+    <ul class="submenu">
+        <li>
+            <a href="{% url 'student_management:plan_list' %}"
+               class="{% if request.resolver_match.url_name in 'plan_list plan_create plan_update plan_detail' %}active{% endif %}">
+                <i class="icofont-list"></i> Plans
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'student_management:payment_list' %}"
+               class="{% if request.resolver_match.url_name in 'payment_list payment_detail' %}active{% endif %}">
+                <i class="icofont-money"></i> Payment History
+            </a>
+        </li>
+    </ul>
+</li>
+                    
                 </ul>
             </div>
         </div>

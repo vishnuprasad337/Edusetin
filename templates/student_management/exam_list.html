@@ -1,0 +1,138 @@
+{% extends "student_management/base.html" %}
+
+{% block title %}Exams | Student Management{% endblock %}
+
+{% block content %}
+<div class="dashboard__form__wraper">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_management:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Exams</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="mb-0">Exams</h4>
+        <a href="{% url 'student_management:exam_add' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> Add Exam
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            {% if exams %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width:40px">#</th>
+                            <th>Title</th>
+                            <th style="width:110px">Exam Type</th>
+                            <th>Subjects</th>
+                            <th>Submodules</th>
+                            <th style="width:80px">Duration</th>
+                            <th style="width:80px">Questions</th>
+                            <th style="width:70px">Marks/Q</th>
+                            <th style="width:80px">Status</th>
+                            <th class="text-end pe-3" style="width:90px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in exams %}
+                        <tr>
+                            <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
+                            <td>
+                                <span class="fw-semibold">{{ exam.title }}</span>
+                                {% if exam.custom_name %}
+                                <div class="text-muted small">{{ exam.custom_name }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ exam.exam_type.name|default:"—" }}</td>
+                            <td class="text-muted small">
+                                {% for subject in exam.subjects.all %}
+                                    <span class="badge bg-light text-dark border me-1">{{ subject.name }}</span>
+                                {% empty %}—{% endfor %}
+                            </td>
+                            <td class="text-muted small">
+                                {% for submodule in exam.submodules.all %}
+                                    <span class="badge bg-light text-dark border me-1">{{ submodule.name }}</span>
+                                {% empty %}—{% endfor %}
+                            </td>
+                            <td class="text-muted small">{{ exam.duration_minutes }} min</td>
+                            <td class="text-muted small">{{ exam.total_questions }}</td>
+                            <td class="text-muted small">{{ exam.marks_per_question }}</td>
+                            <td>
+                                {% if exam.is_active %}
+                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <a href="{% url 'student_management:exam_edit' exam.pk %}"
+                                   class="btn btn-outline-primary btn-sm me-1"
+                                   title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-outline-danger btn-sm"
+                                        title="Delete"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ exam.pk }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-file-alt fa-2x mb-3 d-block"></i>
+                No exams found. <a href="{% url 'student_management:exam_add' %}">Create your first exam.</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modals -->
+{% for exam in exams %}
+<div class="modal fade" id="deleteModal{{ exam.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <form method="post" action="{% url 'student_management:exam_list' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="pk" value="{{ exam.pk }}">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Exam
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-muted small">
+                    Are you sure you want to delete <strong>{{ exam.title }}</strong>? This cannot be undone.
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash me-1"></i> Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

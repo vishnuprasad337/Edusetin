@@ -1,0 +1,725 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Quiz History - Dashboard Quiz{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quiz History</h1>
+        <p class="page-subtitle">All your past practice quiz attempts</p>
+    </div>
+    <div class="page-header-actions">
+        <select id="perPageSelect" class="btn-admio btn-white btn-sm" style="cursor:pointer;">
+            <option value="5">5 per page</option>
+            <option value="10" selected>10 per page</option>
+            <option value="20">20 per page</option>
+            <option value="50">50 per page</option>
+        </select>
+        <a href="{% url 'student_portal:quiz_setup' %}" class="btn-admio btn-ai btn-sm">
+            <i class="icon-plus-circle"></i> New Quiz
+        </a>
+    </div>
+</div>
+
+{% if not attempts %}
+<div class="admio-card">
+    <div class="admio-card-body text-center py-5">
+        <i class="icon-clipboard-list" style="font-size:3rem; color:var(--admio-text-secondary,#9ca3af);"></i>
+        <h3 class="mt-3 fw-600">No quiz attempts yet</h3>
+        <p class="text-secondary-c">Generate your first practice quiz to see results here.</p>
+        <a href="{% url 'student_portal:quiz_setup' %}" class="btn-admio btn-ai btn-sm mt-2">Generate Quiz</a>
+    </div>
+</div>
+
+{% else %}
+
+<!-- Count bar -->
+<div class="count-bar">
+    <span class="text-secondary-c text-sm" id="countLabel"></span>
+</div>
+
+<div class="admio-card">
+    <div class="admio-card-body p-0">
+
+        <!-- Desktop Table -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="exam-table">
+                <colgroup>
+                    <col class="col-subj">
+                    <col class="col-score">
+                    <col class="col-cwsk">
+                    <col class="col-grade">
+                    <col class="col-date">
+                    <col class="col-act">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Subject / Submodule</th>
+                        <th>Score</th>
+                        <th>Correct / Wrong / Skip</th>
+                        <th>Grade</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="attemptList">
+                    {% for attempt in attempts %}
+                    <tr class="attempt-row">
+                        <td>
+                            <div class="fw-600">{{ attempt.subject.name|default:"General" }}</div>
+                            {% if attempt.submodule %}
+                            <div class="text-secondary-c text-xs">{{ attempt.submodule.name }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="score-pct {% if attempt.percentage >= 70 %}score-high{% elif attempt.percentage >= 40 %}score-medium{% else %}score-low{% endif %}">
+                                {{ attempt.percentage|floatformat:1 }}%
+                            </div>
+                            <div class="text-secondary-c text-xs">{{ attempt.marks_earned|floatformat:2 }}/{{ attempt.total_marks|floatformat:0 }} marks</div>
+                        </td>
+                        <td>
+                            <div class="cwrap">
+                                <span class="chip chip-ok"><i class="icon-check"></i> {{ attempt.correct_count }}</span>
+                                <span class="chip chip-ng"><i class="icon-x"></i> {{ attempt.wrong_count }}</span>
+                                <span class="chip chip-sk"><i class="icon-minus"></i> {{ attempt.skipped_count }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="grade-badge {% if attempt.percentage >= 70 %}grade-excellent{% elif attempt.percentage >= 40 %}grade-average{% else %}grade-poor{% endif %}">
+                                {{ attempt.grade }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-sm">{{ attempt.submitted_at|date:"M d, Y" }}</div>
+                            <div class="text-secondary-c text-xs">{{ attempt.submitted_at|date:"h:i A" }}</div>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'student_portal:quiz_result' attempt.id %}" class="btn-admio btn-white btn-sm">
+                                <i class="icon-eye"></i> Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile / Tablet View -->
+        <div class="d-lg-none">
+            <div class="p-3">
+                <div class="mb-3">
+                    <span class="text-secondary-c text-sm" id="resultCountMobile"></span>
+                </div>
+                {% for attempt in attempts %}
+                <div class="mobile-attempt-card mb-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="score-badge-mobile {% if attempt.percentage >= 70 %}score-high{% elif attempt.percentage >= 40 %}score-medium{% else %}score-low{% endif %}">
+                            {{ attempt.percentage|floatformat:1 }}%
+                        </span>
+                        <div class="flex-grow-1">
+                            <div class="fw-600">{{ attempt.subject.name|default:"General" }}</div>
+                            {% if attempt.submodule %}
+                            <div class="text-secondary-c text-xs">{{ attempt.submodule.name }}</div>
+                            {% endif %}
+                            <div class="text-secondary-c text-xs d-flex flex-wrap gap-2 mt-1">
+                                <span><i class="icon-calendar me-1"></i>{{ attempt.submitted_at|date:"d M Y, H:i" }}</span>
+                                <span><i class="icon-check me-1"></i>{{ attempt.correct_count }} correct</span>
+                                <span><i class="icon-x me-1"></i>{{ attempt.wrong_count }} wrong</span>
+                                <span><i class="icon-minus me-1"></i>{{ attempt.skipped_count }} skipped</span>
+                                <span><i class="icon-file-text me-1"></i>{{ attempt.marks_earned|floatformat:2 }}/{{ attempt.total_marks|floatformat:0 }} marks</span>
+                            </div>
+                            <div class="mt-2 d-flex align-items-center gap-2">
+                                <span class="grade-badge {% if attempt.percentage >= 70 %}grade-excellent{% elif attempt.percentage >= 40 %}grade-average{% else %}grade-poor{% endif %}">
+                                    {{ attempt.grade }}
+                                </span>
+                                <a href="{% url 'student_portal:quiz_result' attempt.id %}" class="btn-admio btn-white btn-sm">
+                                    <i class="icon-eye"></i> Review
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="pagination-wrap" id="pagination"></div>
+
+{% endif %}
+
+<style>
+/* =====================
+   Reset & Base
+   ===================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* =====================
+   Page Header
+   ===================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: var(--admio-card-bg, #ffffff);
+    border-radius: 14px;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--admio-text-color, #111827);
+}
+
+.page-subtitle {
+    font-size: 0.875rem;
+    margin: 0.2rem 0 0;
+    color: var(--admio-text-secondary, #6b7280);
+}
+
+.page-header-actions {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* =====================
+   Count Bar
+   ===================== */
+.count-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0 0.25rem;
+}
+
+/* =====================
+   Card
+   ===================== */
+.admio-card {
+    background: var(--admio-card-bg, #ffffff);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--admio-border-color, #f0f0f0);
+    overflow: hidden;
+    width: 100%;
+}
+
+.admio-card-body { padding: 1.25rem; }
+.admio-card-body.p-0 { padding: 0; }
+
+/* =====================
+   Table
+   ===================== */
+.table-responsive {
+    width: 100%;
+    overflow: hidden; /* NO horizontal scroll — fixed layout handles it */
+}
+
+.exam-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* CRITICAL — columns never overflow */
+}
+
+/* Column widths — total = 100% */
+.col-subj  { width: 21%; }
+.col-score { width: 14%; }
+.col-cwsk  { width: 21%; }
+.col-grade { width: 18%; }
+.col-date  { width: 15%; }
+.col-act   { width: 11%; }
+
+.exam-table thead {
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--admio-border-color, #e5e7eb);
+}
+
+.exam-table thead th {
+    padding: 11px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.45px;
+    color: var(--admio-text-secondary, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exam-table thead th:last-child { text-align: right; }
+
+.exam-table tbody tr {
+    border-bottom: 1px solid var(--admio-border-color, #f0f0f0);
+    transition: background 0.12s;
+}
+
+.exam-table tbody tr:last-child { border-bottom: none; }
+
+.exam-table tbody tr:hover { background: #fafafa; }
+
+.exam-table tbody td {
+    padding: 11px 12px;
+    vertical-align: middle;
+    font-size: 0.8125rem;
+    color: var(--admio-text-color, #374151);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exam-table tbody td:last-child { text-align: right; }
+
+/* =====================
+   Score
+   ===================== */
+.score-pct {
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.score-high   { color: #15803d; }
+.score-medium { color: #854d0e; }
+.score-low    { color: #b91c1c; }
+
+/* =====================
+   Correct / Wrong / Skip chips
+   ===================== */
+.cwrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.chip-ok { color: #15803d; }
+.chip-ng { color: #b91c1c; }
+.chip-sk { color: #6b7280; }
+
+/* =====================
+   Grade Badge
+   ===================== */
+.grade-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.grade-excellent { background: #dcfce7; color: #15803d; }
+.grade-average   { background: #fef9c3; color: #854d0e; }
+.grade-poor      { background: #fee2e2; color: #b91c1c; }
+
+/* =====================
+   Mobile Score Badge
+   ===================== */
+.score-badge-mobile {
+    display: inline-block;
+    min-width: 52px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* =====================
+   Mobile Card
+   ===================== */
+.mobile-attempt-card {
+    border: 1px solid var(--admio-border-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 13px 14px;
+    background: #ffffff;
+}
+
+/* =====================
+   Buttons
+   ===================== */
+.btn-admio {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.btn-white {
+    background: var(--admio-card-bg, #ffffff);
+    border-color: var(--admio-border-color, #e5e7eb);
+    color: var(--admio-text-color, #374151);
+}
+
+.btn-white:hover {
+    background: var(--admio-bg-hover, #f9fafb);
+    border-color: #7c3aed;
+    color: #7c3aed;
+}
+
+.btn-white:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.btn-ai {
+    background: #7c3aed;
+    color: #ffffff;
+    border-color: #7c3aed;
+}
+
+.btn-ai:hover {
+    background: #6d28d9;
+    border-color: #6d28d9;
+    color: #ffffff;
+}
+
+.btn-sm {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+}
+
+/* =====================
+   Pagination
+   ===================== */
+.pagination-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0 0.1rem;
+}
+
+.pager-info {
+    font-size: 0.8rem;
+    color: var(--admio-text-secondary, #6b7280);
+}
+
+.pager-btns {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pager-btns button,
+.pager-btns span {
+    min-width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    border: 1.5px solid var(--admio-border-color, #e5e7eb);
+    background: var(--admio-card-bg, #fff);
+    color: var(--admio-text-color, #374151);
+    transition: all 0.12s;
+}
+
+.pager-btns button:hover {
+    border-color: #7c3aed;
+    color: #7c3aed;
+}
+
+.pager-btns button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pager-btns span.active {
+    background: #7c3aed;
+    border-color: #7c3aed;
+    color: #fff;
+    cursor: default;
+}
+
+/* =====================
+   Icons (Font Awesome 6)
+   ===================== */
+.icon-plus-circle,
+.icon-calendar,
+.icon-check,
+.icon-x,
+.icon-minus,
+.icon-file-text,
+.icon-eye,
+.icon-arrow-left,
+.icon-arrow-right,
+.icon-clipboard-list {
+    display: inline-block;
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900;
+    font-style: normal;
+    font-variant: normal;
+    line-height: 1;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+.icon-plus-circle::before   { content: '\f055'; }
+.icon-calendar::before      { content: '\f133'; }
+.icon-check::before         { content: '\f00c'; }
+.icon-x::before             { content: '\f00d'; }
+.icon-minus::before         { content: '\f068'; }
+.icon-file-text::before     { content: '\f15c'; }
+.icon-eye::before           { content: '\f06e'; }
+.icon-arrow-left::before    { content: '\f060'; }
+.icon-arrow-right::before   { content: '\f061'; }
+.icon-clipboard-list::before{ content: '\f46d'; }
+
+/* =====================
+   Utilities
+   ===================== */
+.fw-600        { font-weight: 600; }
+.text-secondary-c { color: var(--admio-text-secondary, #6b7280); }
+.text-sm       { font-size: 0.8125rem; }
+.text-xs       { font-size: 0.75rem; }
+.text-end      { text-align: right; }
+.p-0           { padding: 0; }
+.p-3           { padding: 1rem; }
+.d-flex        { display: flex; }
+.flex-grow-1   { flex-grow: 1; }
+.flex-wrap     { flex-wrap: wrap; }
+.align-items-center { align-items: center; }
+.align-items-start  { align-items: flex-start; }
+.gap-2         { gap: 0.5rem; }
+.gap-3         { gap: 0.75rem; }
+.mt-1          { margin-top: 0.25rem; }
+.mt-2          { margin-top: 0.5rem; }
+.mt-3          { margin-top: 1rem; }
+.mb-3          { margin-bottom: 1rem; }
+.me-1          { margin-right: 0.25rem; }
+.text-center   { text-align: center; }
+.py-5          { padding-top: 3rem; padding-bottom: 3rem; }
+
+/* =====================
+   Dark Mode
+   ===================== */
+[data-theme="dark"] .exam-table thead {
+    background: #1e1e2e;
+    border-color: var(--admio-border-color);
+}
+
+[data-theme="dark"] .exam-table thead th {
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .exam-table tbody tr {
+    border-color: var(--admio-border-color);
+}
+
+[data-theme="dark"] .exam-table tbody tr:hover {
+    background: rgba(124,58,237,.07);
+}
+
+[data-theme="dark"] .mobile-attempt-card {
+    background: var(--admio-card-bg);
+    border-color: var(--admio-border-color);
+}
+
+[data-theme="dark"] .page-header,
+[data-theme="dark"] .admio-card {
+    background: var(--admio-card-bg);
+}
+
+[data-theme="dark"] .btn-white {
+    background: var(--admio-card-bg);
+    border-color: var(--admio-border-color);
+    color: var(--admio-text-color);
+}
+
+[data-theme="dark"] .btn-white:hover {
+    background: #252535;
+    border-color: #7c3aed;
+    color: #a78bfa;
+}
+
+[data-theme="dark"] .pager-btns button,
+[data-theme="dark"] .pager-btns span {
+    background: var(--admio-card-bg);
+    border-color: var(--admio-border-color);
+    color: var(--admio-text-color);
+}
+
+[data-theme="dark"] .pager-btns button:hover {
+    border-color: #7c3aed;
+    color: #a78bfa;
+}
+
+/* =====================
+   Responsive
+   ===================== */
+@media (max-width: 991px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.875rem;
+        padding: 1rem 1.25rem;
+    }
+    .page-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 767px) {
+    .page-header {
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.875rem;
+    }
+    .page-title  { font-size: 1.2rem; }
+    .page-subtitle { font-size: 0.8rem; }
+    .page-header-actions { flex-wrap: wrap; }
+}
+
+/* Bootstrap-style display helpers */
+@media (min-width: 992px) {
+    .d-lg-none    { display: none !important; }
+    .d-none.d-lg-block { display: block !important; }
+}
+@media (max-width: 991px) {
+    .d-none { display: none !important; }
+}
+</style>
+
+<script>
+(function () {
+    const rows       = Array.from(document.querySelectorAll('.attempt-row'));
+    const perSelect  = document.getElementById('perPageSelect');
+    const pageWrap   = document.getElementById('pagination');
+    const countEl    = document.getElementById('countLabel');
+    const countMob   = document.getElementById('resultCountMobile');
+    const total      = rows.length;
+    let currentPage  = 1;
+    let perPage      = parseInt(perSelect.value);
+
+    function render() {
+        const totalPages = Math.ceil(total / perPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * perPage;
+        const end   = start + perPage;
+
+        // Desktop rows
+        rows.forEach(function (row, i) {
+            row.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+
+        // Mobile cards
+        document.querySelectorAll('.mobile-attempt-card').forEach(function (card, i) {
+            card.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+
+        const showing = total > 0
+            ? 'Showing ' + (start + 1) + '–' + Math.min(end, total) + ' of ' + total + ' attempts'
+            : 'No attempts';
+
+        if (countEl)  countEl.textContent  = showing;
+        if (countMob) countMob.textContent = showing;
+
+        // Build pagination
+        pageWrap.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // Info
+        const info = document.createElement('div');
+        info.className = 'pager-info';
+        info.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+        pageWrap.appendChild(info);
+
+        // Buttons container
+        const btns = document.createElement('div');
+        btns.className = 'pager-btns';
+
+        // Previous
+        const prev = document.createElement('button');
+        prev.className = 'btn-admio btn-white btn-sm';
+        prev.innerHTML = '<i class="icon-arrow-left"></i> Prev';
+        prev.disabled = currentPage === 1;
+        if (!prev.disabled) {
+            prev.addEventListener('click', function () { currentPage--; render(); });
+        }
+        btns.appendChild(prev);
+
+        // Page numbers (window of 5)
+        for (let i = 1; i <= totalPages; i++) {
+            if (i < currentPage - 2 || i > currentPage + 2) continue;
+            if (i === currentPage) {
+                const sp = document.createElement('span');
+                sp.className = 'active';
+                sp.textContent = i;
+                btns.appendChild(sp);
+            } else {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.addEventListener('click', (function (p) {
+                    return function () { currentPage = p; render(); };
+                })(i));
+                btns.appendChild(btn);
+            }
+        }
+
+        // Next
+        const next = document.createElement('button');
+        next.className = 'btn-admio btn-white btn-sm';
+        next.innerHTML = 'Next <i class="icon-arrow-right"></i>';
+        next.disabled = currentPage === totalPages;
+        if (!next.disabled) {
+            next.addEventListener('click', function () { currentPage++; render(); });
+        }
+        btns.appendChild(next);
+
+        pageWrap.appendChild(btns);
+    }
+
+    perSelect.addEventListener('change', function () {
+        perPage     = parseInt(this.value);
+        currentPage = 1;
+        render();
+    });
+
+    render();
+})();
+</script>
+
+{% endblock %}

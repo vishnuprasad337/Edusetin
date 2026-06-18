@@ -150,5 +150,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'theofaber26@gmail.com'
 EMAIL_HOST_PASSWORD = 'esjidmnzthbfcycx'  
 DEFAULT_FROM_EMAIL = 'EduSetin <theofaber26@gmail.com>'
+RAZORPAY_KEY_ID = "rzp_test_T0KXIIUpQI4hrE"
+RAZORPAY_KEY_SECRET = "PgvGWO7Eimerh4Q84JGQpfK9"
 
 

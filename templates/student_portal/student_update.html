@@ -1,0 +1,360 @@
+{% extends "student_portal/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  :root {
+    --blue-50:  #e6f1fb;
+    --blue-100: #b5d4f4;
+    --blue-200: #85b7eb;
+    --blue-400: #378add;
+    --blue-600: #185fa5;
+    --blue-800: #0c447c;
+    --blue-900: #042c53;
+  }
+
+  .avatar-upload-wrap {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+  }
+  .avatar-upload-wrap img,
+  .avatar-upload-wrap .avatar-initials {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--blue-200);
+  }
+  .avatar-initials {
+    background: var(--blue-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--blue-600);
+  }
+  .avatar-upload-btn {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--blue-600);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    border: 2px solid #fff;
+    transition: background .15s;
+  }
+  .avatar-upload-btn:hover { background: var(--blue-800); }
+  #id_profile_image { display: none; }
+
+  /* Section title accent */
+  .card-title i { color: var(--blue-400) !important; }
+
+  /* Save button */
+  .btn-blue-save {
+    background: var(--blue-600);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 22px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background .15s;
+    text-decoration: none;
+  }
+  .btn-blue-save:hover { background: var(--blue-800); }
+
+  /* Info banner override to blue */
+  .ai-insight-banner.blue-info {
+    border-color: var(--blue-200) !important;
+    background: var(--blue-50) !important;
+  }
+  .ai-insight-banner.blue-info .ai-banner-icon { color: var(--blue-600) !important; }
+  .ai-insight-banner.blue-info .ai-banner-text { color: var(--blue-800) !important; }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Edit Profile</h1>
+    <p class="page-subtitle">Update your account information and password</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'student_portal:student_detail' %}" class="btn-admio btn-white btn-sm">
+      <i class="icon-arrow-left"></i> Back to Profile
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Left — Avatar preview -->
+  <div class="col-lg-4">
+    <div class="admio-card">
+      <div class="admio-card-body d-flex flex-column align-items-center text-center gap-3 py-4">
+
+        <div class="avatar-upload-wrap">
+          {% if student.profile_image %}
+            <img src="{{ student.profile_image.url }}"
+                 alt="{{ student.full_name }}"
+                 id="avatarPreviewImg">
+          {% else %}
+            <div class="avatar-initials" id="avatarInitialsBox">
+              <span id="previewInitial">{{ student.full_name|slice:":1"|upper }}</span>
+            </div>
+          {% endif %}
+          <label class="avatar-upload-btn" for="id_profile_image" title="Change photo">
+            <i class="icon-camera"></i>
+          </label>
+        </div>
+
+        <div class="text-xs text-secondary-c">Click the camera icon to change photo</div>
+
+        <div>
+          <div class="fw-700 fs-5 mb-1" id="previewName">{{ student.full_name }}</div>
+          <div class="text-secondary-c text-sm" id="previewEmail">{{ student.user.email }}</div>
+        </div>
+
+        <span class="badge-admio {% if student.is_active %}badge-green badge-dot{% else %}badge-red badge-dot{% endif %}">
+          {% if student.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+
+        <div class="w-100"
+             style="background:var(--blue-50);border:1px solid var(--blue-100);
+                    border-radius:12px; padding:14px 16px;">
+          <p class="text-xs mb-2 fw-600" style="color:var(--blue-800);">ACCOUNT DETAILS</p>
+          <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between text-sm">
+              <span class="text-secondary-c">Member Since</span>
+              <span class="fw-600">{{ student.created_at|date:"d M Y" }}</span>
+            </div>
+            <div class="d-flex justify-content-between text-sm">
+              <span class="text-secondary-c">Exams Taken</span>
+              <span class="fw-600">{{ student.exam_attempts.count }}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-xs text-secondary-c mb-0">
+          <i class="icon-shield-check" style="color:#22c55e;"></i>
+          Changes reflect immediately after saving.
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right — Form -->
+  <div class="col-lg-8">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {{ form.profile_image }}
+
+      {% if form.non_field_errors %}
+      <div class="ai-insight-banner mb-4"
+           style="border-color:#ef4444; background:rgba(239,68,68,.06); margin-bottom:1rem;">
+        <div class="ai-banner-icon" style="color:#ef4444;">
+          <i class="icon-triangle-alert"></i>
+        </div>
+        <div class="ai-banner-content">
+          {% for error in form.non_field_errors %}
+          <p class="ai-banner-text mb-0">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+        <div class="ai-insight-banner mb-4"
+             style="border-color:#22c55e; background:rgba(34,197,94,.06); margin-bottom:1rem;">
+          <div class="ai-banner-icon" style="color:#22c55e;"><i class="icon-circle-check"></i></div>
+          <div class="ai-banner-content">
+            <p class="ai-banner-text mb-0">{{ message }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Profile Information -->
+      <div class="admio-card mb-4">
+        <div class="admio-card-header">
+          <h2 class="card-title mb-0">
+            <i class="icon-circle-user me-2"></i>
+            Profile Information
+          </h2>
+        </div>
+        <div class="admio-card-body admio-card-body-sm">
+
+          <div class="mb-4">
+            <label class="form-label fw-600">
+              Full Name <span style="color:#ef4444;">*</span>
+            </label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+            <div class="text-xs mt-1" style="color:#ef4444;">
+              <i class="icon-circle-alert"></i> {{ form.full_name.errors.0 }}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label fw-600">
+              Email Address <span style="color:#ef4444;">*</span>
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="text-xs mt-1" style="color:#ef4444;">
+              <i class="icon-circle-alert"></i> {{ form.email.errors.0 }}
+            </div>
+            {% endif %}
+          </div>
+
+          {% if form.profile_image.errors %}
+          <div class="text-xs mt-1" style="color:#ef4444;">
+            <i class="icon-circle-alert"></i> {{ form.profile_image.errors.0 }}
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="admio-card mb-4">
+        <div class="admio-card-header">
+          <h2 class="card-title mb-0">
+            <i class="icon-lock me-2"></i>
+            Change Password
+          </h2>
+          <span class="badge-admio badge-gray text-xs">Optional</span>
+        </div>
+        <div class="admio-card-body admio-card-body-sm">
+
+          <div class="ai-insight-banner blue-info mb-4"
+               style="padding:14px 18px !important; border-radius:12px !important;">
+            <div class="ai-banner-icon"><i class="icon-info"></i></div>
+            <div class="ai-banner-content">
+              <p class="ai-banner-text mb-0">
+                Leave all password fields blank to keep your current password unchanged.
+              </p>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-600">Current Password</label>
+            {{ form.old_password }}
+            {% if form.old_password.errors %}
+            <div class="text-xs mt-1" style="color:#ef4444;">
+              <i class="icon-circle-alert"></i> {{ form.old_password.errors.0 }}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-600">New Password</label>
+            {{ form.new_password1 }}
+            {% if form.new_password1.errors %}
+            <div class="text-xs mt-1" style="color:#ef4444;">
+              <i class="icon-circle-alert"></i> {{ form.new_password1.errors.0 }}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label fw-600">Confirm New Password</label>
+            {{ form.new_password2 }}
+            {% if form.new_password2.errors %}
+            <div class="text-xs mt-1" style="color:#ef4444;">
+              <i class="icon-circle-alert"></i> {{ form.new_password2.errors.0 }}
+            </div>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="admio-card">
+        <div class="admio-card-body admio-card-body-sm">
+          <div class="d-flex gap-3 justify-content-between align-items-center flex-wrap">
+            <span class="text-xs text-secondary-c">
+              <i class="icon-shield-check" style="color:#22c55e;"></i>
+              Your data is saved securely.
+            </span>
+            <div class="d-flex gap-3">
+              <a href="{% url 'student_portal:student_detail' %}" class="btn-admio btn-white">
+                <i class="icon-x"></i> Cancel
+              </a>
+              <button type="submit" class="btn-blue-save">
+                <i class="icon-save"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  const nameInput    = document.querySelector('input[name="full_name"]');
+  const emailInput   = document.querySelector('input[name="email"]');
+  const imageInput   = document.getElementById('id_profile_image');
+  const previewName  = document.getElementById('previewName');
+  const previewInit  = document.getElementById('previewInitial');
+  const previewEmail = document.getElementById('previewEmail');
+
+  if (nameInput) {
+    nameInput.addEventListener('input', function () {
+      const val = this.value.trim() || '—';
+      if (previewName) previewName.textContent = val;
+      if (previewInit) previewInit.textContent = val.charAt(0).toUpperCase();
+    });
+  }
+
+  if (emailInput && previewEmail) {
+    emailInput.addEventListener('input', function () {
+      previewEmail.textContent = this.value.trim() || '—';
+    });
+  }
+
+  if (imageInput) {
+    imageInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const wrap = document.querySelector('.avatar-upload-wrap');
+        let img = wrap.querySelector('img#avatarPreviewImg');
+        const initialsBox = wrap.querySelector('#avatarInitialsBox');
+        if (!img) {
+          img = document.createElement('img');
+          img.id  = 'avatarPreviewImg';
+          img.alt = 'Profile preview';
+          img.style.cssText = 'width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #85b7eb;';
+          if (initialsBox) initialsBox.replaceWith(img);
+          else wrap.insertBefore(img, wrap.querySelector('label'));
+        }
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+
+{% endblock %}

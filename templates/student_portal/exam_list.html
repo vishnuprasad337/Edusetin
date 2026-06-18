@@ -1,0 +1,913 @@
+{% extends "student_portal/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+[id^="examModal"],
+#confirmStartModal {
+  z-index: 100000 !important;
+}
+.modal-backdrop {
+  z-index: 99999 !important;
+}
+
+/* ── FILTER BAR ── */
+.exam-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  align-items: center;
+}
+.exam-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 0.5px solid var(--border-color, #e5e7eb);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
+}
+.exam-filter-btn:hover {
+  border-color: #85b7eb;
+  color: #0066f5;
+  background: #e6f1fb;
+}
+.exam-filter-btn.active {
+  background: #0066f5;
+  border-color: transparent;
+  color: #fff;
+}
+.exam-filter-btn .filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(0,102,245,.1);
+  color: #0066f5;
+  line-height: 1;
+  transition: all .15s ease;
+}
+.exam-filter-btn.active .filter-count {
+  background: rgba(255,255,255,.22);
+  color: #fff;
+}
+.exam-type-section { transition: none; }
+.exam-type-section.hidden { display: none !important; }
+
+
+/* ── EXAM CARD (UPDATED) ── */
+.exam-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.04);
+  position: relative;
+}
+.exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0066f5, #4ea5ff, #85b7eb);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 102, 245, 0.12), 0 4px 12px rgba(0,0,0,0.06);
+  border-color: rgba(0,102,245,0.15);
+}
+.exam-card:hover::before {
+  opacity: 1;
+}
+.exam-card-top {
+  padding: 18px 18px 12px;
+  flex-grow: 1;
+}
+.exam-card-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.exam-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.exam-card-title i {
+  color: #0066f5;
+  font-size: 16px;
+  opacity: 0.8;
+}
+.exam-card-desc {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 14px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.exam-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.exam-stat-chip {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.exam-card:hover .exam-stat-chip {
+  background: linear-gradient(135deg, #eaf4ff 0%, #d4eaff 100%);
+  border-color: rgba(0,102,245,0.1);
+}
+.exam-stat-chip .sv {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+.exam-card:hover .exam-stat-chip .sv {
+  color: #0066f5;
+}
+.exam-stat-chip .sl {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 3px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.exam-card-footer {
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafafa;
+  transition: background 0.2s ease;
+}
+.exam-card:hover .exam-card-footer {
+  background: #f0f6ff;
+}
+.exam-students-label {
+  font-size: 11px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.exam-students-label i {
+  font-size: 13px;
+  color: #0066f5;
+}
+.btn-exam-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 102, 245, 0.25);
+}
+.btn-exam-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 102, 245, 0.35);
+  background: linear-gradient(135deg, #0052cc 0%, #0066f5 100%);
+}
+.btn-exam-action:active {
+  transform: translateY(0);
+}
+.btn-exam-resume {
+  background: linear-gradient(135deg, #0F6E56 0%, #15856A 100%);
+  box-shadow: 0 2px 8px rgba(15, 110, 86, 0.25);
+}
+.btn-exam-resume:hover {
+  background: linear-gradient(135deg, #085041 0%, #0F6E56 100%);
+  box-shadow: 0 4px 16px rgba(15, 110, 86, 0.35);
+}
+
+/* ── STATUS BADGES (UPDATED) ── */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+}
+.badge-new {
+  background: linear-gradient(135deg, #E1F5EE 0%, #D0EDE3 100%);
+  color: #0F6E56;
+}
+.badge-attempted {
+  background: linear-gradient(135deg, #E6F1FB 0%, #D4E8F8 100%);
+  color: #185FA5;
+}
+.badge-progress {
+  background: linear-gradient(135deg, #FAEEDA 0%, #F5E3C4 100%);
+  color: #854F0B;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.badge-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+.badge-new .badge-status-dot,
+.badge-attempted .badge-status-dot {
+  animation: none;
+}
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* Card icon decoration */
+.exam-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #e6f1fb 0%, #d4eaff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.exam-card-icon i {
+  font-size: 18px;
+  color: #0066f5;
+}
+.exam-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.exam-card-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── EXAM DETAIL MODAL ── */
+.exam-modal .modal-content {
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.16);
+}
+.exam-modal .modal-header {
+  background: linear-gradient(135deg, #0066f5 0%, #4ea5ff 100%);
+  border: none;
+  padding: 18px 22px 16px;
+}
+.exam-modal .modal-title {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+.exam-modal .modal-title i { opacity: .8; }
+.exam-modal .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: .65;
+}
+.exam-modal .btn-close:hover { opacity: 1; }
+.exam-modal .modal-body {
+  padding: 20px 22px 8px;
+  background: #fff;
+}
+
+/* Status pill */
+.em-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+}
+.em-pill-new      { background: #E1F5EE; color: #0F6E56; }
+.em-pill-attempted{ background: #E6F1FB; color: #185FA5; }
+.em-pill-progress { background: #FAEEDA; color: #854F0B; }
+.em-status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Stat grid */
+.em-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.em-stat-tile {
+  background: #f9fafb;
+  border: 0.5px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.em-stat-tile .stv {
+  font-size: 19px;
+  font-weight: 500;
+  color: #0066f5;
+  line-height: 1;
+}
+.em-stat-tile .stl {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 3px;
+}
+.em-stat-tile .sti {
+  font-size: 14px;
+  color: #4ea5ff;
+  margin-bottom: 3px;
+  display: block;
+}
+
+/* Marking row */
+.em-marking-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+.em-mark-chip {
+  flex: 1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.em-mark-correct { background: #EAF3DE; color: #3B6D11; border: 0.5px solid #97C459; }
+.em-mark-wrong   { background: #FCEBEB; color: #A32D2D; border: 0.5px solid #F09595; }
+.em-mark-skip    { background: #f9fafb; color: #6b7280; border: 0.5px solid rgba(0,0,0,.08); }
+
+/* Section label */
+.em-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+/* Tags */
+.em-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.em-tag {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  background: #f3f4f6;
+  color: #374151;
+}
+.em-tag-purple { background: #e6f1fb; color: #0052cc; }
+
+/* Students banner */
+.em-students-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  border-radius: 9px;
+  padding: 9px 12px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.em-students-banner i { color: #0066f5; font-size: 15px; }
+.em-students-banner span { font-size: 12px; color: #6b7280; }
+.em-students-banner strong { color: #111827; }
+
+/* Previous attempt */
+.em-prev-box {
+  background: #eaf4ff;
+  border: 0.5px solid #85b7eb;
+  border-radius: 11px;
+  padding: 13px 14px;
+  margin-bottom: 4px;
+}
+.em-prev-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.a-stat .a-val { font-size: 17px; font-weight: 500; line-height: 1; }
+.a-stat .a-lbl { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+.a-stat.score   .a-val { color: #0066f5; }
+.a-stat.correct .a-val { color: #3B6D11; }
+.a-stat.wrong   .a-val { color: #A32D2D; }
+.a-stat.skip    .a-val { color: #854F0B; }
+
+/* Modal footer */
+.exam-modal .modal-footer {
+  padding: 12px 22px 20px;
+  border: none;
+  background: #fff;
+  gap: 8px;
+}
+.exam-modal .modal-footer .btn-admio {
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+/* ── CONFIRM MODAL ── */
+#confirmStartModal .modal-content {
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.16);
+}
+.confirm-header {
+  background: #fff;
+  border: none;
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.confirm-icon-wrap {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: #e6f1fb;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.confirm-icon-wrap i { font-size: 20px; color: #0066f5; }
+.confirm-header-text { flex: 1; }
+.confirm-header-text h5 { font-size: 17px; font-weight: 500; color: #111827; margin: 0 0 2px; }
+.confirm-header-text p  { font-size: 12px; color: #6b7280; margin: 0; }
+#confirmStartModal .btn-close {
+  background: #f3f4f6; border-radius: 8px; opacity: 1; padding: 6px; margin: 0; flex-shrink: 0;
+}
+#confirmStartModal .btn-close:hover { background: #e5e7eb; }
+#confirmStartModal .modal-body { padding: 18px 24px 6px; }
+.confirm-exam-name-box {
+  background: #eaf4ff;
+  border: 0.5px solid #85b7eb;
+  border-radius: 11px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.confirm-exam-name-box i { color: #0066f5; font-size: 17px; flex-shrink: 0; }
+.confirm-exam-name-box .name { font-weight: 500; font-size: 14px; color: #1f2937; }
+.confirm-exam-name-box .action-word { font-size: 10px; color: #4ea5ff; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+.confirm-warnings { display: flex; flex-direction: column; gap: 7px; margin-bottom: 4px; }
+.confirm-warning-item {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 9px 11px; border-radius: 9px; font-size: 12px; line-height: 1.45;
+}
+.cw-timer { background: #FAEEDA; color: #633806; }
+.cw-eye   { background: #FCEBEB; color: #501313; }
+.cw-save  { background: #EAF3DE; color: #173404; }
+.confirm-warning-item i { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.cw-timer i { color: #BA7517; }
+.cw-eye   i { color: #E24B4A; }
+.cw-save  i { color: #639922; }
+#confirmStartModal .modal-footer {
+  border: none; padding: 10px 24px 22px; gap: 8px;
+}
+#confirmStartModal .modal-footer .btn-admio {
+  border-radius: 8px; padding: 9px 18px;
+  font-size: 13px; font-weight: 500; flex: 1;
+}
+</style>
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Examinations</h1>
+        <p class="page-subtitle">Browse and attempt exams included in your active plans</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'student_portal:exam_history' %}" class="btn-admio btn-white btn-sm">
+            <i class="icon-clock"></i> Exam History
+        </a>
+    </div>
+</div>
+
+{% if not has_active_subscription %}
+<div class="ai-insight-banner mb-4">
+    <div class="ai-banner-icon"><i class="icon-triangle-alert"></i></div>
+    <div class="ai-banner-content">
+        <p class="ai-banner-title">No Active Subscription</p>
+        <p class="ai-banner-text">Subscribe to a plan to unlock exams.</p>
+    </div>
+    <a href="{% url 'student_portal:plan_list' %}" class="ai-banner-action">
+        <i class="icon-arrow-right"></i> View Plans
+    </a>
+</div>
+{% endif %}
+
+{% if exams_by_type %}
+
+<!-- FILTER BAR -->
+<div class="exam-filter-bar" id="examFilterBar">
+    <button class="exam-filter-btn active" data-filter="all" onclick="filterExams('all', this)">
+        <i class="icon-layout-grid"></i>
+        All
+        <span class="filter-count">{% for type_name, exams in exams_by_type.items %}{% if not forloop.first %} + {% endif %}{{ exams|length }}{% endfor %}</span>
+    </button>
+    {% for type_name, exams in exams_by_type.items %}
+    <button class="exam-filter-btn"
+            data-filter="{{ type_name|slugify }}"
+            onclick="filterExams('{{ type_name|slugify }}', this)">
+        <i class="icon-file-text"></i>
+        {{ type_name }}
+        <span class="filter-count">{{ exams|length }}</span>
+    </button>
+    {% endfor %}
+</div>
+
+<!-- EXAM SECTIONS -->
+{% for type_name, exams in exams_by_type.items %}
+<div class="exam-type-section mb-4" data-section="{{ type_name|slugify }}">
+    <div class="row g-3">
+        {% for exam in exams %}
+        <div class="col-sm-6 col-lg-4">
+
+            <!-- Exam Card (UPDATED) -->
+            <div class="exam-card">
+                <div class="exam-card-top">
+
+                    <div class="exam-card-badge-row">
+                        {% if exam.in_progress_attempt %}
+                        <span class="badge-status badge-progress"><span class="badge-status-dot"></span>In Progress</span>
+                        {% elif exam.last_attempt %}
+                        <span class="badge-status badge-attempted"><span class="badge-status-dot"></span>Attempted</span>
+                        {% else %}
+                        <span class="badge-status badge-new"><span class="badge-status-dot"></span>New</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="exam-card-header">
+                        <div class="exam-card-icon">
+                            <i class="icon-book-open"></i>
+                        </div>
+                        <div class="exam-card-title-wrap">
+                            <div class="exam-card-title">
+                                {{ exam.custom_name|default:exam.title }}
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <div class="exam-stat-row">
+                        <div class="exam-stat-chip">
+                            <div class="sv">{{ exam.duration_minutes }}</div>
+                            <div class="sl">Minutes</div>
+                        </div>
+                        <div class="exam-stat-chip">
+                            <div class="sv">{{ exam.question_count }}</div>
+                            <div class="sl">Questions</div>
+                        </div>
+                        <div class="exam-stat-chip">
+                            <div class="sv">{{ exam.total_marks_val }}</div>
+                            <div class="sl">Marks</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="exam-card-footer">
+                    <span class="exam-students-label">
+                        <i class="icon-users"></i>
+                        {{ exam.attempt_count }} attempted
+                    </span>
+                    {% if exam.in_progress_attempt %}
+                    <button type="button"
+                            class="btn-exam-action btn-exam-resume"
+                            data-bs-toggle="modal"
+                            data-bs-target="#examModal{{ exam.id }}">
+                        <i class="icon-play" style="font-size:11px"></i> Resume
+                    </button>
+                    {% else %}
+                    <button type="button"
+                            class="btn-exam-action"
+                            data-bs-toggle="modal"
+                            data-bs-target="#examModal{{ exam.id }}">
+                        <i class="icon-play" style="font-size:11px"></i> Start
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- DETAIL MODAL (unchanged) -->
+        <div class="modal fade exam-modal" id="examModal{{ exam.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="icon-book-open me-2"></i>
+                            {{ exam.custom_name|default:exam.title }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        {% if exam.in_progress_attempt %}
+                        <span class="em-status-pill em-pill-progress">
+                            <span class="em-status-dot"></span> In Progress
+                        </span>
+                        {% elif exam.last_attempt %}
+                        <span class="em-status-pill em-pill-attempted">
+                            <span class="em-status-dot"></span> Previously Attempted
+                        </span>
+                        {% else %}
+                        <span class="em-status-pill em-pill-new">
+                            <span class="em-status-dot"></span> Not Attempted Yet
+                        </span>
+                        {% endif %}
+
+                        <div class="em-stat-grid">
+                            <div class="em-stat-tile">
+                                <span class="sti"><i class="icon-hourglass"></i></span>
+                                <div class="stv">{{ exam.duration_minutes }}</div>
+                                <div class="stl">Minutes</div>
+                            </div>
+                            <div class="em-stat-tile">
+                                <span class="sti"><i class="icon-list"></i></span>
+                                <div class="stv">{{ exam.question_count }}</div>
+                                <div class="stl">Questions</div>
+                            </div>
+                            <div class="em-stat-tile">
+                                <span class="sti"><i class="icon-target"></i></span>
+                                <div class="stv">{{ exam.total_marks_val }}</div>
+                                <div class="stl">Total Marks</div>
+                            </div>
+                        </div>
+
+                        <div class="em-marking-row">
+                            <div class="em-mark-chip em-mark-correct">
+                                <i class="icon-plus"></i>
+                                +{{ exam.marks_per_question }} correct
+                            </div>
+                            {% if exam.negative_marks %}
+                            <div class="em-mark-chip em-mark-wrong">
+                                <i class="icon-minus"></i>
+                                −{{ exam.negative_marks }} wrong
+                            </div>
+                            {% endif %}
+                            <div class="em-mark-chip em-mark-skip">
+                                <i class="icon-circle"></i>
+                                0 skipped
+                            </div>
+                        </div>
+
+                        <div class="em-label">Exam type</div>
+                        <div class="em-tags">
+                            <span class="em-tag em-tag-purple">
+                                <i class="icon-tag me-1"></i>{{ exam.exam_type.get_name_display }}
+                            </span>
+                        </div>
+
+                        {% if exam.description %}
+                        <div class="em-label">About this exam</div>
+                        <p class="text-sm text-secondary-c mb-3">{{ exam.description }}</p>
+                        {% endif %}
+
+                        {% if exam.subjects.all %}
+                        <div class="em-label">Subjects covered</div>
+                        <div class="em-tags">
+                            {% for subject in exam.subjects.all %}
+                            <span class="em-tag">{{ subject.name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% if exam.pyq_year_list %}
+                        <div class="em-label">Previous year questions</div>
+                        <div class="em-tags">
+                            {% for year in exam.pyq_year_list %}
+                            <span class="em-tag em-tag-purple">{{ year }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% if exam.last_attempt %}
+                        <div class="em-label">Your last attempt</div>
+                        <div class="em-prev-box">
+                            <div class="em-prev-grid">
+                                <div class="a-stat score">
+                                    <div class="a-val">{{ exam.last_attempt.marks_earned }}<span style="font-size:11px;font-weight:400;color:#9ca3af"> / {{ exam.last_attempt.total_marks }}</span></div>
+                                    <div class="a-lbl">Score</div>
+                                </div>
+                                <div class="a-stat correct">
+                                    <div class="a-val">{{ exam.last_attempt.correct_count }}</div>
+                                    <div class="a-lbl">Correct</div>
+                                </div>
+                                <div class="a-stat wrong">
+                                    <div class="a-val">{{ exam.last_attempt.wrong_count }}</div>
+                                    <div class="a-lbl">Wrong</div>
+                                </div>
+                                <div class="a-stat skip">
+                                    <div class="a-val">{{ exam.last_attempt.skipped_count }}</div>
+                                    <div class="a-lbl">Skipped</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="em-students-banner">
+                            <i class="icon-users"></i>
+                            <span><strong>{{ exam.attempt_count }}</strong> student{{ exam.attempt_count|pluralize }} have attempted this exam</span>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-admio btn-white btn-sm" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        {% if exam.in_progress_attempt %}
+                        <button type="button"
+                                class="btn-admio btn-ai btn-sm"
+                                data-bs-dismiss="modal"
+                                onclick="openConfirmModal(
+                                    '{{ exam.custom_name|default:exam.title|escapejs }}',
+                                    '{% url "student_portal:exam_start" exam.id %}?resume={{ exam.in_progress_attempt.id }}',
+                                    true
+                                )">
+                            <i class="icon-play"></i> Resume Exam
+                        </button>
+                        {% else %}
+                        <button type="button"
+                                class="btn-admio btn-ai btn-sm"
+                                data-bs-dismiss="modal"
+                                onclick="openConfirmModal(
+                                    '{{ exam.custom_name|default:exam.title|escapejs }}',
+                                    '{% url "student_portal:exam_start" exam.id %}',
+                                    false
+                                )">
+                            <i class="icon-play"></i> Start Exam
+                        </button>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- END DETAIL MODAL -->
+
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+<div class="admio-card">
+    <div class="admio-card-body text-center py-5">
+        <i class="icon-book-open" style="font-size: 48px; opacity: .3;"></i>
+        <p class="text-secondary-c mt-3 mb-0">No exams available. Subscribe to a plan to access exams.</p>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- CONFIRM MODAL (unchanged) -->
+<div class="modal fade" id="confirmStartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 430px;">
+        <div class="modal-content">
+
+            <div class="modal-header confirm-header border-0">
+                <div class="confirm-icon-wrap">
+                    <i class="icon-circle-alert"></i>
+                </div>
+                <div class="confirm-header-text">
+                    <h5>Are you sure?</h5>
+                    <p>Review the exam rules before proceeding.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="confirm-exam-name-box">
+                    <i class="icon-book-open"></i>
+                    <div>
+                        <div class="action-word">You are about to <span id="confirmActionWord">start</span></div>
+                        <div class="name" id="confirmExamName"></div>
+                    </div>
+                </div>
+
+                <div id="confirmWarnings" class="confirm-warnings">
+                    <div class="confirm-warning-item cw-timer">
+                        <i class="icon-timer"></i>
+                        <span>The timer starts immediately and cannot be paused.</span>
+                    </div>
+                    <div class="confirm-warning-item cw-eye">
+                        <i class="icon-eye-off"></i>
+                        <span>Switching tabs or windows will be recorded.</span>
+                    </div>
+                    <div class="confirm-warning-item cw-save">
+                        <i class="icon-save"></i>
+                        <span>Your answers are auto-saved every 30 seconds.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn-admio btn-white btn-sm" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <a id="confirmStartBtn" href="#" class="btn-admio btn-ai btn-sm">
+                    <i class="icon-play"></i>
+                    <span id="confirmBtnLabel">Yes, Start Exam</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function filterExams(filter, btn) {
+    document.querySelectorAll('.exam-filter-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    document.querySelectorAll('.exam-type-section').forEach(function(section) {
+        if (filter === 'all' || section.dataset.section === filter) {
+            section.classList.remove('hidden');
+        } else {
+            section.classList.add('hidden');
+        }
+    });
+}
+
+function openConfirmModal(examName, url, isResume) {
+    document.getElementById('confirmExamName').textContent   = examName;
+    document.getElementById('confirmStartBtn').href          = url;
+    document.getElementById('confirmActionWord').textContent = isResume ? 'resume' : 'start';
+    document.getElementById('confirmBtnLabel').textContent   = isResume ? 'Yes, Resume Exam' : 'Yes, Start Exam';
+    document.getElementById('confirmWarnings').style.display = isResume ? 'none' : '';
+
+    var modal = new bootstrap.Modal(document.getElementById('confirmStartModal'));
+    modal.show();
+}
+</script>
+
+{% endblock %}

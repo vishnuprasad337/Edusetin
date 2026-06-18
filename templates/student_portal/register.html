@@ -4,82 +4,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration | EdusetIn</title>
-    <!-- Use existing Bootstrap CSS -->
+    <title>Student Registration | EduSetIn</title>
     <link rel="stylesheet" href="{% static 'admin-static/assets/css/bootstrap.min.css' %}">
+    <link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --blue-50:  #e6f1fb;
+            --blue-100: #b5d4f4;
+            --blue-200: #85b7eb;
+            --blue-400: #378add;
+            --blue-600: #185fa5;
+            --blue-800: #0c447c;
+            --blue-900: #042c53;
+            --ink:      #0f1a2e;
+            --muted:    #6b7280;
+            --border:   #e2e8f0;
+            --surface:  #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: #f8f9fa;
-            height: 100vh;
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            color: var(--ink);
+            background: var(--blue-900);
+        }
+
+        /* ── Left panel ── */
+        .auth-aside {
+            width: 440px;
+            flex-shrink: 0;
+            background: var(--blue-900);
+            color: #fff;
+            padding: 48px 44px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-aside::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 320px; height: 320px;
+            border-radius: 50%;
+            background: rgba(55,138,221,.12);
+            pointer-events: none;
+        }
+        .auth-aside::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(21,96,165,.18);
+            pointer-events: none;
+        }
+
+        /* Brand */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 52px;
+        }
+        .brand-mark {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            background: var(--blue-600);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-mark img {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+        .brand-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .brand-tag {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            color: rgba(255,255,255,.4);
+            margin-top: 3px;
+        }
+
+        /* Heading */
+        .aside-heading {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.18;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 14px;
+        }
+        .aside-heading em {
+            font-style: normal;
+            color: var(--blue-200);
+        }
+        .aside-sub {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,.55);
+            position: relative;
+            z-index: 1;
+            margin-bottom: 40px;
+        }
+
+        /* Feature list */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        .feature-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .feature-icon {
+            flex-shrink: 0;
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: rgba(133,183,235,.12);
+            border: 1px solid rgba(133,183,235,.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            color: var(--blue-200);
+        }
+        .feature-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+        .feature-desc {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,.45);
+            margin-top: 3px;
+        }
+
+        /* Trust row */
+        .trust-row {
+            margin-top: auto;
+            padding-top: 36px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .trust-avatars { display: flex; }
+        .trust-avatars span {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: var(--blue-400);
+            border: 2px solid var(--blue-900);
+            margin-left: -8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .trust-avatars span:first-child { margin-left: 0; }
+        .trust-text { font-size: 0.76rem; color: rgba(255,255,255,.5); line-height: 1.4; }
+        .trust-stars { color: #facc15; font-size: 0.72rem; letter-spacing: 2px; }
+
+        /* ── Right panel ── */
+        .auth-main {
+            flex: 1;
+            background: var(--surface);
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 48px 40px;
+            overflow-y: auto;
         }
-        .register-container {
-            max-width: 450px;
+
+        .auth-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 44px 48px;
             width: 100%;
-            padding: 2rem;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+            box-shadow: 0 4px 24px -8px rgba(12,68,124,.10);
         }
-        .form-title {
-            margin-bottom: 1.5rem;
+
+        .auth-heading {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: var(--blue-900);
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        .auth-subheading {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        /* Two-column grid for name fields */
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .field-grid .field-full { grid-column: 1 / -1; }
+
+        /* Divider */
+        .form-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 22px 0;
+        }
+
+        /* Field */
+        .field-wrap { margin-bottom: 16px; }
+        .field-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--blue-800);
+            display: block;
+            margin-bottom: 7px;
+            letter-spacing: 0.02em;
+        }
+        .field-shell { position: relative; }
+        .field-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--blue-400);
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .field-shell input,
+        .field-shell select,
+        .field-shell .form-control {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            background: var(--surface);
+            color: var(--ink);
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .field-shell input:focus,
+        .field-shell select:focus,
+        .field-shell .form-control:focus {
+            outline: none;
+            border-color: var(--blue-400);
+            box-shadow: 0 0 0 3px rgba(55,138,221,.14);
+            background: #fff;
+        }
+        .field-shell.has-toggle input { padding-right: 42px; }
+        .toggle-password {
+            position: absolute;
+            right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            padding: 0; cursor: pointer;
+            color: var(--muted); font-size: 14px;
+            display: flex; align-items: center;
+        }
+        .toggle-password:hover { color: var(--blue-600); }
+
+        .field-error {
+            font-size: 0.76rem;
+            color: #dc2626;
             font-weight: 600;
-            color: #333;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Submit button */
+        .btn-register {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: var(--blue-600);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.96rem;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 0.01em;
+            transition: background .15s, transform .1s;
+        }
+        .btn-register:hover {
+            background: var(--blue-800);
+            transform: translateY(-1px);
+        }
+        .btn-register:active { transform: translateY(0); }
+
+        /* Login link */
+        .login-row {
             text-align: center;
+            margin-top: 20px;
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+        .login-row a {
+            color: var(--blue-600);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .login-row a:hover { text-decoration: underline; }
+
+        /* Footer strip */
+        .footer-strip {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .footer-item i { color: var(--blue-400); font-size: 12px; }
+
+        /* Alert */
+        .alert-stack { margin-bottom: 18px; }
+        .alert-stack .alert {
+            font-size: 0.84rem;
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        @media (max-width: 900px) {
+            .auth-aside { width: 360px; padding: 40px 32px; }
+            .auth-card  { padding: 36px 32px; }
+        }
+        @media (max-width: 720px) {
+            body { background: var(--surface); flex-direction: column; }
+            .auth-aside { display: none; }
+            .auth-main  { padding: 24px 16px; }
+            .auth-card  { padding: 32px 24px; border-radius: 16px; }
+            .field-grid { grid-template-columns: 1fr; }
+            .footer-strip { justify-content: center; }
         }
     </style>
 </head>
 <body>
 
-<div class="register-container">
-    <h3 class="form-title">Student Registration</h3>
+    <!-- Left panel -->
+    <aside class="auth-aside">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="brand">
+            <div class="brand-mark">
+                <img src="{% static 'admin-static/assets/img/favicon.ico' %}" alt="EdusetIn">
             </div>
-        {% endfor %}
-    {% endif %}
-
-    <form method="POST" action="{% url 'student_portal:register' %}">
-        {% csrf_token %}
-        
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
+            <div>
+                <div class="brand-name">edusetin</div>
+                <div class="brand-tag">IMAT PREP PLATFORM</div>
             </div>
-        {% endif %}
+        </div>
 
-        {% for field in form %}
-            <div class="mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                    <div class="text-danger small mt-1">
-                        {% for error in field.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
+        <h1 class="aside-heading">Begin Your<br>IMAT Journey<br><em>Today</em></h1>
+        <p class="aside-sub">Join thousands of aspirants preparing smarter with topic-wise practice, timed mock tests, and AI-powered performance insights.</p>
+
+        <div class="feature-list">
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-book-open"></i></div>
+                <div>
+                    <div class="feature-title">Topic-wise Practice</div>
+                    <div class="feature-desc">Master every concept with structured quizzes</div>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div>
+                    <div class="feature-title">IMAT Pattern Mock Tests</div>
+                    <div class="feature-desc">60 questions &middot; 100 minutes &middot; Real exam feel</div>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <div>
+                    <div class="feature-title">AI Performance Insights</div>
+                    <div class="feature-desc">Spot weak topics and improve score faster</div>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <div class="feature-title">Past Papers</div>
+                    <div class="feature-desc">Practice with real previous year papers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="trust-row">
+            <div class="trust-avatars">
+                <span>AK</span><span>SR</span><span>MJ</span>
+            </div>
+            <div>
+                <div class="trust-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <div class="trust-text">Trusted by 15,000+ IMAT aspirants</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- Right panel -->
+    <main class="auth-main">
+        <div class="auth-card">
+
+            <h2 class="auth-heading">Create account</h2>
+            <p class="auth-subheading">Fill in your details to start your IMAT preparation</p>
+
+            <div class="alert-stack">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 {% endif %}
             </div>
-        {% endfor %}
 
-        <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-primary">Create Account</button>
+            <form method="POST" action="{% url 'student_portal:register' %}">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" style="border-radius:10px; font-size:.84rem; padding:10px 14px; margin-bottom:16px;">
+                        <i class="fas fa-circle-exclamation me-2"></i>
+                        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="field-grid">
+                    {% for field in form %}
+                    <div class="field-wrap {% if forloop.counter > 2 %}field-full{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="field-label">{{ field.label }}</label>
+
+                        {% if field.field.widget.input_type == 'password' %}
+                            <div class="field-shell has-toggle">
+                                <i class="fas fa-lock field-icon"></i>
+                                {{ field }}
+                                <button type="button"
+                                        class="toggle-password"
+                                        onclick="togglePassword('{{ field.id_for_label }}')"
+                                        aria-label="Toggle password visibility">
+                                    <i class="fas fa-eye" id="icon_{{ field.id_for_label }}"></i>
+                                </button>
+                            </div>
+                        {% elif field.field.widget.input_type == 'email' %}
+                            <div class="field-shell">
+                                <i class="fas fa-envelope field-icon"></i>
+                                {{ field }}
+                            </div>
+                        {% else %}
+                            <div class="field-shell">
+                                <i class="fas fa-user field-icon"></i>
+                                {{ field }}
+                            </div>
+                        {% endif %}
+
+                        {% if field.errors %}
+                            <div class="field-error">
+                                <i class="fas fa-circle-exclamation"></i>
+                                {% for error in field.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-divider"></div>
+
+                <button type="submit" class="btn-register">
+                    <i class="fas fa-user-plus me-2"></i> Create Account
+                </button>
+            </form>
+
+            <div class="login-row">
+                Already have an account? <a href="{% url 'student_portal:login' %}">Sign in</a>
+            </div>
+
+            <div class="footer-strip">
+                <div class="footer-item"><i class="fas fa-shield-alt"></i> Secure &amp; safe</div>
+                <div class="footer-item"><i class="fas fa-graduation-cap"></i> Expert content</div>
+                <div class="footer-item"><i class="fas fa-clock"></i> Anytime access</div>
+                <div class="footer-item"><i class="fas fa-headset"></i> 24/7 support</div>
+            </div>
+
         </div>
-    </form>
-
-    <div class="text-center mt-3">
-        <p class="text-muted mb-0">Already have an account? <a href="{% url 'student_portal:login' %}" class="text-decoration-none">Login</a></p>
-    </div>
-</div>
+    </main>
 
 <script src="{% static 'admin-static/assets/js/bootstrap.min.js' %}"></script>
+<script>
+function togglePassword(fieldId) {
+    const input = document.getElementById(fieldId);
+    const icon  = document.getElementById('icon_' + fieldId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+</script>
 </body>
 </html>

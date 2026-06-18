@@ -133,6 +133,12 @@
                             <span class="text-muted">Subject</span>
                             <span class="fw-medium">{{ question.subject.name }}</span>
                         </li>
+                        {% if question.submodule %}
+<li class="list-group-item d-flex justify-content-between align-items-center px-0">
+    <span class="text-muted">Submodule</span>
+    <span class="fw-medium">{{ question.submodule.name }}</span>
+</li>
+{% endif %}
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span class="text-muted">Correct Answer</span>
                             <span class="badge bg-success">{{ question.correct_answer }}</span>

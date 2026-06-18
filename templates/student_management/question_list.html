@@ -30,6 +30,19 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+    <label for="submodule_filter" class="form-label small fw-semibold text-muted mb-1">Filter by Submodule</label>
+    <select name="submodule" id="submodule_filter" class="form-select form-select-sm">
+        <option value="">All Submodules</option>
+        {% for sm in submodules %}
+            {% if not selected_subject or sm.subject_id|stringformat:"s" == selected_subject %}
+            <option value="{{ sm.id }}" {% if selected_submodule == sm.id|stringformat:"s" %}selected{% endif %}>
+                {{ sm.name }}
+            </option>
+            {% endif %}
+        {% endfor %}
+    </select>
+</div>
+                <div class="col-md-3">
                     <label for="source" class="form-label small fw-semibold text-muted mb-1">Filter by Source</label>
                     <select name="source" id="source" class="form-select form-select-sm">
                         <option value="">All Sources</option>
@@ -66,11 +79,13 @@
                 <tr>
                     <th scope="col">ID</th>
                     <th scope="col">Subject</th>
+                    <th scope="col">Submodule</th><!-- ADD -->
                     <th scope="col">Question Preview</th>
                     <th scope="col">Source</th>
                     <th scope="col">Year</th>
                     <th scope="col">Status</th>
                     <th scope="col" class="text-center">Actions</th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -78,6 +93,13 @@
                 <tr>
                     <td>#{{ question.id }}</td>
                     <td><span class="badge bg-secondary" style="font-size:12px;">{{ question.subject.name }}</span></td>
+                    <td><!-- ADD -->
+    {% if question.submodule %}
+        <span class="badge bg-light text-dark border" style="font-size:11px;">{{ question.submodule.name }}</span>
+    {% else %}
+        <span class="text-muted">—</span>
+    {% endif %}
+</td>
                     <td style="max-width:280px;">{{ question.question_text|truncatechars:80 }}</td>
                     <td>
                         {% if question.source %}
@@ -103,7 +125,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center py-4">
+                    <td colspan="8" class="text-center py-4">
                         <p class="text-muted">No questions found. <a href="{% url 'student_management:question_create' %}">Create one now.</a></p>
                     </td>
                 </tr>
@@ -113,6 +135,7 @@
     </div>
 </div>
 
+<script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const searchInput = document.getElementById("questionSearchInput");
@@ -128,20 +151,43 @@ document.addEventListener("DOMContentLoaded", function() {
         const q = searchInput.value.toLowerCase().trim();
         let visible = 0;
         rows.forEach(row => {
-            const subject = row.querySelector("td:nth-child(2)")?.textContent.toLowerCase() || "";
-            const preview = row.querySelector("td:nth-child(3)")?.textContent.toLowerCase() || "";
-            const show = q === "" || subject.includes(q) || preview.includes(q);
+            const subject    = row.querySelector("td:nth-child(2)")?.textContent.toLowerCase() || "";
+            const submodule  = row.querySelector("td:nth-child(3)")?.textContent.toLowerCase() || "";
+            const preview    = row.querySelector("td:nth-child(4)")?.textContent.toLowerCase() || "";
+            const show = q === "" || subject.includes(q) || submodule.includes(q) || preview.includes(q);
             row.style.display = show ? "" : "none";
             if (show) visible++;
         });
         let noRow = document.getElementById("noResultRow");
         if (visible === 0 && q !== "") {
             if (!noRow) { noRow = document.createElement("tr"); noRow.id = "noResultRow"; tableBody.appendChild(noRow); }
-            noRow.innerHTML = `<td colspan="7" class="text-center py-4 text-muted">No questions found for "<strong>${q}</strong>"</td>`;
+            noRow.innerHTML = `<td colspan="8" class="text-center py-4 text-muted">No questions found for "<strong>${q}</strong>"</td>`;
             noRow.style.display = "";
         } else if (noRow) { noRow.style.display = "none"; }
     }
     searchInput.addEventListener("input", debounce(performSearch, 150));
+
+    // Submodule filter: refresh on subject change
+    const subjectSel   = document.getElementById('subject');
+    const submoduleSel = document.getElementById('submodule_filter');
+    if (subjectSel && submoduleSel) {
+        const SUBMODULE_API = "{% url 'student_management:submodules_by_subject_api' %}";
+        subjectSel.addEventListener('change', function () {
+            const subjectId = this.value;
+            submoduleSel.innerHTML = '<option value="">All Submodules</option>';
+            if (!subjectId) return;
+            fetch(SUBMODULE_API + '?subject_id=' + encodeURIComponent(subjectId))
+                .then(r => r.json())
+                .then(data => {
+                    (data.submodules || []).forEach(sm => {
+                        const opt = document.createElement('option');
+                        opt.value = sm.id;
+                        opt.textContent = sm.name;
+                        submoduleSel.appendChild(opt);
+                    });
+                });
+        });
+    }
 });
 </script>
 {% endblock %}

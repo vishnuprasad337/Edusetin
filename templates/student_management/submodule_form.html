@@ -1,0 +1,146 @@
+{% extends "student_management/base.html" %}
+
+{% block title %}{% if submodule %}Edit{% else %}Add{% endif %} Submodule | Student Management{% endblock %}
+
+{% block content %}
+<div class="dashboard__form__wraper">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_management:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_management:submodule_list' %}">Submodules</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if submodule %}Edit{% else %}Add{% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <div class="create__course__title mb-4">
+        <h4 class="mb-0">{% if submodule %}Edit Submodule{% else %}Add New Submodule{% endif %}</h4>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom pt-3 pb-2">
+                        <h6 class="mb-0 fw-semibold">Submodule Information</h6>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div class="mb-3">
+                            <label for="id_subject" class="form-label fw-semibold">
+                                Subject <span class="text-danger">*</span>
+                            </label>
+                            <select id="id_subject" name="subject"
+                                    class="form-select {% if errors.subject %}is-invalid{% endif %}" required>
+                                <option value="">-- Select Subject --</option>
+                                {% for subj in subjects %}
+                                    <option value="{{ subj.id }}"
+                                        {% if initial.subject_id|stringformat:"s" == subj.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ subj.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.subject %}
+                                <div class="invalid-feedback">{{ errors.subject }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label fw-semibold">
+                                Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="id_name" name="name"
+                                   class="form-control {% if errors.name %}is-invalid{% endif %}"
+                                   placeholder="e.g. Mechanics"
+                                   value="{{ initial.name|default:'' }}" required>
+                            {% if errors.name %}
+                                <div class="invalid-feedback">{{ errors.name }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label fw-semibold">
+                                Description <span class="text-muted small">(optional)</span>
+                            </label>
+                            <textarea id="id_description" name="description" rows="3"
+                                      class="form-control"
+                                      placeholder="Optional description…">{{ initial.description|default:'' }}</textarea>
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="id_order" class="form-label fw-semibold">
+                                Display Order
+                            </label>
+                            <input type="number" id="id_order" name="order" min="0"
+                                   class="form-control {% if errors.order %}is-invalid{% endif %}"
+                                   value="{{ initial.order|default:0 }}">
+                            {% if errors.order %}
+                                <div class="invalid-feedback">{{ errors.order }}</div>
+                            {% endif %}
+                            <div class="form-text text-muted">Lower numbers appear first.</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom pt-3 pb-2">
+                        <h6 class="mb-0 fw-semibold">Image</h6>
+                    </div>
+                    <div class="card-body p-4">
+
+                        {% if submodule and submodule.image %}
+                        <div class="mb-2 text-center">
+                            <img src="{{ submodule.image.url }}" alt="{{ submodule.name }}"
+                                 class="img-fluid rounded border" style="max-height:160px;">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="id_remove_image" name="remove_image">
+                            <label class="form-check-label small" for="id_remove_image">Remove current image</label>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="id_image" class="form-label fw-semibold">
+                                {% if submodule and submodule.image %}Replace Image{% else %}Upload Image{% endif %}
+                                <span class="text-muted small">(optional)</span>
+                            </label>
+                            <input type="file" id="id_image" name="image" class="form-control" accept="image/*">
+                        </div>
+
+                        <div class="mb-0">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active"
+                                       {% if initial.is_active %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="id_is_active">Active</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> {% if submodule %}Update{% else %}Create{% endif %} Submodule
+                    </button>
+                    <a href="{% url 'student_management:submodule_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

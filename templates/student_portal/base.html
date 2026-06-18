@@ -1,0 +1,956 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+<title>{% block title %}Student Dashboard | EdusetIn - Education Platform{% endblock %}</title>
+
+<meta name="description" content="EdusetIn Student Dashboard - Manage courses, quizzes, exams, subscriptions and learning progress.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Favicon -->
+<link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
+
+<!-- Student Portal Favicon -->
+<link rel="icon" type="image/x-icon" href="{% static 'admin-static/assets/img/favicon.ico' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'student_portal/assets/css/vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'student_portal/assets/css/admio.css' %}">
+  <link rel="stylesheet" href="{% static 'student_portal/assets/css/admio-icons.css' %}">
+
+  <style>
+    /* ─── RESET SIDEBAR ─── */
+    .admio-sidebar { display: none !important; }
+    .admio-main { margin-left: 0 !important; padding-top: 0 !important; width: 100% !important; }
+
+    /* ─── GLOBAL SIZE BOOST ─── */
+    body { font-size: 18px; }
+    .admio-content { padding: 40px 48px; }
+    .page-title { font-size: 2.4rem !important; font-weight: 800 !important; }
+    .page-subtitle { font-size: 1.15rem !important; }
+    .stat-value { font-size: 2.9rem !important; font-weight: 800 !important; line-height: 1.1 !important; }
+    .stat-label { font-size: 1.05rem !important; }
+    .card-title { font-size: 1.35rem !important; font-weight: 700 !important; }
+    .text-sm { font-size: 1.05rem !important; }
+    .text-xs { font-size: 0.96rem !important; }
+    .fw-600 { font-weight: 600 !important; }
+    .fw-700 { font-weight: 700 !important; }
+    .admio-table th { font-size: 1rem !important; padding: 18px 20px !important; font-weight: 700; }
+    .admio-table td { font-size: 1rem !important; padding: 18px 20px !important; }
+    .stat-card { padding: 32px 32px 0 !important; border-radius: 20px !important; }
+    .admio-card { border-radius: 20px !important; }
+    .admio-card-header { padding: 26px 30px !important; }
+    .admio-card-body { padding: 26px 30px !important; }
+    .admio-card-body-sm { padding: 20px 30px !important; }
+    .admio-card-footer { padding: 16px 30px !important; }
+    .progress-admio { height: 12px !important; border-radius: 10px !important; }
+    .country-row { padding: 14px 0 !important; font-size: 1.05rem !important; }
+    .chart-h-lg { min-height: 420px !important; }
+    .chart-h-md { min-height: 300px !important; }
+    .chart-h-sm { min-height: 280px !important; }
+    .mini-chart-bar { height: 64px !important; }
+    .stat-icon { width: 60px !important; height: 60px !important; border-radius: 16px !important; }
+    .stat-icon i { font-size: 26px !important; }
+    .stat-trend { font-size: 0.92rem !important; padding: 6px 12px !important; border-radius: 20px !important; }
+    .badge-admio { font-size: 0.88rem !important; padding: 6px 13px !important; }
+    .btn-admio { font-size: 1rem !important; padding: 11px 22px !important; }
+    .btn-sm.btn-admio, .btn-admio.btn-sm { font-size: 0.92rem !important; padding: 8px 16px !important; }
+    .page-header { margin-bottom: 32px !important; }
+    .ai-insight-banner { padding: 22px 28px !important; border-radius: 16px !important; font-size: 1.05rem !important; }
+    .ai-banner-title { font-size: 1.1rem !important; }
+    .ai-banner-text { font-size: 1rem !important; }
+    .notif-title { font-size: 1.02rem !important; }
+    .notif-desc { font-size: 0.92rem !important; }
+    .form-control-admio, .form-select-admio { font-size: 1rem !important; padding: 10px 16px !important; }
+
+    /* ═══════════════════════════════════════════════
+       NAVBAR SHELL
+    ═══════════════════════════════════════════════ */
+    .h-navbar {
+      position: sticky; top: 0; z-index: 9999;
+      background: #fff;
+      border-bottom: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(21,101,192,.10);
+      overflow: visible;
+    }
+
+    /* ═══════════════════════════════════════════════
+       TOP STRIP — dark navy background
+    ═══════════════════════════════════════════════ */
+    .h-navbar-top {
+      display: flex; align-items: center; gap: 18px;
+      padding: 0 32px; height: 70px;
+      background: #1a2a5e;
+      border-bottom: 1px solid #243570;
+    }
+
+    /* Brand logo + text */
+    .h-navbar-brand {
+      display: flex; align-items: center; gap: 9px;
+      text-decoration: none; flex-shrink: 0;
+    }
+    .h-navbar-brand img { width: 36px; }
+    .h-navbar-brand-text {
+      font-size: 1.5rem; font-weight: 800;
+      color: #fff; letter-spacing: -0.3px;
+    }
+    .h-navbar-brand-text span { color: #90CAF9; }
+
+    /* AI active pill */
+    .h-ai-pill {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 14px; border-radius: 20px;
+      background: rgba(255,255,255,.12);
+      font-size: 13px; font-weight: 600;
+      color: #BBDEFB; flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .h-ai-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #4CAF50;
+      animation: pulse-g 1.5s infinite;
+    }
+    @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* Search bar in top strip */
+    .h-topbar-search { flex: 1; max-width: 420px; position: relative; }
+    .h-topbar-search .search-icon {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,.55); font-size: 15px;
+    }
+    .h-topbar-search .search-input {
+      width: 100%; padding: 8px 16px 8px 38px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 9px; font-size: 14px;
+      background: rgba(255,255,255,.10);
+      color: #fff; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .h-topbar-search .search-input::placeholder { color: rgba(255,255,255,.5); }
+    .h-topbar-search .search-input:focus {
+      border-color: rgba(255,255,255,.5);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.10);
+    }
+
+    /* Right-side action icons */
+    .h-topbar-actions {
+      display: flex; align-items: center; gap: 6px;
+      margin-left: auto; flex-shrink: 0;
+    }
+    .h-topbar-divider {
+      width: 1px; height: 24px;
+      background: rgba(255,255,255,.20); flex-shrink: 0;
+    }
+    .topbar-btn {
+      background: transparent; border: none; cursor: pointer;
+      color: rgba(255,255,255,.80);
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; font-size: 16px;
+      transition: background .15s, color .15s;
+    }
+    .topbar-btn:hover {
+      background: rgba(255,255,255,.12); color: #fff;
+    }
+
+    /* Language switcher on dark top bar */
+    .lang-btn {
+      border-color: rgba(255,255,255,.22) !important;
+      background: rgba(255,255,255,.08) !important;
+    }
+    .lang-btn:hover {
+      border-color: rgba(255,255,255,.45) !important;
+      background: rgba(255,255,255,.16) !important;
+      box-shadow: none !important;
+    }
+    .lang-label { color: rgba(255,255,255,.85) !important; }
+    .lang-arrow { color: rgba(255,255,255,.55) !important; }
+
+    /* Avatar in top bar */
+    .topbar-user-avatar { cursor: pointer; }
+
+    /* ═══════════════════════════════════════════════
+       DESKTOP NAV STRIP — white bar below top strip
+    ═══════════════════════════════════════════════ */
+    .h-navbar-menu {
+      display: flex; align-items: center;
+      padding: 0 28px; gap: 2px;
+      overflow: visible !important; height: 52px;
+      background: #fff;
+      border-bottom: 2px solid #E3F0FB;
+    }
+    .h-navbar-menu::-webkit-scrollbar { display: none; }
+
+    /* Nav links */
+    .h-nav-item { position: relative; }
+    .h-nav-link {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 15px; border-radius: 8px;
+      font-size: 15px; font-weight: 600;
+      color: #1a2a5e;
+      text-decoration: none; white-space: nowrap;
+      cursor: pointer; border: none; background: transparent;
+      transition: background .15s, color .15s;
+      user-select: none;
+    }
+    .h-nav-link:hover {
+      background: #E3F0FB; color: #1565C0;
+    }
+    .h-nav-link.active {
+      background: #E3F0FB; color: #1565C0;
+    }
+    .h-nav-link i { font-size: 17px; }
+    .h-nav-arrow { font-size: 11px; margin-left: 1px; transition: transform .2s; }
+    .h-nav-item.open > .h-nav-link .h-nav-arrow { transform: rotate(180deg); }
+
+    /* Dropdown menus */
+    .h-nav-dropdown-menu {
+      display: none;
+      position: absolute; top: calc(100% + 6px); left: 0;
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid #dde3f0;
+      border-radius: 12px;
+      box-shadow: 0 10px 32px rgba(21,101,192,.14);
+      padding: 6px; z-index: 99999;
+    }
+    .h-nav-item.open .h-nav-dropdown-menu { display: block; }
+    .h-nav-dropdown-menu a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 13px; border-radius: 8px;
+      font-size: 14.5px; color: #374151;
+      text-decoration: none; transition: background .12s, color .12s;
+    }
+    .h-nav-dropdown-menu a:hover,
+    .h-nav-dropdown-menu a.active {
+      background: #E3F0FB; color: #1565C0;
+    }
+    .h-nav-dropdown-menu a i { font-size: 16px; width: 18px; color: #1565C0; }
+    .notif-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    min-width: 16px; height: 16px;
+    border-radius: 8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #fff;
+    line-height: 1;
+  }
+
+  /* Icon color overrides matching blue system */
+  .notif-icon.bg-primary  { background: #e6f1fb; color: #185fa5; }
+  .notif-icon.bg-success  { background: #dcfce7; color: #166534; }
+  .notif-icon.bg-info     { background: #e6f1fb; color: #0c447c; }
+  .notif-icon.bg-warning  { background: #fef9c3; color: #854d0e; }
+  .notif-icon.bg-danger   { background: #fee2e2; color: #991b1b; }
+
+  /* Skeleton loading */
+  .notif-skeleton {
+    height: 56px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 10px;
+    margin: 10px 16px;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Empty state */
+  .notif-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: #9ca3af;
+  }
+  .notif-empty i { font-size: 2rem; display: block; margin-bottom: 8px; }
+  .notif-empty p { font-size: 0.85rem; margin: 0; }
+
+  /* Unread dot */
+  .notif-item.unread { background: rgba(55,138,221,.04); }
+  .notif-item.unread .notif-title { color: #0c447c; }
+    /* ═══════════════════════════════════════════════
+       HAMBURGER (mobile)
+    ═══════════════════════════════════════════════ */
+    .h-menu-toggle {
+      display: none; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border: none;
+      background: rgba(255,255,255,.12); border-radius: 8px;
+      cursor: pointer; color: #fff; font-size: 20px;
+      flex-shrink: 0; transition: background .15s;
+    }
+    .h-menu-toggle:hover { background: rgba(255,255,255,.22); }
+
+    /* ═══════════════════════════════════════════════
+       MOBILE DRAWER
+    ═══════════════════════════════════════════════ */
+    .h-navbar-menu-mobile {
+      display: none; flex-direction: column;
+      background: #fff;
+      border-top: 1px solid #dde3f0;
+      padding: 10px 14px 20px;
+      max-height: 75vh; overflow-y: auto;
+    }
+    .h-navbar-menu-mobile.open { display: flex; }
+
+    /* Mobile direct links */
+    .h-mobile-direct {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 12px; border-radius: 9px;
+      font-size: 15px; font-weight: 600;
+      color: #1a2a5e;
+      text-decoration: none; transition: background .15s;
+      margin-bottom: 2px;
+    }
+    .h-mobile-direct:hover { background: #E3F0FB; color: #1565C0; }
+    .h-mobile-direct.active { background: #E3F0FB; color: #1565C0; }
+    .h-mobile-direct i { font-size: 16px; color: #1565C0; }
+
+    /* Mobile section toggles */
+    .h-mobile-section { margin-bottom: 2px; }
+    .h-mobile-section-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 11px 12px; border: none;
+      background: transparent; border-radius: 9px;
+      font-size: 15px; font-weight: 600;
+      color: #1a2a5e;
+      cursor: pointer; text-align: left; transition: background .15s;
+    }
+    .h-mobile-section-toggle:hover { background: #E3F0FB; color: #1565C0; }
+    .h-mobile-section-toggle.active { background: #E3F0FB; color: #1565C0; }
+    .h-mobile-section-toggle .left-ico { margin-right: 10px; font-size: 17px; color: #1565C0; }
+    .h-mobile-arrow { font-size: 12px; transition: transform .22s; color: #1565C0; }
+    .h-mobile-section.open .h-mobile-arrow { transform: rotate(180deg); }
+
+    /* Mobile sub-links */
+    .h-mobile-sub {
+      display: none; flex-direction: column;
+      padding: 3px 0 4px 36px; gap: 2px;
+    }
+    .h-mobile-section.open .h-mobile-sub { display: flex; }
+    .h-mobile-sub a {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 14.5px; color: #374151;
+      text-decoration: none; transition: background .12s, color .12s;
+    }
+    .h-mobile-sub a:hover,
+    .h-mobile-sub a.active { background: #E3F0FB; color: #1565C0; }
+    .h-mobile-sub a i { font-size: 15px; width: 18px; color: #1565C0; }
+
+    /* User + notif dropdowns */
+    .topbar-user { position: relative; cursor: pointer; }
+    .topbar-user .user-dropdown-menu { right: 0; left: auto; }
+    .topbar-btn-notification { position: relative; }
+
+    /* ═══════════════════════════════════════════════
+       DARK THEME OVERRIDES
+    ═══════════════════════════════════════════════ */
+    [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
+    [data-theme="dark"] .h-navbar-top { background: #080f20; border-color: #1a2a5e; }
+    [data-theme="dark"] .h-navbar-menu { background: #0d1a3a; border-color: #1a2a5e; }
+    [data-theme="dark"] .h-nav-link { color: #90CAF9; }
+    [data-theme="dark"] .h-nav-link:hover,
+    [data-theme="dark"] .h-nav-link.active { background: rgba(21,101,192,.25); color: #64B5F6; }
+    [data-theme="dark"] .h-nav-dropdown-menu { background: #0d1a3a; border-color: #1a2a5e; }
+    [data-theme="dark"] .h-nav-dropdown-menu a { color: #90CAF9; }
+    [data-theme="dark"] .h-nav-dropdown-menu a:hover,
+    [data-theme="dark"] .h-nav-dropdown-menu a.active { background: rgba(21,101,192,.25); color: #64B5F6; }
+    [data-theme="dark"] .h-navbar-menu-mobile { background: #0d1a3a; border-color: #1a2a5e; }
+    [data-theme="dark"] .h-mobile-section-toggle,
+    [data-theme="dark"] .h-mobile-direct { color: #90CAF9; }
+    [data-theme="dark"] .h-mobile-sub a { color: #64B5F6; }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 1199px) {
+      .admio-content { padding: 28px 24px; }
+      .h-navbar-top { padding: 0 20px; }
+      .h-navbar-menu { padding: 0 20px; }
+    }
+
+    @media (max-width: 991px) {
+      .admio-content { padding: 24px 20px; }
+      .chart-h-lg { min-height: 320px !important; }
+      .h-navbar-top { padding: 0 16px; height: 64px; }
+      .h-navbar-menu { padding: 0 16px; }
+    }
+
+    @media (max-width: 767px) {
+      /* Show hamburger, hide desktop nav */
+      .h-menu-toggle { display: flex; }
+      .h-navbar-menu { display: none !important; }
+
+      /* Shrink search on mobile */
+      .h-topbar-search { max-width: 160px; }
+      .h-navbar-top { padding: 0 12px; height: 58px; gap: 10px; }
+
+      /* Smaller dividers on mobile */
+      .h-topbar-divider { height: 20px; }
+
+      /* Hide some top bar items on mobile */
+      .h-topbar-actions .h-topbar-divider:first-of-type { display: none; }
+
+      /* Content */
+      .admio-content { padding: 18px 16px; }
+      .page-title { font-size: 1.6rem !important; }
+      .stat-value { font-size: 1.9rem !important; }
+      .chart-h-lg { min-height: 280px !important; }
+      .chart-h-sm { min-height: 200px !important; }
+    }
+
+    @media (max-width: 575px) {
+      .h-navbar-top { height: 54px; padding: 0 10px; gap: 8px; }
+      .h-topbar-search { max-width: 130px; }
+      .h-navbar-brand-text { font-size: 1.25rem; }
+      .h-navbar-brand img { width: 28px; }
+      .admio-content { padding: 14px 12px; }
+      .stat-value { font-size: 1.65rem !important; }
+    }
+
+    @media (max-width: 479px) {
+      /* Hide AI pill and search on very small screens */
+      .h-ai-pill { display: none !important; }
+      .h-topbar-search { display: none !important; }
+      .h-navbar-brand-text { font-size: 1.15rem; }
+      .admio-content { padding: 12px 10px; }
+      .stat-value { font-size: 1.5rem !important; }
+      /* Keep essential icons only */
+      .h-topbar-actions .h-topbar-divider { display: none; }
+      .h-topbar-actions { gap: 4px; }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ══════════ HORIZONTAL NAVBAR ══════════ -->
+<nav class="h-navbar" id="hNavbar">
+
+  <!-- TOP STRIP (dark navy) -->
+  <div class="h-navbar-top">
+
+    <!-- Hamburger — visible on mobile only -->
+    <button class="h-menu-toggle" id="hMenuToggle" aria-label="Toggle menu">
+      <i class="icon-menu" id="hMenuIcon"></i>
+    </button>
+
+    <!-- Brand -->
+    <div class="brand-logo">
+    <a href="{% url 'student_portal:dashboard' %}" 
+       style="display:flex; align-items:center; gap:2px; text-decoration:none; line-height:1;">
+        
+        <img src="{% static 'admin-static/assets/img/favicon.ico' %}"
+             alt="EdusetIn"
+             style="height:32px; 
+                    width:32px; 
+                    border-radius:6px; 
+                    object-fit:contain;
+                    filter: brightness(0) invert(1);">
+        
+        <span class="logo-text" 
+              style="color:#ffffff; 
+                     font-weight:700; 
+                     font-size:1.6rem; 
+                     letter-spacing:-0.01em;
+                     font-family:'Segoe UI', sans-serif;
+                     line-height:1;">
+            edusetin
+        </span>
+    </a>
+</div>
+    
+
+    <!-- Right actions -->
+    <div class="h-topbar-actions">
+
+      <!-- Language switcher (large screens only) -->
+      
+      
+
+      <!-- Theme toggle -->
+      <button class="topbar-btn header-icon" id="themeToggle" title="Toggle theme">
+        <i class="icon-moon" id="themeIcon"></i>
+      </button>
+
+      <div class="h-topbar-divider"></div>
+
+      <!-- Notifications -->
+      <div class="topbar-btn-notification">
+  <button class="topbar-btn header-icon" id="notifBtn" aria-label="Notifications">
+    <i class="icon-bell"></i>
+    <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+  </button>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <h2>Notifications</h2>
+      <button class="btn-text" id="markAllRead">Mark all read</button>
+    </div>
+
+    <!-- Loading state -->
+    <div class="notif-loading" id="notifLoading">
+      <div class="notif-skeleton"></div>
+      <div class="notif-skeleton"></div>
+      <div class="notif-skeleton"></div>
+    </div>
+
+    <!-- Populated list -->
+    <div class="notif-list" id="notifList" style="display:none;"></div>
+
+    <!-- Empty state -->
+    <div class="notif-empty" id="notifEmpty" style="display:none;">
+      <i class="icon-bell-off"></i>
+      <p>You're all caught up!</p>
+    </div>
+
+    <div class="notif-footer">
+  <button class="btn-text" id="viewAllBtn">View all activity</button>
+    </div>
+  </div>
+</div>
+
+
+
+      <div class="h-topbar-divider"></div>
+
+      <!-- User avatar + dropdown -->
+      <div class="topbar-user position-relative">
+        <span class="avatar-gen topbar-user-avatar" 
+      data-name="{{ request.user.get_full_name|default:request.user.username }}" 
+      data-bg="#1565C0" 
+      data-size="34">
+    {{ request.user.get_full_name|default:request.user.username|slice:":2"|upper }}
+</span>
+        <div class="user-dropdown-menu">
+          <div class="user-dropdown-header">
+    <span class="avatar-gen udm-avatar" 
+          data-name="{{ request.user.get_full_name|default:request.user.username }}" 
+          data-bg="#1565C0" 
+          data-size="42">
+        {{ request.user.get_full_name|default:request.user.username|slice:":2"|upper }}
+    </span>
+    <div class="udm-info">
+        <p class="user-dropdown-name">
+            {{ request.user.get_full_name|default:request.user.username }}
+        </p>
+        <p class="user-dropdown-email">
+            {{ request.user.email }}
+        </p>
+    </div>
+</div>
+          <div class="udm-body">
+            
+            <hr class="user-dropdown-divider">
+           <a href="{% url 'student_portal:logout' %}" class="user-dropdown-item danger"><i class="icon-log-out"></i><span>Sign Out</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /h-topbar-actions -->
+  </div><!-- /h-navbar-top -->
+
+  <!-- DESKTOP NAV STRIP (white bar) -->
+  <div class="h-navbar-menu" id="hDesktopMenu">
+
+    {% url 'student_portal:dashboard' as url_dashboard %}
+    {% url 'student_portal:exam_list' as url_exam_list %}
+    {% url 'student_portal:exam_history' as url_exam_history %}
+    {% url 'student_portal:quiz_setup' as url_quiz_setup %}
+    {% url 'student_portal:quiz_history' as url_quiz_history %}
+    {% url 'student_portal:student_detail' as url_student_detail %}
+    {% url 'student_portal:student_update' as url_student_update %}
+
+    <!-- Dashboard -->
+    <div class="h-nav-item">
+      <a href="{{ url_dashboard }}"
+         class="h-nav-link {% if request.path == url_dashboard %}active{% endif %}">
+        <i class="icon-gauge"></i> Dashboard
+      </a>
+    </div>
+
+    <!-- Exams -->
+    <div class="h-nav-item h-nav-dropdown" id="dd-exams">
+      <button type="button" class="h-nav-link
+        {% if request.path == url_exam_list or request.path == url_exam_history %}active{% endif %}">
+        <i class="icon-file-text"></i> Exams
+        <i class="icon-chevron-down h-nav-arrow"></i>
+      </button>
+      <div class="h-nav-dropdown-menu">
+        <a href="{{ url_exam_list }}"
+           class="{% if request.path == url_exam_list %}active{% endif %}">
+          <i class="icon-list"></i> All Exams
+        </a>
+        <a href="{{ url_exam_history }}"
+           class="{% if request.path == url_exam_history %}active{% endif %}">
+          <i class="icon-clock"></i> Exam History
+        </a>
+      </div>
+    </div>
+
+    <!-- Quiz -->
+    <div class="h-nav-item h-nav-dropdown" id="dd-quiz">
+      <button type="button" class="h-nav-link
+        {% if request.path == url_quiz_setup or request.path == url_quiz_history %}active{% endif %}">
+        <i class="icon-circle-help"></i> Quiz
+        <i class="icon-chevron-down h-nav-arrow"></i>
+      </button>
+      <div class="h-nav-dropdown-menu">
+        <a href="{{ url_quiz_setup }}"
+           class="{% if request.path == url_quiz_setup %}active{% endif %}">
+          <i class="icon-plus-circle"></i> Generate Quiz
+        </a>
+        <a href="{{ url_quiz_history }}"
+           class="{% if request.path == url_quiz_history %}active{% endif %}">
+          <i class="icon-clock"></i> Quiz History
+        </a>
+      </div>
+    </div>
+
+    <!-- AI Tools -->
+    
+
+    <!-- Apps -->
+    
+    <!-- Users -->
+    <div class="h-nav-item h-nav-dropdown" id="dd-users">
+      <span class="h-nav-link
+        {% if request.path == url_student_detail or request.path == url_student_update %}active{% endif %}"
+        role="button" tabindex="0">
+        <i class="icon-users"></i> Users
+        <i class="icon-chevron-down h-nav-arrow"></i>
+      </span>
+      <div class="h-nav-dropdown-menu">
+        <a href="{{ url_student_detail }}"
+           class="{% if request.path == url_student_detail %}active{% endif %}">
+          <i class="icon-circle-user"></i> User Detail
+        </a>
+        <a href="{{ url_student_update }}"
+           class="{% if request.path == url_student_update %}active{% endif %}">
+          <i class="icon-user-pen"></i> Edit User
+        </a>
+      </div>
+    </div>
+
+    <!-- Finance -->
+    
+
+    <!-- UI -->
+    
+
+  </div><!-- /h-navbar-menu -->
+
+  <!-- MOBILE DRAWER -->
+  <div class="h-navbar-menu-mobile" id="hMobileMenu">
+
+    <a href="{{ url_dashboard }}"
+       class="h-mobile-direct {% if request.path == url_dashboard %}active{% endif %}">
+      <i class="icon-gauge"></i> Dashboard
+    </a>
+
+    <!-- Exams mobile -->
+    <div class="h-mobile-section
+      {% if request.path == url_exam_list or request.path == url_exam_history %}open{% endif %}">
+      <button class="h-mobile-section-toggle
+        {% if request.path == url_exam_list or request.path == url_exam_history %}active{% endif %}"
+        type="button">
+        <span><i class="icon-file-text left-ico"></i>Exams</span>
+        <i class="icon-chevron-down h-mobile-arrow"></i>
+      </button>
+      <div class="h-mobile-sub">
+        <a href="{{ url_exam_list }}"
+           class="{% if request.path == url_exam_list %}active{% endif %}">
+          <i class="icon-list"></i> All Exams
+        </a>
+        <a href="{{ url_exam_history }}"
+           class="{% if request.path == url_exam_history %}active{% endif %}">
+          <i class="icon-clock"></i> Exam History
+        </a>
+      </div>
+    </div>
+
+    <!-- Quiz mobile -->
+    <div class="h-mobile-section
+      {% if request.path == url_quiz_setup or request.path == url_quiz_history %}open{% endif %}">
+      <button class="h-mobile-section-toggle
+        {% if request.path == url_quiz_setup or request.path == url_quiz_history %}active{% endif %}"
+        type="button">
+        <span><i class="icon-circle-help left-ico"></i>Quiz</span>
+        <i class="icon-chevron-down h-mobile-arrow"></i>
+      </button>
+      <div class="h-mobile-sub">
+        <a href="{{ url_quiz_setup }}"
+           class="{% if request.path == url_quiz_setup %}active{% endif %}">
+          <i class="icon-plus-circle"></i> Generate Quiz
+        </a>
+        <a href="{{ url_quiz_history }}"
+           class="{% if request.path == url_quiz_history %}active{% endif %}">
+          <i class="icon-clock"></i> Quiz History
+        </a>
+      </div>
+    </div>
+
+    <!-- AI Tools mobile -->
+   
+
+    <!-- Apps mobile -->
+   
+
+    <!-- Users mobile -->
+    <div class="h-mobile-section
+      {% if request.path == url_student_detail or request.path == url_student_update %}open{% endif %}">
+      <button class="h-mobile-section-toggle
+        {% if request.path == url_student_detail or request.path == url_student_update %}active{% endif %}"
+        type="button">
+        <span><i class="icon-users left-ico"></i>Users</span>
+        <i class="icon-chevron-down h-mobile-arrow"></i>
+      </button>
+      <div class="h-mobile-sub">
+        <a href="{{ url_student_detail }}"
+           class="{% if request.path == url_student_detail %}active{% endif %}">
+          <i class="icon-circle-user"></i> User Detail
+        </a>
+        <a href="{{ url_student_update }}"
+           class="{% if request.path == url_student_update %}active{% endif %}">
+          <i class="icon-user-pen"></i> Edit User
+        </a>
+      </div>
+    </div>
+
+    <!-- Finance mobile -->
+    
+  </div><!-- /h-navbar-menu-mobile -->
+</nav>
+<!-- ══════════ END NAVBAR ══════════ -->
+
+<div class="admio-main" id="admioMain">
+  <main class="admio-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="admio-footer">
+    <span>&copy; 2026 <strong>Admio</strong>. All rights reserved.</span>
+    <ul class="d-flex align-items-center mb-0 list-unstyled gap-4">
+      <li><a href="#">About</a></li>
+      <li><a href="#">Support</a></li>
+    </ul>
+  </footer>
+
+  <button class="back-to-top visible" id="backToTop" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+         stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+</div>
+
+<script src="{% static 'student_portal/assets/js/vendor/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'student_portal/assets/js/vendor/chart.umd.min.js' %}"></script>
+<script src="{% static 'student_portal/assets/js/admio.js' %}"></script>
+<script src="{% static 'student_portal/assets/js/charts.js' %}"></script>
+
+<script>
+(function () {
+  /* ── DESKTOP DROPDOWNS (click-based) ── */
+  const ddItems = document.querySelectorAll('.h-nav-dropdown');
+  ddItems.forEach(function (item) {
+    const trigger = item.querySelector('.h-nav-link');
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const isOpen = item.classList.contains('open');
+      ddItems.forEach(function (d) { d.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+  document.addEventListener('click', function () {
+    ddItems.forEach(function (d) { d.classList.remove('open'); });
+  });
+
+  /* ── MOBILE HAMBURGER ── */
+  const hMenuToggle = document.getElementById('hMenuToggle');
+  const hMobileMenu = document.getElementById('hMobileMenu');
+  const hMenuIcon   = document.getElementById('hMenuIcon');
+
+  hMenuToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    const isOpen = hMobileMenu.classList.toggle('open');
+    hMenuIcon.className = isOpen ? 'icon-x' : 'icon-menu';
+  });
+  document.addEventListener('click', function (e) {
+    if (hMobileMenu.classList.contains('open') &&
+        !hMobileMenu.contains(e.target) &&
+        !hMenuToggle.contains(e.target)) {
+      hMobileMenu.classList.remove('open');
+      hMenuIcon.className = 'icon-menu';
+    }
+  });
+
+  /* ── MOBILE ACCORDION ── */
+  document.querySelectorAll('.h-mobile-section-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      btn.closest('.h-mobile-section').classList.toggle('open');
+    });
+  });
+})();
+(function () {
+  const btn      = document.getElementById('notifBtn');
+  const panel    = document.getElementById('notifPanel');
+  const badge    = document.getElementById('notifBadge');
+  const list     = document.getElementById('notifList');
+  const loading  = document.getElementById('notifLoading');
+  const empty    = document.getElementById('notifEmpty');
+  const markAll  = document.getElementById('markAllRead');
+  const viewAll  = document.getElementById('viewAllBtn');
+
+  const PREVIEW_COUNT = 5;
+  let loaded      = false;
+  let unreadCount = 0;
+  let allNotifs   = [];
+  let showAll     = false;
+
+  const colorMap = {
+    new_plan:       'bg-primary',
+    new_exam:       'bg-success',
+    new_subject:    'bg-info',
+    new_submodule:  'bg-warning',
+    expiry_warning: 'bg-danger',
+  };
+
+  function buildItem(n) {
+    return '<div class="notif-item' + (n.unread ? ' unread' : '') + '">' +
+      '<div class="notif-icon ' + (colorMap[n.type] || 'bg-primary') + '">' +
+        '<i class="' + n.icon + '"></i>' +
+      '</div>' +
+      '<div class="notif-content">' +
+        '<p class="notif-title">' + escapeHtml(n.title) + '</p>' +
+        '<p class="notif-desc">'  + escapeHtml(n.desc)  + '</p>' +
+        '<span class="notif-time">' + escapeHtml(n.time) + '</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderNotifications(notifications) {
+    allNotifs = notifications;
+
+    if (!notifications.length) {
+      loading.style.display = 'none';
+      list.style.display    = 'none';
+      empty.style.display   = 'block';
+      viewAll.style.display = 'none';
+      return;
+    }
+
+    const visible   = showAll ? notifications : notifications.slice(0, PREVIEW_COUNT);
+    const remaining = notifications.length - PREVIEW_COUNT;
+
+    list.innerHTML = visible.map(buildItem).join('');
+
+    loading.style.display = 'none';
+    empty.style.display   = 'none';
+    list.style.display    = 'block';
+
+    if (notifications.length <= PREVIEW_COUNT) {
+      viewAll.style.display = 'none';
+    } else {
+      viewAll.style.display = 'block';
+      viewAll.textContent   = showAll
+        ? 'Show less'
+        : 'View all (' + remaining + ' more)';
+    }
+  }
+
+  function fetchNotifications() {
+    if (loaded) return;
+    loaded = true;
+
+    // reset UI to loading state each fetch
+    loading.style.display = 'block';
+    list.style.display    = 'none';
+    empty.style.display   = 'none';
+
+    fetch('{% url "student_portal:get_notifications" %}', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      unreadCount = data.unread_count || 0;
+      badge.textContent   = unreadCount > 9 ? '9+' : unreadCount;
+      badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+      renderNotifications(data.notifications || []);
+    })
+    .catch(function () {
+      loading.style.display = 'none';
+      empty.style.display   = 'block';
+    });
+  }
+
+  // ── Toggle panel ──────────────────────────────────────────────────────
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    const isOpen = panel.classList.toggle('active');
+    if (isOpen) fetchNotifications();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove('active');
+    }
+  });
+
+  // ── View all / Show less ──────────────────────────────────────────────
+  viewAll.addEventListener('click', function (e) {   // ← e was missing
+    e.stopPropagation();
+    showAll = !showAll;
+    renderNotifications(allNotifs);
+  });
+
+  // ── Mark all read ─────────────────────────────────────────────────────
+markAll.addEventListener('click', function (e) {
+  e.stopPropagation();
+  allNotifs = allNotifs.map(function (n) {
+    return Object.assign({}, n, { unread: false });
+  });
+  renderNotifications(allNotifs);
+  badge.style.display = 'none';
+  unreadCount = 0;
+});
+
+  // ── Escape helper ─────────────────────────────────────────────────────
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
+
+  // ── Silent badge count on page load ───────────────────────────────────
+  fetch('{% url "student_portal:get_notifications" %}', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function (r) { return r.json(); })
+  .then(function (data) {
+    const count = data.unread_count || 0;
+    badge.textContent   = count > 9 ? '9+' : count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  })
+  .catch(function () {});
+
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

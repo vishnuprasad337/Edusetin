@@ -1,0 +1,550 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plans — Edusetin</title>
+<link rel="shortcut icon" href="{% static 'assets/img/favicon.ico' %}" type="image/x-icon" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    /* Brand navy — matches the dashboard top bar */
+    --navy-950: #0A1029;
+    --navy-900: #111A42;
+    --navy-800: #1B265C;
+    --navy-700: #283577;
+
+    /* Accent blue — primary actions, links, icons */
+    --blue: #2F6BFF;
+    --blue-dark: #1E54E0;
+    --blue-light: #5C92FF;
+    --blue-tint: #EAF1FF;
+
+    /* Supporting accents, cycled across plan cards like the dashboard's stat tiles */
+    --green: #15A36B;
+    --green-tint: #E4F8EE;
+    --amber: #D97706;
+    --amber-tint: #FFF3DE;
+    --violet: #7C5CFC;
+    --violet-tint: #F0ECFE;
+
+    --ink: #0F172A;
+    --ink-soft: #51607A;
+    --ink-faint: #94A0B8;
+    --border: #E7EAF2;
+    --bg: #F6F8FC;
+    --white: #FFFFFF;
+
+    /* Shared content width — keeps every section edge-aligned like the dashboard */
+    --page-max: 1320px;
+    --page-pad: 32px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+  button { font-family: inherit; }
+
+  /* ── NAV : single navy bar, colour-matched to the dashboard header ── */
+  .nav-top {
+    background: linear-gradient(135deg, var(--navy-900), var(--navy-950));
+    padding: 0 var(--page-pad);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 4px 16px rgba(10,16,41,.12);
+  }
+  .brand-logo a:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 4px; border-radius: 6px; }
+
+  .nav-actions { display: flex; align-items: center; gap: 14px; }
+  .nav-actions a.link {
+    font-size: 13.5px;
+    color: rgba(255,255,255,.72);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .nav-actions a.link:hover { color: #fff; }
+
+  .btn-pill-light {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #fff;
+    color: var(--navy-900) !important;
+    padding: 9px 18px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13.5px;
+    text-decoration: none;
+    transition: background .15s, transform .15s, box-shadow .15s;
+  }
+  .btn-pill-light svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .btn-pill-light:hover {
+    background: #DCE6FF;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0,0,0,.18);
+  }
+
+  /* ── HERO BANNER : compact blue bar, same family as the dashboard's welcome banner ── */
+  .hero-wrap { max-width: var(--page-max); margin: 24px auto 0; padding: 0 var(--page-pad); }
+  .hero-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(120deg, var(--blue-dark) 0%, var(--blue-light) 100%);
+    border-radius: 16px;
+    padding: 20px 30px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::before {
+    content: "";
+    position: absolute;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(255,255,255,.14), transparent 70%);
+    top: -90px; right: -50px;
+  }
+  .hero-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(255,255,255,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .hero-icon svg { width: 21px; height: 21px; }
+  .hero-text { position: relative; min-width: 0; }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,.18);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: .03em;
+    margin-bottom: 6px;
+  }
+  .hero-banner h1 {
+    font-size: 19px;
+    font-weight: 800;
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+  .hero-banner p {
+    font-size: 12.5px;
+    color: rgba(255,255,255,.85);
+    line-height: 1.5;
+  }
+
+  /* ── MESSAGES ──────────────────────────────────────── */
+  .messages { max-width: var(--page-max); margin: 20px auto 0; padding: 0 var(--page-pad); }
+  .msg { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 8px; font-weight: 500; }
+  .msg-error   { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
+  .msg-success { background: var(--green-tint); border: 1px solid #86EFAC; color: #166534; }
+  .msg-info    { background: var(--blue-tint); border: 1px solid #BFD7FF; color: #1E40AF; }
+
+  /* ── PLANS GRID ────────────────────────────────────── */
+  .plans-wrap { max-width: var(--page-max); margin: 0 auto 36px; padding: 36px var(--page-pad) 0; }
+  .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: stretch; }
+
+  /* ── PLAN CARD ─────────────────────────────────────────────────────
+     Mirrors the anatomy of the dashboard's stat tiles: an icon + status
+     chip header row, a headline metric with a supporting line underneath,
+     a clearly labelled section for the detail list, and a CTA that stays
+     pinned to the same baseline across every card regardless of how many
+     features it lists. */
+  .plan-card {
+    position: relative;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .plan-card::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 4px;
+    z-index: 1;
+  }
+  .plan-card:nth-child(4n+1)::before { background: var(--blue); }
+  .plan-card:nth-child(4n+2)::before { background: var(--green); }
+  .plan-card:nth-child(4n+3)::before { background: var(--amber); }
+  .plan-card:nth-child(4n+0)::before { background: var(--violet); }
+  .plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, .1);
+    border-color: #C7D9FF;
+  }
+  .plan-card.featured {
+    border-color: var(--blue);
+    background: linear-gradient(180deg, var(--blue-tint) 0%, #fff 220px);
+    box-shadow: 0 12px 28px rgba(47, 107, 255, .16);
+  }
+  .plan-card.featured:hover { box-shadow: 0 18px 38px rgba(47, 107, 255, .22); }
+
+  /* Status strip — replaces the old overlapping ribbon so nothing clips
+     against neighbouring cards or the grid edge. */
+  .plan-ribbon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(120deg, var(--blue), var(--blue-dark));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 0;
+  }
+  .plan-ribbon svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+  .plan-card-body {
+    padding: 24px 24px 22px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  /* Header row: icon left, spec chip right — same pairing the dashboard
+     uses for icon + trend badge. */
+  .plan-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .plan-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .plan-icon svg { width: 19px; height: 19px; }
+  .plan-card:nth-child(4n+1) .plan-icon { background: var(--blue-tint); color: var(--blue); }
+  .plan-card:nth-child(4n+2) .plan-icon { background: var(--green-tint); color: var(--green); }
+  .plan-card:nth-child(4n+3) .plan-icon { background: var(--amber-tint); color: var(--amber); }
+  .plan-card:nth-child(4n+0) .plan-icon { background: var(--violet-tint); color: var(--violet); }
+
+  .plan-duration-chip {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: 5px 11px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .plan-card:nth-child(4n+1) .plan-duration-chip { background: var(--blue-tint); color: var(--blue-dark); }
+  .plan-card:nth-child(4n+2) .plan-duration-chip { background: var(--green-tint); color: var(--green); }
+  .plan-card:nth-child(4n+3) .plan-duration-chip { background: var(--amber-tint); color: var(--amber); }
+  .plan-card:nth-child(4n+0) .plan-duration-chip { background: var(--violet-tint); color: var(--violet); }
+
+  .plan-name { font-size: 17px; font-weight: 700; margin-bottom: 5px; letter-spacing: -0.01em; }
+  .plan-desc { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; min-height: 36px; line-height: 1.5; }
+
+  /* Headline metric: the price reads like the dashboard's big stat number,
+     with a computed per-day cost underneath instead of a stray badge —
+     real information instead of decoration. */
+  .plan-price-block { margin-bottom: 16px; }
+  .plan-price-row { display: flex; align-items: baseline; gap: 7px; margin-bottom: 4px; }
+  .plan-price { font-size: 32px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
+  .plan-price.is-free { color: var(--blue); }
+  .plan-price-unit { font-size: 13px; font-weight: 600; color: var(--ink-faint); }
+  .plan-price-meta { font-size: 12.5px; color: var(--ink-soft); font-weight: 500; }
+  .plan-price-meta .accent { color: var(--blue-dark); font-weight: 700; }
+
+  .plan-divider { height: 1px; background: var(--border); margin: 0 0 16px; }
+
+  .plan-includes-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+
+  .plan-features { list-style: none; flex: 1; margin-bottom: 22px; }
+  .plan-features li {
+    font-size: 13.5px;
+    color: #334155;
+    padding: 6px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    line-height: 1.4;
+  }
+  .plan-features li .tick {
+    flex-shrink: 0;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+  .plan-features li .tick svg { width: 9px; height: 9px; }
+  .plan-card:nth-child(4n+1) .tick { background: var(--blue-tint); color: var(--blue); }
+  .plan-card:nth-child(4n+2) .tick { background: var(--green-tint); color: var(--green); }
+  .plan-card:nth-child(4n+3) .tick { background: var(--amber-tint); color: var(--amber); }
+  .plan-card:nth-child(4n+0) .tick { background: var(--violet-tint); color: var(--violet); }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+
+  .login-hint { text-align: center; margin-top: 12px; font-size: 12.5px; color: var(--ink-faint); }
+  .login-hint a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+  .empty { text-align: center; padding: 70px 0; color: var(--ink-faint); font-size: 15px; grid-column: 1 / -1; }
+
+  /* ── TRUST STRIP ───────────────────────────────────── */
+  .trust-strip {
+    max-width: var(--page-max);
+    margin: 8px auto 60px;
+    padding: 0 var(--page-pad);
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .trust-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 100px;
+  }
+  .trust-pill svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+
+  @media(max-width:680px){
+    .nav-top { padding: 0 16px; }
+  }
+  @media(max-width:500px){
+    :root { --page-pad: 16px; }
+    .hero-banner { padding: 16px 18px; gap: 12px; }
+    .hero-banner h1 { font-size: 16.5px; }
+    .hero-banner p { font-size: 12px; }
+    .hero-icon { width: 36px; height: 36px; }
+    .hero-icon svg { width: 18px; height: 18px; }
+    .plans-wrap { padding-top: 28px; }
+    .plan-card-body { padding: 20px 18px; }
+    .plan-price { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-top">
+  <div class="brand-logo">
+    <a href="{% url 'student_portal:dashboard' %}"
+       style="display:flex; align-items:center; gap:2px; text-decoration:none; line-height:1;">
+
+        <img src="{% static 'admin-static/assets/img/favicon.ico' %}"
+             alt="EdusetIn"
+             style="height:32px;
+                    width:32px;
+                    border-radius:6px;
+                    object-fit:contain;
+                    filter: brightness(0) invert(1);">
+
+        <span class="logo-text"
+              style="color:#ffffff;
+                     font-weight:700;
+                     font-size:1.6rem;
+                     letter-spacing:-0.01em;
+                     font-family:'Segoe UI', sans-serif;
+                     line-height:1;">
+            edusetin
+        </span>
+    </a>
+  </div>
+
+  <div class="nav-actions">
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'student_portal:dashboard' %}" class="btn-pill-light">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+    {% else %}
+      <a href="{% url 'student_portal:login' %}" class="link">Log in</a>
+      <a href="{% url 'student_portal:register' %}" class="btn-pill-light">Register</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="hero-wrap">
+  <div class="hero-banner">
+    <div class="hero-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 23l-9-9 9.59-9.59A2 2 0 0 1 13 4h7v7a2 2 0 0 1-.41 1.41Z"/><circle cx="16.5" cy="7.5" r="1.25" fill="currentColor" stroke="none"/></svg>
+    </div>
+    <div class="hero-text">
+      <span class="hero-eyebrow">Plans &amp; Pricing</span>
+      <h1>Choose your preparation plan</h1>
+      <p>Pick the plan that fits how you're studying. Access activates the moment your payment is verified.</p>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+<div class="messages">
+  {% for message in messages %}
+  <div class="msg msg-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="plans-wrap">
+  <div class="plans-grid">
+    {% for plan in plans %}
+    <div class="plan-card{% if plan.is_featured %} featured{% endif %}">
+
+      {% if plan.is_featured %}
+      <div class="plan-ribbon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.6 6.8L12 17.1 5.8 20.5l1.6-6.8-5.2-4.7 6.9-.7L12 2z"/></svg>
+        Most popular
+      </div>
+      {% endif %}
+
+      <div class="plan-card-body">
+
+        <div class="plan-card-head">
+          <div class="plan-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </div>
+          <span class="plan-duration-chip">{{ plan.duration_days }} day{{ plan.duration_days|pluralize }}</span>
+        </div>
+
+        <div class="plan-name">{{ plan.name }}</div>
+        <div class="plan-desc">{{ plan.description|default:"Full access to all study materials." }}</div>
+
+        <div class="plan-price-block">
+          <div class="plan-price-row">
+            <span class="plan-price{% if plan.price == 0 %} is-free{% endif %}">
+              {% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:0 }}{% endif %}
+            </span>
+            {% if plan.price != 0 %}<span class="plan-price-unit">/ {{ plan.duration_days }}d</span>{% endif %}
+          </div>
+          <div class="plan-price-meta">
+            {% if plan.price == 0 %}
+              No payment required, ever
+            {% else %}
+              ≈ <span class="accent">₹{% widthratio plan.price plan.duration_days 1 %}</span> per day
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="plan-divider"></div>
+        <div class="plan-includes-label">What's included</div>
+
+        <ul class="plan-features">
+          {% for subject in plan.subjects.all %}
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ subject.name }}</li>
+          {% endfor %}
+
+          {% for submodule in plan.submodules.all %}
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ submodule.subject.name }} → {{ submodule.name }}</li>
+          {% endfor %}
+
+          {% for exam in plan.exams.all %}
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ exam.title }}</li>
+          {% endfor %}
+
+          {% if not plan.subjects.exists and not plan.submodules.exists and not plan.exams.exists %}
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>All subjects</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>All mock tests &amp; PYQs</li>
+          {% endif %}
+
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Detailed explanations</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Performance analytics</li>
+        </ul>
+
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'student_portal:plan_checkout' plan.uuid %}" class="btn btn-primary">
+            Get this plan
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        {% else %}
+          <a href="{% url 'student_portal:register' %}?next={% url 'student_portal:plan_checkout' plan.pk %}" class="btn btn-primary">
+            Get started
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <div class="login-hint">
+            Already registered?
+            <a href="{% url 'student_portal:login' %}?next={% url 'student_portal:plan_checkout' plan.pk %}">Log in</a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty">No plans available right now. Check back soon.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="trust-strip">
+  <span class="trust-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    Secure payments via Razorpay
+  </span>
+  <span class="trust-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="12"/><line x1="11" y1="20" x2="11" y2="6"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+    Performance analytics included
+  </span>
+  <span class="trust-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/></svg>
+    Cancel anytime
+  </span>
+</div>
+
+</body>
+</html>

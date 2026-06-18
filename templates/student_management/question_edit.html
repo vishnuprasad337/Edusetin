@@ -65,7 +65,18 @@
                         </select>
                     </div>
                 </div>
-
+                <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white border-bottom pt-3 pb-2">
+        <h6 class="mb-0 fw-semibold">Submodule <span class="text-muted small">(optional)</span></h6>
+    </div>
+    <div class="card-body p-4">
+        <label for="id_submodule" class="form-label fw-semibold">Select Submodule</label>
+        <select id="id_submodule" name="submodule" class="form-select" disabled>
+            <option value="">-- None --</option>
+        </select>
+        <div class="text-muted small mt-1" id="submodule-hint">Loading submodules...</div>
+    </div>
+</div>
                 <!-- Question Text + Image -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom pt-3 pb-2">
@@ -448,6 +459,61 @@
             const fi = document.getElementById('file_' + slot); if (fi) fi.value = '';
         }
     };
+})();
+// Submodule dynamic loader
+(function () {
+    const subjectSelect  = document.getElementById('id_subject');
+    const submoduleSelect = document.getElementById('id_submodule');
+    const hint            = document.getElementById('submodule-hint');
+    const SUBMODULE_API   = "{% url 'student_management:submodules_by_subject_api' %}";
+
+    // Pre-selected values from the saved question
+    const savedSubmoduleId = "{{ question.submodule_id|default:'' }}";
+
+    function loadSubmodules(subjectId, selectAfterLoad) {
+        submoduleSelect.disabled = true;
+        submoduleSelect.innerHTML = '<option value="">-- None --</option>';
+        hint.textContent = '';
+
+        if (!subjectId) {
+            hint.textContent = 'Select a subject to load submodules.';
+            return;
+        }
+
+        fetch(SUBMODULE_API + '?subject_id=' + encodeURIComponent(subjectId))
+            .then(r => r.json())
+            .then(data => {
+                if (data.submodules && data.submodules.length) {
+                    data.submodules.forEach(sm => {
+                        const opt = document.createElement('option');
+                        opt.value = sm.id;
+                        opt.textContent = sm.name;
+                        if (String(sm.id) === selectAfterLoad) opt.selected = true;
+                        submoduleSelect.appendChild(opt);
+                    });
+                    hint.textContent = data.submodules.length + ' submodule(s) available.';
+                } else {
+                    hint.textContent = 'No submodules for this subject.';
+                }
+                submoduleSelect.disabled = false;
+            })
+            .catch(() => {
+                submoduleSelect.innerHTML = '<option value="">-- Error loading --</option>';
+                hint.textContent = 'Failed to load submodules.';
+            });
+    }
+
+    // On subject change — no pre-selection, reset submodule
+    subjectSelect.addEventListener('change', function () {
+        loadSubmodules(this.value, '');
+    });
+
+    // On page load — load submodules for the current subject and pre-select saved submodule
+    if (subjectSelect.value) {
+        loadSubmodules(subjectSelect.value, savedSubmoduleId);
+    } else {
+        hint.textContent = 'Select a subject to load submodules.';
+    }
 })();
 </script>
 {% endblock %}

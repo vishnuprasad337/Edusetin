@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <!-- Statistics Card (Placeholders) -->
+        <!-- Statistics Card -->
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
@@ -104,25 +104,30 @@
                         <div class="col-sm-6 col-md-3">
                             <div class="p-3 border rounded bg-light text-center">
                                 <div class="text-muted small mb-1">Total Mock Tests Taken</div>
-                                <div class="fs-4 fw-bold text-primary">Coming Soon</div>
+                                <div class="fs-4 fw-bold text-primary">{{ total_mock_tests }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <div class="p-3 border rounded bg-light text-center">
                                 <div class="text-muted small mb-1">Total Results</div>
-                                <div class="fs-4 fw-bold text-success">Coming Soon</div>
+                                <div class="fs-4 fw-bold text-success">{{ total_results }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <div class="p-3 border rounded bg-light text-center">
                                 <div class="text-muted small mb-1">Average Score</div>
-                                <div class="fs-4 fw-bold text-info">Coming Soon</div>
+                                <div class="fs-4 fw-bold text-info">{{ average_score }}%</div>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <div class="p-3 border rounded bg-light text-center">
                                 <div class="text-muted small mb-1">Subscription Status</div>
-                                <div class="fs-5 fw-bold text-warning mt-1">Coming Soon</div>
+                                {% if active_subscription %}
+                                    <div class="fs-5 fw-bold text-success mt-1">{{ active_subscription.plan.name }}</div>
+                                    <div class="text-muted small">Expires {{ active_subscription.expires_at|date:"M d, Y" }}</div>
+                                {% else %}
+                                    <div class="fs-5 fw-bold text-secondary mt-1">No Active Plan</div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

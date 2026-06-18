@@ -1,0 +1,460 @@
+{% extends "student_management/base.html" %}
+
+{% block title %}{{ title }} | Student Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    input[type="text"], input[type="number"], textarea, select {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .form-check-input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+    }
+
+    /* Accordion styles */
+    .section-accordion {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    .section-accordion .accordion-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        background: #f9fafb;
+        cursor: pointer;
+        user-select: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        transition: background 0.15s;
+    }
+    .section-accordion .accordion-toggle:hover {
+        background: #f1f3f5;
+    }
+    .section-accordion .accordion-toggle .acc-title {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-accordion .accordion-toggle .acc-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-accordion .acc-badge {
+        font-size: 11px;
+        font-weight: 600;
+        background: #e0e7ff;
+        color: #3730a3;
+        border-radius: 20px;
+        padding: 2px 10px;
+    }
+    .section-accordion .acc-badge.none {
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+    .section-accordion .acc-chevron {
+        font-size: 18px;
+        color: #9ca3af;
+        transition: transform 0.25s ease;
+    }
+    .section-accordion.open .acc-chevron {
+        transform: rotate(180deg);
+    }
+    .section-accordion .accordion-body {
+        display: none;
+        padding: 16px 18px 18px;
+        border-top: 1px solid #e5e7eb;
+        background: #fff;
+    }
+    .section-accordion.open .accordion-body {
+        display: block;
+    }
+
+    /* Hidden real checkbox */
+    #id_is_active {
+        display: none !important;
+    }
+
+    /* iOS-style toggle switch */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        user-select: none;
+    }
+    .toggle-row.active {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+    .toggle-row .toggle-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .toggle-row .toggle-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        transition: color 0.2s;
+    }
+    .toggle-row.active .toggle-title {
+        color: #15803d;
+    }
+    .toggle-row .toggle-sub {
+        font-size: 12px;
+        color: #9ca3af;
+        transition: color 0.2s;
+    }
+    .toggle-row.active .toggle-sub {
+        color: #86efac;
+    }
+
+    /* The pill switch */
+    .ios-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    .ios-switch .track {
+        position: absolute;
+        inset: 0;
+        background: #d1d5db;
+        border-radius: 999px;
+        transition: background 0.25s;
+    }
+    .ios-switch.on .track {
+        background: #16a34a;
+    }
+    .ios-switch .thumb {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+        transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    .ios-switch.on .thumb {
+        transform: translateX(24px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard__form__wraper">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_management:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_management:plan_list' %}">Subscription Plans</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="mb-0">{{ title }}</h4>
+        <a href="{% url 'student_management:plan_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Plans
+        </a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-4">
+
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size:12px; letter-spacing:.05em;">Plan Details</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold">Price (₹) <span class="text-danger">*</span></label>
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                    <div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold">Duration (days) <span class="text-danger">*</span></label>
+                                {{ form.duration_days }}
+                                {% if form.duration_days.errors %}
+                                    <div class="text-danger small mt-1">{{ form.duration_days.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subjects Accordion -->
+                <div class="section-accordion" id="accordion-subjects">
+                    <button type="button" class="accordion-toggle" onclick="toggleAccordion('accordion-subjects')">
+                        <span class="acc-title">
+                            <i class="fas fa-book-open" style="color:#6366f1;"></i>
+                            Subjects
+                        </span>
+                        <span class="acc-meta">
+                            <span class="acc-badge none" id="badge-subjects">0 selected</span>
+                            <i class="fas fa-chevron-down acc-chevron"></i>
+                        </span>
+                    </button>
+                    <div class="accordion-body">
+                        {% if form.subjects.field.queryset.exists %}
+                        <div class="row g-2">
+                            {% for choice in form.subjects %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted small mb-0">No active subjects available.</p>
+                        {% endif %}
+                        {% if form.subjects.errors %}
+                            <div class="text-danger small mt-1">{{ form.subjects.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Submodules Accordion -->
+                <div class="section-accordion" id="accordion-submodules">
+                    <button type="button" class="accordion-toggle" onclick="toggleAccordion('accordion-submodules')">
+                        <span class="acc-title">
+                            <i class="fas fa-layer-group" style="color:#0891b2;"></i>
+                            Submodules
+                        </span>
+                        <span class="acc-meta">
+                            <span class="acc-badge none" id="badge-submodules">0 selected</span>
+                            <i class="fas fa-chevron-down acc-chevron"></i>
+                        </span>
+                    </button>
+                    <div class="accordion-body">
+                        {% if form.submodules.field.queryset.exists %}
+                        <div class="row g-2">
+                            {% for choice in form.submodules %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted small mb-0">No active submodules available.</p>
+                        {% endif %}
+                        {% if form.submodules.errors %}
+                            <div class="text-danger small mt-1">{{ form.submodules.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Exams Accordion -->
+                <div class="section-accordion" id="accordion-exams">
+                    <button type="button" class="accordion-toggle" onclick="toggleAccordion('accordion-exams')">
+                        <span class="acc-title">
+                            <i class="fas fa-file-alt" style="color:#dc2626;"></i>
+                            Exams
+                        </span>
+                        <span class="acc-meta">
+                            <span class="acc-badge none" id="badge-exams">0 selected</span>
+                            <i class="fas fa-chevron-down acc-chevron"></i>
+                        </span>
+                    </button>
+                    <div class="accordion-body">
+                        {% if form.exams.field.queryset.exists %}
+                        <div class="row g-2">
+                            {% for choice in form.exams %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted small mb-0">No active exams available.</p>
+                        {% endif %}
+                        {% if form.exams.errors %}
+                            <div class="text-danger small mt-1">{{ form.exams.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size:12px; letter-spacing:.05em;">Status</h6>
+
+                        <!-- Hidden real checkbox rendered by Django -->
+                        {{ form.is_active }}
+
+                        <!-- iOS-style toggle switch -->
+                        <div class="toggle-row" id="status-toggle-row" onclick="toggleStatus()">
+                            <div class="toggle-info">
+                                <span class="toggle-title" id="status-label">Inactive</span>
+                                <span class="toggle-sub">Tap to change status</span>
+                            </div>
+                            <div class="ios-switch" id="ios-switch">
+                                <div class="track"></div>
+                                <div class="thumb"></div>
+                            </div>
+                        </div>
+
+                        <p class="text-muted small mt-2 mb-0">Inactive plans won't be visible to students.</p>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {% if plan %}Update Plan{% else %}Create Plan{% endif %}
+                        </button>
+                        <a href="{% url 'student_management:plan_list' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+(function () {
+
+    /* ---------- Accordion ---------- */
+    function toggleAccordion(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('open');
+    }
+    window.toggleAccordion = toggleAccordion;
+
+    /* ---------- Selection badges ---------- */
+    function updateBadge(groupName, badgeId) {
+        var checkboxes = document.querySelectorAll('input[name="' + groupName + '"]:checked');
+        var badge = document.getElementById(badgeId);
+        if (!badge) return;
+        var count = checkboxes.length;
+        badge.textContent = count + ' selected';
+        if (count > 0) {
+            badge.classList.remove('none');
+        } else {
+            badge.classList.add('none');
+        }
+    }
+
+    function bindGroupBadge(groupName, badgeId, accordionId) {
+        var checkboxes = document.querySelectorAll('input[name="' + groupName + '"]');
+        checkboxes.forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                updateBadge(groupName, badgeId);
+            });
+        });
+        updateBadge(groupName, badgeId);
+    }
+
+    bindGroupBadge('subjects',   'badge-subjects',   'accordion-subjects');
+    bindGroupBadge('submodules', 'badge-submodules', 'accordion-submodules');
+    bindGroupBadge('exams',      'badge-exams',      'accordion-exams');
+
+    /* ---------- Open accordions that have errors or pre-selected items ---------- */
+    ['subjects', 'submodules', 'exams'].forEach(function (name) {
+        var hasChecked = document.querySelectorAll('input[name="' + name + '"]:checked').length > 0;
+        var accordionId = 'accordion-' + name;
+        if (hasChecked) {
+            var el = document.getElementById(accordionId);
+            if (el) el.classList.add('open');
+        }
+    });
+
+    /* ---------- Status toggle ---------- */
+    var realCheckbox = document.getElementById('id_is_active');
+    var toggleRow    = document.getElementById('status-toggle-row');
+    var iosSwitch    = document.getElementById('ios-switch');
+    var label        = document.getElementById('status-label');
+
+    function applyStatusUI(isActive) {
+        if (isActive) {
+            toggleRow.classList.add('active');
+            iosSwitch.classList.add('on');
+            label.textContent = 'Active';
+        } else {
+            toggleRow.classList.remove('active');
+            iosSwitch.classList.remove('on');
+            label.textContent = 'Inactive';
+        }
+    }
+
+    function toggleStatus() {
+        realCheckbox.checked = !realCheckbox.checked;
+        applyStatusUI(realCheckbox.checked);
+    }
+    window.toggleStatus = toggleStatus;
+
+    /* Sync on page load (handles edit mode where checkbox is pre-checked) */
+    if (realCheckbox) {
+        applyStatusUI(realCheckbox.checked);
+    }
+
+})();
+</script>
+{% endblock %}
+
+{% endblock %}

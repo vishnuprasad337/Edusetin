@@ -66,7 +66,24 @@
                         {% endif %}
                     </div>
                 </div>
-
+                <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white border-bottom pt-3 pb-2">
+        <h6 class="mb-0 fw-semibold">Submodule <span class="text-muted small">(optional)</span></h6>
+    </div>
+    <div class="card-body p-4">
+        <label for="id_submodule" class="form-label fw-semibold">Select Submodule</label>
+        <select id="id_submodule" name="submodule" class="form-select" disabled>
+            <option value="">-- Select a subject first --</option>
+            {% for sm in submodules %}
+            <option value="{{ sm.id }}"
+                {% if post_data.submodule == sm.id|stringformat:"s" %}selected{% endif %}>
+                {{ sm.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <div class="text-muted small mt-1" id="submodule-hint">Select a subject to load submodules.</div>
+    </div>
+</div>
                 <!-- Question Text + Image -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom pt-3 pb-2">
@@ -378,6 +395,55 @@
             const fi = document.getElementById('file_' + slot); if (fi) fi.value = '';
         }
     };
+})();
+// Dynamic submodule loading
+(function () {
+    const subjectSelect = document.getElementById('id_subject');
+    const submoduleSelect = document.getElementById('id_submodule');
+    const hint = document.getElementById('submodule-hint');
+    const SUBMODULE_API = "{% url 'student_management:submodules_by_subject_api' %}";
+    const savedSubmodule = "{{ post_data.submodule|default:'' }}";
+
+    subjectSelect.addEventListener('change', function () {
+        const subjectId = this.value;
+        submoduleSelect.innerHTML = '<option value="">-- Loading... --</option>';
+        submoduleSelect.disabled = true;
+        hint.textContent = '';
+
+        if (!subjectId) {
+            submoduleSelect.innerHTML = '<option value="">-- Select a subject first --</option>';
+            hint.textContent = 'Select a subject to load submodules.';
+            return;
+        }
+
+        fetch(SUBMODULE_API + '?subject_id=' + encodeURIComponent(subjectId))
+            .then(r => r.json())
+            .then(data => {
+                submoduleSelect.innerHTML = '<option value="">-- None --</option>';
+                if (data.submodules && data.submodules.length) {
+                    data.submodules.forEach(sm => {
+                        const opt = document.createElement('option');
+                        opt.value = sm.id;
+                        opt.textContent = sm.name;
+                        if (String(sm.id) === savedSubmodule) opt.selected = true;
+                        submoduleSelect.appendChild(opt);
+                    });
+                    hint.textContent = data.submodules.length + ' submodule(s) available.';
+                } else {
+                    hint.textContent = 'No submodules for this subject.';
+                }
+                submoduleSelect.disabled = false;
+            })
+            .catch(() => {
+                submoduleSelect.innerHTML = '<option value="">-- Error loading --</option>';
+                hint.textContent = 'Failed to load submodules.';
+            });
+    });
+
+    // Auto-trigger on page load if subject is pre-selected (e.g. validation error repopulate)
+    if (subjectSelect.value) {
+        subjectSelect.dispatchEvent(new Event('change'));
+    }
 })();
 </script>
 {% endblock %}

@@ -8,10 +8,10 @@ from django.conf import settings
 from django.utils import timezone
 import secrets
 import datetime
-
+from django.http import JsonResponse
 from .forms import StudentRegistrationForm, StudentLoginForm
-from .models import Student
-
+from .models import Student,ExamAttempt, AttemptResponse
+from django.views.decorators.http import require_POST
 
 # ─────────────────────────────────────────────
 # HELPERS
@@ -54,10 +54,12 @@ def student_register(request):
     if request.user.is_authenticated:
         # Only redirect to dashboard if user actually has a Student profile
         if hasattr(request.user, 'student'):
-            return redirect('student_portal:dashboard')
+            return redirect('student_portal:plan_list')
         # Non-student authenticated user (e.g. admin) — log them out silently
         logout(request)
-
+    next_url = request.GET.get('next', '')
+    if next_url:
+        request.session['post_auth_redirect'] = next_url
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
@@ -180,7 +182,10 @@ def verify_otp(request):
 
             login(request, user)
             messages.success(request, "Registration successful! Welcome to your dashboard.")
-            return redirect('student_portal:dashboard')
+            next_url = request.session.pop('post_auth_redirect', '')
+            if next_url:
+                return redirect(next_url)
+            return redirect('student_portal:plan_list')
 
         else:
             # ── Wrong OTP ────────────────────────────────────────────────
@@ -293,19 +298,267 @@ def student_login(request):
 # ─────────────────────────────────────────────
 # DASHBOARD
 # ─────────────────────────────────────────────
+import json
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.db.models import Avg, Sum, Count, F
+
+# Tunable thresholds for the Accuracy Rate stat card.
+ACCURACY_WINDOW = 10          
+MIN_ATTEMPTS_FOR_TREND = 4    
+TREND_RECENT_WINDOW = 5       
+
 
 @login_required(login_url='student_portal:login')
 def student_dashboard(request):
-    # Hard guard: only users with a Student profile may enter
     if not hasattr(request.user, 'student'):
         logout(request)
         messages.error(request, "Please login with a student account.")
         return redirect('student_portal:login')
 
-    student = request.user.student
-    return render(request, 'student_portal/dashboard.html', {'student': student})
+    student  = request.user.student
+    now      = timezone.now()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
+    from student_management.models import Payment, Exam
+    from .models import ExamAttempt, AttemptResponse, QuizAttempt
 
+    # ── Active payments & exam access ─────────────────────────────────────────
+    active_payments = list(
+        student.payments.filter(
+            status=Payment.STATUS_SUCCESS,
+            expires_at__gt=now,
+        ).select_related('plan').prefetch_related('plan__exams')
+        .order_by('expires_at')   # soonest-expiring first
+    )
+
+    # Annotate each payment with days_until_expiry (integer, None if no expires_at)
+    for payment in active_payments:
+        if payment.expires_at:
+            delta = payment.expires_at - now
+            payment.days_until_expiry = max(0, delta.days)
+        else:
+            payment.days_until_expiry = None
+
+    exam_ids = set()
+    for payment in active_payments:
+        for exam in payment.plan.exams.filter(is_active=True):
+            exam_ids.add(exam.id)
+
+    exams = Exam.objects.filter(
+        id__in=exam_ids, is_active=True
+    ).select_related('exam_type').prefetch_related('subjects')
+
+    exams_by_type = {}
+    for exam in exams.order_by('exam_type__name', 'title'):
+        label = exam.exam_type.get_name_display()
+        exams_by_type.setdefault(label, []).append(exam)
+
+    
+    completed_attempts = ExamAttempt.objects.filter(
+        student=student,
+        status=ExamAttempt.STATUS_SUBMITTED,
+    )
+
+    total_exam_attempts = completed_attempts.count()
+    exams_this_month    = completed_attempts.filter(submitted_at__gte=month_start).count()
+
+    agg = completed_attempts.aggregate(
+        avg_score   = Avg('percentage'),
+        tot_correct = Sum('correct_count'),
+        tot_wrong   = Sum('wrong_count'),
+        tot_skipped = Sum('skipped_count'),
+    )
+   
+    avg_net_score = round(agg['avg_score']   or 0, 1)
+    total_correct = agg['tot_correct'] or 0
+    total_wrong   = agg['tot_wrong']   or 0
+    total_skipped = agg['tot_skipped'] or 0
+    total_answered = total_correct + total_wrong + total_skipped or 1
+
+    
+    correct_pct = round(total_correct  / total_answered * 100, 1)
+    wrong_pct   = round(total_wrong    / total_answered * 100, 1)
+    skipped_pct = round(total_skipped  / total_answered * 100, 1)
+
+   
+    attempts_chrono = list(
+        completed_attempts
+        .filter(submitted_at__isnull=False)
+        .order_by('submitted_at')
+    )
+    attempt_count = len(attempts_chrono)
+
+    def _accuracy(a):
+        total = a.total_questions or (a.correct_count + a.wrong_count + a.skipped_count) or 1
+        return (a.correct_count / total) * 100
+
+    
+    recent_for_accuracy = attempts_chrono[-ACCURACY_WINDOW:] if attempts_chrono else []
+    if recent_for_accuracy:
+        window_correct = sum(a.correct_count for a in recent_for_accuracy)
+        window_total = sum(
+            a.total_questions or (a.correct_count + a.wrong_count + a.skipped_count)
+            for a in recent_for_accuracy
+        ) or 1
+        accuracy_rate = round(window_correct / window_total * 100, 1)
+    else:
+        accuracy_rate = 0
+
+    # Score trend: last 10 completed exam attempts (for the line chart)
+    trend_qs = list(
+        completed_attempts
+        .filter(submitted_at__isnull=False)
+        .order_by('-submitted_at')
+        .values('exam__title', 'percentage', 'submitted_at')[:10]
+    )
+    trend_qs.reverse()
+    exam_trend_labels = [a['submitted_at'].strftime('%d %b') for a in trend_qs]
+    exam_trend_scores = [float(a['percentage'] or 0) for a in trend_qs]
+
+    
+    has_trend_data = attempt_count >= MIN_ATTEMPTS_FOR_TREND
+
+    if has_trend_data:
+        recent_n = min(TREND_RECENT_WINDOW, attempt_count // 2)
+        recent_block = attempts_chrono[-recent_n:]
+        older_block = attempts_chrono[:-recent_n]
+        recent_avg = sum(_accuracy(a) for a in recent_block) / len(recent_block)
+        older_avg = sum(_accuracy(a) for a in older_block) / len(older_block)
+        accuracy_trend = round(recent_avg - older_avg, 1)
+    else:
+        accuracy_trend = 0
+
+    # ── Quiz aggregates ───────────────────────────────────────────────────────
+    completed_quizzes = QuizAttempt.objects.filter(
+        student=student, status=QuizAttempt.STATUS_SUBMITTED
+    )
+    total_quiz_attempts = completed_quizzes.count()
+    quizzes_this_month  = completed_quizzes.filter(submitted_at__gte=month_start).count()
+
+    quiz_trend_qs = list(
+        completed_quizzes.select_related('subject')
+        .filter(submitted_at__isnull=False)
+        .order_by('-submitted_at')
+        .values('subject__name', 'percentage', 'submitted_at')[:10]
+    )
+    quiz_trend_qs.reverse()
+    quiz_trend_labels = [a['submitted_at'].strftime('%d %b') for a in quiz_trend_qs]
+    quiz_trend_scores  = [float(a['percentage'] or 0) for a in quiz_trend_qs]
+
+    # ── Subject-level performance ─────────────────────────────────────────────
+    from django.db.models import Case, When, IntegerField
+
+    subj_qs = (
+        AttemptResponse.objects
+        .filter(attempt__student=student, attempt__status=ExamAttempt.STATUS_SUBMITTED)
+        .values('question__subject__name')
+        .annotate(
+            avg_correct=Avg(
+                Case(When(is_correct=True, then=1), default=0, output_field=IntegerField())
+            ) * 100
+        )
+        .order_by('-avg_correct')
+    )
+    subject_performance = [
+        {'name': s['question__subject__name'], 'avg_score': round(s['avg_correct'] or 0, 1)}
+        for s in subj_qs if s['question__subject__name']
+    ]
+
+    # ── Peer comparison ───────────────────────────────────────────────────────
+    platform_subj_avg = {}
+    platform_qs = (
+        AttemptResponse.objects
+        .filter(attempt__status=ExamAttempt.STATUS_SUBMITTED)
+        .values('question__subject__name')
+        .annotate(
+            platform_avg=Avg(
+                Case(When(is_correct=True, then=1), default=0, output_field=IntegerField())
+            ) * 100
+        )
+    )
+    for row in platform_qs:
+        if row['question__subject__name']:
+            platform_subj_avg[row['question__subject__name']] = round(row['platform_avg'] or 0, 1)
+
+    subject_comparison = [
+        {
+            'name':       s['name'],
+            'your_score': s['avg_score'],
+            'avg_score':  platform_subj_avg.get(s['name'], 0),
+        }
+        for s in subject_performance
+    ]
+
+    # ── Platform rank ─────────────────────────────────────────────────────────
+    student_avg_qs = (
+        ExamAttempt.objects
+        .filter(status=ExamAttempt.STATUS_SUBMITTED)
+        .values('student')
+        .annotate(avg_pct=Avg('percentage'))
+    )
+    
+    students_above = sum(1 for s in student_avg_qs if float(s['avg_pct'] or 0) > float(avg_net_score))
+    total_students = student_avg_qs.count() or 1
+    rank = students_above + 1
+    rank_percentile = round((1 - students_above / total_students) * 100)
+
+    # ── Recent attempts for tables ────────────────────────────────────────────
+    recent_exam_attempts = (
+        completed_attempts
+        .select_related('exam__exam_type')
+        .order_by('-submitted_at')[:8]
+    )
+    recent_quiz_attempts = (
+        completed_quizzes
+        .select_related('subject', 'submodule')
+        .order_by('-submitted_at')[:8]
+    )
+
+    context = {
+        # Student & plan
+        'student':                 student,
+        'active_payments':         active_payments,   # now a list with .days_until_expiry
+        'has_active_subscription': bool(active_payments),
+        'exams_by_type':           exams_by_type,
+
+        # Stats
+        'accuracy_rate':           accuracy_rate,
+        'accuracy_trend':          accuracy_trend,
+        'has_trend_data':          has_trend_data,
+        'total_exam_attempts':     total_exam_attempts,
+        'exams_this_month':        exams_this_month,
+        'total_quiz_attempts':     total_quiz_attempts,
+        'quizzes_this_month':      quizzes_this_month,
+        'rank':                    rank,
+        'rank_percentile':         rank_percentile,
+
+        # Answer breakdown (lifetime totals)
+        'total_correct':           total_correct,
+        'total_wrong':             total_wrong,
+        'total_skipped':           total_skipped,
+        'correct_pct':             correct_pct,
+        'wrong_pct':               wrong_pct,
+        'skipped_pct':             skipped_pct,
+
+        # Charts (JSON for JS)
+        'exam_trend_labels_json':  json.dumps(exam_trend_labels),
+        'exam_trend_scores_json':  json.dumps(exam_trend_scores),
+        'quiz_trend_labels_json':  json.dumps(quiz_trend_labels),
+        'quiz_trend_scores_json':  json.dumps(quiz_trend_scores),
+
+        # Subject breakdown
+        'subject_performance':     subject_performance,
+        'subject_comparison':      subject_comparison,
+
+        # Tables
+        'recent_exam_attempts':    recent_exam_attempts,
+        'recent_quiz_attempts':    recent_quiz_attempts,
+    }
+    return render(request, 'student_portal/dashboard.html', context)
 # ─────────────────────────────────────────────
 # LOGOUT
 # ─────────────────────────────────────────────
@@ -327,3 +580,1108 @@ def _mask_email(email):
         return f"{visible}***@{domain}"
     except Exception:
         return email
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+
+from student_management.models import SubscriptionPlan, Payment
+
+
+def plan_list_student(request):
+    """
+    Public page — anyone can see plans.
+    'Get started' button sends unauthenticated users to register.
+    After registration they come back here.
+    """
+    plans = SubscriptionPlan.objects.filter(is_active=True).prefetch_related(
+        'subjects', 'submodules', 'exams'
+    ).order_by('price')
+
+    return render(request, 'student_portal/plan_list.html', {'plans': plans})
+
+
+
+
+import json
+from datetime import timedelta
+
+import razorpay
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils import timezone
+
+from student_management.models import SubscriptionPlan, Payment
+
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+
+
+@login_required(login_url='student_portal:register')
+def plan_checkout(request, plan_uuid):
+    plan = get_object_or_404(
+        SubscriptionPlan.objects.prefetch_related('subjects', 'submodules', 'exams'),
+        uuid=plan_uuid,
+        is_active=True,
+    )
+    student = getattr(request.user, 'student', None)
+
+    if student is None:
+        messages.error(request, "Your account doesn't have a student profile. Please log in with a student account or register.")
+        return redirect('student_portal:register')
+
+    amount_paise = int(plan.price * 100)
+
+    razorpay_order = razorpay_client.order.create({
+        'amount': amount_paise,
+        'currency': 'INR',
+        'payment_capture': 1,
+    })
+
+    payment = Payment.objects.create(
+        student=student,
+        plan=plan,
+        amount=plan.price,
+        status=Payment.STATUS_PENDING,
+        razorpay_order_id=razorpay_order['id'],
+    )
+
+    context = {
+        'plan': plan,
+        'payment': payment,
+        'razorpay_order_id': razorpay_order['id'],
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'amount_paise': amount_paise,
+        'amount_display': plan.price,
+        'student_name': student.full_name,
+        'student_email': request.user.email,
+        'plan_subjects': plan.subjects.all(),
+        'plan_submodules': plan.submodules.all(),
+        'plan_exams': plan.exams.all(),
+        'has_specific_content': plan.subjects.exists() or plan.submodules.exists() or plan.exams.exists(),
+    }
+    return render(request, 'student_portal/plan_checkout.html', context)
+
+@login_required(login_url='student_portal:register')
+def razorpay_payment_callback(request):
+    """
+    Called by Razorpay JS checkout after payment completes.
+    Verifies signature, then marks Payment as success and activates subscription.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=400)
+
+    data = json.loads(request.body)
+
+    razorpay_order_id = data.get('razorpay_order_id')
+    razorpay_payment_id = data.get('razorpay_payment_id')
+    razorpay_signature = data.get('razorpay_signature')
+
+    if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+        return JsonResponse({'status': 'error', 'message': 'Missing payment details'}, status=400)
+
+    payment = get_object_or_404(Payment, razorpay_order_id=razorpay_order_id)
+
+    # Verify only payments belonging to the logged-in student
+    if payment.student != getattr(request.user, 'student', None):
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    params_dict = {
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_payment_id': razorpay_payment_id,
+        'razorpay_signature': razorpay_signature,
+    }
+
+    try:
+        razorpay_client.utility.verify_payment_signature(params_dict)
+    except razorpay.errors.SignatureVerificationError:
+        payment.status = Payment.STATUS_FAILED
+        payment.save()
+        return JsonResponse({'status': 'error', 'message': 'Signature verification failed'}, status=400)
+
+    # Signature valid → mark success and activate plan
+    payment.razorpay_payment_id = razorpay_payment_id
+    payment.razorpay_signature = razorpay_signature
+    payment.status = Payment.STATUS_SUCCESS
+    payment.paid_at = timezone.now()
+    payment.expires_at = timezone.now() + timedelta(days=payment.plan.duration_days)
+    payment.save()
+
+    return JsonResponse({'status': 'success', 'redirect_url': reverse('student_portal:dashboard')})
+
+from django.views.decorators.cache import never_cache
+def _get_student_or_redirect(request):
+    
+    """Return the Student linked to request.user, or None."""
+    return getattr(request.user, 'student', None)
+ 
+ 
+def _has_exam_access(student, exam_id):
+    """Return True if the student has an active payment covering this exam."""
+    from student_management.models import Payment
+    return student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+        plan__exams__id=exam_id,
+    ).exists()
+ 
+ 
+def _no_cache_response(response):
+    """
+    Attach headers that prevent the browser from serving this page
+    from cache — so the back button cannot restore a submitted exam.
+    """
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response['Pragma']        = 'no-cache'
+    response['Expires']       = '0'
+    return response
+ 
+ 
+def _compute_score(attempt, exam, post_data):
+    questions = list(exam.selected_questions.filter(is_active=True))
+ 
+    correct = wrong = skipped = 0
+ 
+    for question in questions:
+        user_answer    = post_data.get(f'q_{question.id}', '').strip().upper()
+        correct_answer = question.correct_answer.strip().upper()
+ 
+        if not user_answer:
+            skipped   += 1
+            is_correct = False
+        elif user_answer == correct_answer:
+            correct   += 1
+            is_correct = True
+        else:
+            wrong     += 1
+            is_correct = False
+ 
+        AttemptResponse.objects.update_or_create(
+            attempt=attempt,
+            question=question,
+            defaults={
+                'selected_answer': user_answer,
+                'is_correct':      is_correct,
+            },
+        )
+ 
+    total_questions = len(questions)
+    marks_earned    = (correct * float(exam.marks_per_question)) - (wrong * float(exam.negative_marks))
+    total_marks     = total_questions * float(exam.marks_per_question)
+    raw_percentage  = (marks_earned / total_marks * 100) if total_marks else 0
+    percentage      = round(max(0, raw_percentage), 2)
+ 
+    return {
+        'total_questions': total_questions,
+        'correct':         correct,
+        'wrong':           wrong,
+        'skipped':         skipped,
+        'marks_earned':    round(marks_earned, 2),
+        'total_marks':     total_marks,
+        'percentage':      percentage,
+    }
+ 
+ 
+# ─────────────────────────────────────────────
+# EXAM LIST
+# ─────────────────────────────────────────────
+ 
+@never_cache
+@login_required(login_url='student_portal:login')
+def exam_list_student(request):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+
+    from student_management.models import Payment, Exam
+    from .models import ExamAttempt
+
+    active_payments = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+    ).select_related('plan').prefetch_related('plan__exams')
+
+    
+    exam_ids = set()
+    for payment in active_payments:
+        for exam in payment.plan.exams.filter(is_active=True):
+            exam_ids.add(exam.id)
+
+    
+    exams = (
+        Exam.objects.filter(id__in=exam_ids, is_active=True)
+        .select_related('exam_type')
+        .prefetch_related('subjects', 'selected_questions')
+        .order_by('exam_type__name', 'title')
+    )
+
+    # Allow-list on STATUS_SUBMITTED (not "exclude in_progress") so a
+    # timed_out attempt with zero real answers can't show up as the
+    # student's "last attempt" or count toward attempt_count below.
+    last_attempts_map = {}
+    for attempt in (
+        ExamAttempt.objects.filter(
+            student=student,
+            exam_id__in=exam_ids,
+            status=ExamAttempt.STATUS_SUBMITTED,
+        ).order_by('-started_at')
+    ):
+        if attempt.exam_id not in last_attempts_map:
+            last_attempts_map[attempt.exam_id] = attempt
+
+    in_progress_map = {}
+    for attempt in (
+        ExamAttempt.objects.filter(
+            student=student,
+            exam_id__in=exam_ids,
+            status=ExamAttempt.STATUS_IN_PROGRESS,
+        ).order_by('-started_at')
+    ):
+        if attempt.exam_id not in in_progress_map:
+            in_progress_map[attempt.exam_id] = attempt
+
+    exams_by_type = {}
+    for exam in exams:
+        exam.last_attempt        = last_attempts_map.get(exam.id)
+        exam.in_progress_attempt = in_progress_map.get(exam.id)
+        exam.attempt_count = ExamAttempt.objects.filter(
+            exam=exam,
+            status=ExamAttempt.STATUS_SUBMITTED,
+        ).values('student').distinct().count()
+        q_count = exam.selected_questions.count()
+        exam.question_count  = q_count
+        exam.total_marks_val = round(q_count * float(exam.marks_per_question), 2)
+
+        type_name = exam.exam_type.name
+        if type_name not in exams_by_type:
+            exams_by_type[type_name] = []
+        exams_by_type[type_name].append(exam)
+
+    return render(request, 'student_portal/exam_list.html', {
+        'exams_by_type':           exams_by_type,
+        'has_active_subscription': active_payments.exists(),
+    })
+ 
+ 
+# ─────────────────────────────────────────────
+# EXAM PREVIEW
+# ─────────────────────────────────────────────
+ 
+@never_cache
+@login_required(login_url='student_portal:login')
+def exam_preview(request, exam_id):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+ 
+    if not _has_exam_access(student, exam_id):
+        messages.error(request, "You don't have access to this exam.")
+        return redirect('student_portal:exam_list')
+ 
+    from student_management.models import Exam
+    exam = get_object_or_404(
+        Exam.objects.select_related('exam_type').prefetch_related(
+            'subjects', 'submodules', 'selected_questions'
+        ),
+        id=exam_id,
+        is_active=True,
+    )
+ 
+    question_count = exam.selected_questions.filter(is_active=True).count()
+    total_marks    = question_count * float(exam.marks_per_question)
+ 
+    last_attempt = (
+        ExamAttempt.objects.filter(student=student, exam=exam)
+        .exclude(status=ExamAttempt.STATUS_IN_PROGRESS)
+        .order_by('-started_at')
+        .first()
+    )
+ 
+    in_progress = (
+        ExamAttempt.objects.filter(
+            student=student,
+            exam=exam,
+            status=ExamAttempt.STATUS_IN_PROGRESS,
+        )
+        .order_by('-started_at')
+        .first()
+    )
+ 
+    return render(request, 'student_portal/exam_preview.html', {
+        'exam':           exam,
+        'question_count': question_count,
+        'total_marks':    total_marks,
+        'last_attempt':   last_attempt,
+        'in_progress':    in_progress,
+    })
+ 
+ 
+# ─────────────────────────────────────────────
+# EXAM START
+# ─────────────────────────────────────────────
+ 
+@never_cache
+@login_required(login_url='student_portal:login')
+def exam_start(request, exam_id):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+ 
+    if not _has_exam_access(student, exam_id):
+        messages.error(request, "You don't have access to this exam.")
+        return redirect('student_portal:exam_list')
+ 
+    from student_management.models import Exam
+    exam = get_object_or_404(Exam, id=exam_id, is_active=True)
+ 
+    resume_id = request.GET.get('resume')
+    if resume_id:
+        attempt = get_object_or_404(
+            ExamAttempt,
+            id=resume_id,
+            student=student,
+            exam=exam,
+        )
+ 
+        # ── BACK-BUTTON GUARD ──────────────────────────────────────────
+        # If this attempt is already submitted/timed-out, the student is
+        # trying to go back after submission. Redirect them to the result.
+        if attempt.status != ExamAttempt.STATUS_IN_PROGRESS:
+            messages.warning(request, "This attempt has already been submitted.")
+            return redirect('student_portal:exam_result', attempt_id=attempt.id)
+ 
+        elapsed   = (timezone.now() - attempt.started_at).total_seconds()
+        time_left = max(0, exam.duration_minutes * 60 - int(elapsed))
+ 
+        # If time already ran out on the server side, auto-submit now
+        if time_left == 0:
+            attempt.status       = ExamAttempt.STATUS_TIMED_OUT
+            attempt.submitted_at = timezone.now()
+            attempt.save(update_fields=['status', 'submitted_at'])
+            messages.warning(request, "Your exam time has expired.")
+            return redirect('student_portal:exam_result', attempt_id=attempt.id)
+ 
+    else:
+        # Expire any stale in-progress attempts
+        ExamAttempt.objects.filter(
+            student=student,
+            exam=exam,
+            status=ExamAttempt.STATUS_IN_PROGRESS,
+        ).update(status=ExamAttempt.STATUS_TIMED_OUT)
+ 
+        attempt   = ExamAttempt.objects.create(student=student, exam=exam)
+        time_left = exam.duration_minutes * 60
+ 
+    questions = list(
+        exam.selected_questions.filter(is_active=True)
+        .select_related('subject')
+        .prefetch_related('media_files')
+    )
+ 
+    existing_responses = {}
+    if resume_id:
+        for resp in AttemptResponse.objects.filter(attempt=attempt):
+            existing_responses[resp.question_id] = {
+                'selected_answer': resp.selected_answer,
+                'is_marked':       resp.is_marked,
+            }
+ 
+    response = render(request, 'student_portal/exam_start.html', {
+        'exam':               exam,
+        'attempt':            attempt,
+        'questions':          questions,
+        'total_questions':    len(questions),
+        'duration_seconds':   time_left,
+        'existing_responses': json.dumps(existing_responses),
+    })
+ 
+    # Prevent browser from caching this page so back button cannot restore it
+    return _no_cache_response(response)
+ 
+ 
+# ─────────────────────────────────────────────
+# EXAM AUTO-SAVE  (AJAX)
+# ─────────────────────────────────────────────
+ 
+@login_required(login_url='student_portal:login')
+@require_POST
+def exam_autosave(request, attempt_id):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return JsonResponse({'status': 'error', 'message': 'Not authenticated'}, status=401)
+ 
+    attempt = get_object_or_404(
+        ExamAttempt,
+        id=attempt_id,
+        student=student,
+        status=ExamAttempt.STATUS_IN_PROGRESS,
+    )
+ 
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+ 
+    answers      = data.get('answers', {})
+    marked       = data.get('marked', {})
+    tab_switches = int(data.get('tab_switches', 0))
+ 
+    if tab_switches > attempt.tab_switch_count:
+        attempt.tab_switch_count = tab_switches
+        attempt.save(update_fields=['tab_switch_count'])
+ 
+    for qid_str, answer in answers.items():
+        try:
+            question_id = int(qid_str)
+        except ValueError:
+            continue
+        AttemptResponse.objects.update_or_create(
+            attempt=attempt,
+            question_id=question_id,
+            defaults={
+                'selected_answer': str(answer).upper()[:1] if answer else '',
+                'is_marked':       bool(marked.get(qid_str, False)),
+                'is_correct':      False,
+            },
+        )
+ 
+    return JsonResponse({'status': 'ok'})
+ 
+ 
+# ─────────────────────────────────────────────
+# TAB-SWITCH LOG  (AJAX)
+# ─────────────────────────────────────────────
+from django.db.models import F
+@login_required(login_url='student_portal:login')
+@require_POST
+def exam_log_tab_switch(request, attempt_id):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return JsonResponse({'status': 'error'}, status=401)
+ 
+    ExamAttempt.objects.filter(
+        id=attempt_id,
+        student=student,
+        status=ExamAttempt.STATUS_IN_PROGRESS,
+    ).update(tab_switch_count=F('tab_switch_count') + 1)
+ 
+    return JsonResponse({'status': 'ok'})
+ 
+ 
+# ─────────────────────────────────────────────
+# EXAM SUBMIT
+# ─────────────────────────────────────────────
+ 
+@login_required(login_url='student_portal:login')
+@require_POST
+def exam_submit(request, exam_id):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+ 
+    if not _has_exam_access(student, exam_id):
+        messages.error(request, "Access denied.")
+        return redirect('student_portal:exam_list')
+ 
+    from student_management.models import Exam
+    exam       = get_object_or_404(Exam, id=exam_id, is_active=True)
+    attempt_id = request.POST.get('attempt_id')
+    attempt    = get_object_or_404(ExamAttempt, id=attempt_id, student=student, exam=exam)
+ 
+    # Double-submit guard — sendBeacon or back button may fire this twice
+    if attempt.status != ExamAttempt.STATUS_IN_PROGRESS:
+        return redirect('student_portal:exam_result', slug=attempt.slug)
+ 
+    time_taken   = int(request.POST.get('time_taken', 0))
+    tab_switches = int(request.POST.get('tab_switches', 0))
+    stats        = _compute_score(attempt, exam, request.POST)
+ 
+    attempt.status             = ExamAttempt.STATUS_SUBMITTED
+    attempt.submitted_at       = timezone.now()
+    attempt.time_taken_seconds = time_taken
+    attempt.total_questions    = stats['total_questions']
+    attempt.correct_count      = stats['correct']
+    attempt.wrong_count        = stats['wrong']
+    attempt.skipped_count      = stats['skipped']
+    attempt.marks_earned       = stats['marks_earned']
+    attempt.total_marks        = stats['total_marks']
+    attempt.percentage         = stats['percentage']
+    attempt.tab_switch_count   = max(attempt.tab_switch_count, tab_switches)
+    attempt.save()
+ 
+    return redirect('student_portal:exam_result', slug=attempt.slug)
+ 
+ 
+# ─────────────────────────────────────────────
+# EXAM RESULT
+# ─────────────────────────────────────────────
+ 
+@never_cache
+@login_required(login_url='student_portal:login')
+def exam_result(request, slug):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+
+    attempt = get_object_or_404(
+        ExamAttempt.objects.select_related('exam__exam_type', 'student'),
+        slug=slug,
+        student=student,
+    )
+
+    responses = (
+        attempt.responses
+        .select_related('question__subject')
+        .prefetch_related('question__media_files')
+        .order_by('question_id')
+    )
+
+    # Build enriched response list with options dict attached
+    enriched_responses = []
+    for resp in responses:
+        q = resp.question
+        options = {'A': q.option_a, 'B': q.option_b, 'C': q.option_c, 'D': q.option_d}
+        if q.option_e:
+            options['E'] = q.option_e
+        enriched_responses.append({
+            'response':       resp,
+            'question':       q,
+            'options':        options,
+            'selected':       resp.selected_answer.upper() if resp.selected_answer else '',
+            'correct_answer': q.correct_answer.upper(),
+            'is_correct':     resp.is_correct,
+            'is_skipped':     not resp.selected_answer,
+        })
+
+    m, s = divmod(attempt.time_taken_seconds, 60)
+
+    return render(request, 'student_portal/exam_result.html', {
+        'attempt':             attempt,
+        'exam':                attempt.exam,
+        'enriched_responses':  enriched_responses,
+        'subject_performance': attempt.subject_performance,
+        'time_display':        f"{m}m {s}s",
+        'percentage':          float(attempt.percentage),
+        'marks_earned':        float(attempt.marks_earned),
+        'total_marks':         float(attempt.total_marks),
+    })
+ 
+# ─────────────────────────────────────────────
+# EXAM HISTORY
+# ─────────────────────────────────────────────
+ 
+@never_cache
+@login_required(login_url='student_portal:login')
+def exam_history(request):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+
+    attempts = (
+        ExamAttempt.objects.filter(student=student)
+        .exclude(status=ExamAttempt.STATUS_IN_PROGRESS)
+        .select_related('exam__exam_type')
+        .order_by('-submitted_at')
+    )
+
+    return render(request, 'student_portal/exam_history.html', {
+        'attempts': attempts,
+    })
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth import update_session_auth_hash
+ 
+from .forms import StudentUpdateForm
+ 
+ 
+@login_required
+def student_detail(request):
+    try:
+        student = request.user.student
+    except Exception:
+        messages.error(request, "Student profile not found.")
+        return redirect('student_portal:plan_list')
+ 
+    # Fetch all payments ordered by most recent
+    payments = student.payments.select_related('plan').order_by('-created_at')
+ 
+    return render(request, 'student_portal/student_detail.html', {
+        'student':  student,
+        'user':     request.user,
+        'form':     StudentUpdateForm(instance=student),
+        'payments': payments,
+    })
+ 
+ 
+@login_required
+def student_update(request):
+    try:
+        student = request.user.student
+    except Exception:
+        messages.error(request, "Student profile not found.")
+        return redirect('student_portal:plan_list')
+ 
+    if request.method == 'POST':
+        form = StudentUpdateForm(request.POST, request.FILES, instance=student)
+        if form.is_valid():
+            updated_student = form.save()
+            update_session_auth_hash(request, updated_student.user)
+            messages.success(request, "Profile updated successfully.")
+            return redirect('student_portal:student_detail')
+    else:
+        form = StudentUpdateForm(instance=student)
+ 
+    return render(request, 'student_portal/student_update.html', {
+        'form':    form,
+        'student': student,
+    })
+
+import random
+from .models import QuizAttempt, QuizAttemptResponse
+ 
+ 
+def _get_accessible_subject_ids(student):
+    """Return set of subject IDs the student can access via active payments."""
+    from student_management.models import Payment
+    from django.utils import timezone
+ 
+    active_payments = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+    ).prefetch_related('plan__subjects', 'plan__submodules', 'plan__exams')
+ 
+    subject_ids = set()
+    for payment in active_payments:
+        for subj in payment.plan.subjects.filter(is_active=True):
+            subject_ids.add(subj.id)
+        for submod in payment.plan.submodules.filter(is_active=True):
+            subject_ids.add(submod.subject_id)
+        for exam in payment.plan.exams.filter(is_active=True):
+            for subj in exam.subjects.filter(is_active=True):
+                subject_ids.add(subj.id)
+    return subject_ids
+ 
+ 
+def _get_accessible_submodule_ids(student, subject_id):
+    """Return set of submodule IDs in a subject accessible to the student."""
+    from student_management.models import Payment, SubModule
+    from django.utils import timezone
+ 
+    active_payments = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+    ).prefetch_related('plan__subjects', 'plan__submodules', 'plan__exams')
+ 
+    submodule_ids = set()
+    for payment in active_payments:
+        # If the plan includes the whole subject, all its submodules are accessible
+        if payment.plan.subjects.filter(id=subject_id).exists():
+            ids = SubModule.objects.filter(subject_id=subject_id, is_active=True).values_list('id', flat=True)
+            submodule_ids.update(ids)
+        # Specific submodules granted
+        for submod in payment.plan.submodules.filter(subject_id=subject_id, is_active=True):
+            submodule_ids.add(submod.id)
+        # Via exams
+        for exam in payment.plan.exams.filter(is_active=True):
+            if exam.subjects.filter(id=subject_id).exists():
+                ids = SubModule.objects.filter(subject_id=subject_id, is_active=True).values_list('id', flat=True)
+                submodule_ids.update(ids)
+            for submod in exam.submodules.filter(subject_id=subject_id, is_active=True):
+                submodule_ids.add(submod.id)
+    return submodule_ids
+ 
+ 
+# ─────────────────────────────────────────────
+# QUIZ SETUP  — choose subject / submodule / count
+# ─────────────────────────────────────────────
+ 
+@login_required(login_url='student_portal:login')
+def quiz_setup(request):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+ 
+    from student_management.models import Subject, SubModule
+ 
+    subject_ids    = _get_accessible_subject_ids(student)
+    subjects       = Subject.objects.filter(id__in=subject_ids, is_active=True).order_by('name')
+ 
+    # Build subject → submodules map (only accessible ones)
+    subject_submodules = {}
+    for subj in subjects:
+        accessible_sm_ids = _get_accessible_submodule_ids(student, subj.id)
+        sms = SubModule.objects.filter(id__in=accessible_sm_ids, is_active=True).order_by('order', 'name')
+        subject_submodules[subj.id] = list(sms.values('id', 'name'))
+ 
+    import json
+    return render(request, 'student_portal/quiz_setup.html', {
+        'subjects':          subjects,
+        'subject_submodules_json': json.dumps(subject_submodules),
+        'has_subscription':  bool(subject_ids),
+    })
+ 
+ 
+# ─────────────────────────────────────────────
+# QUIZ GENERATE  — POST: create attempt + questions
+# ─────────────────────────────────────────────
+ 
+@login_required(login_url='student_portal:login')
+def quiz_generate(request):
+    if request.method != 'POST':
+        return redirect('student_portal:quiz_setup')
+ 
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+ 
+    from student_management.models import Question, Subject, SubModule
+ 
+    subject_id    = request.POST.get('subject_id', '').strip()
+    submodule_id  = request.POST.get('submodule_id', '').strip()
+    num_questions = int(request.POST.get('num_questions', 10))
+    num_questions = max(5, min(num_questions, 50))  # clamp 5-50
+ 
+    
+    accessible_subject_ids = _get_accessible_subject_ids(student)
+    if not subject_id or int(subject_id) not in accessible_subject_ids:
+        messages.error(request, "You don't have access to this subject.")
+        return redirect('student_portal:quiz_setup')
+ 
+    subject = Subject.objects.get(id=subject_id)
+    submodule = None
+ 
+    qs = Question.objects.filter(subject_id=subject_id, is_active=True)
+ 
+    if submodule_id:
+        accessible_sm_ids = _get_accessible_submodule_ids(student, int(subject_id))
+        if int(submodule_id) not in accessible_sm_ids:
+            messages.error(request, "You don't have access to this submodule.")
+            return redirect('student_portal:quiz_setup')
+        submodule = SubModule.objects.get(id=submodule_id)
+        qs = qs.filter(submodule_id=submodule_id)
+ 
+    question_pool = list(qs.values_list('id', flat=True))
+    if not question_pool:
+        messages.error(request, "No questions available for the selected topic.")
+        return redirect('student_portal:quiz_setup')
+ 
+    selected_ids = random.sample(question_pool, min(num_questions, len(question_pool)))
+    questions    = list(Question.objects.filter(id__in=selected_ids).select_related('subject').prefetch_related('media_files'))
+    random.shuffle(questions)
+ 
+    
+    attempt = QuizAttempt.objects.create(
+        student=student,
+        subject=subject,
+        submodule=submodule,
+    )
+ 
+    return render(request, 'student_portal/quiz_take.html', {
+        'attempt':   attempt,
+        'questions': questions,
+        'subject':   subject,
+        'submodule': submodule,
+    })
+ 
+ 
+
+ 
+# ─────────────────────────────────────────────
+# QUIZ SUBMIT
+# ─────────────────────────────────────────────
+
+@login_required(login_url='student_portal:login')
+@require_POST
+def quiz_submit(request, attempt_id):
+    from django.utils import timezone
+    from student_management.models import Question
+
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+
+    attempt = get_object_or_404(QuizAttempt, id=attempt_id, student=student)
+
+    if attempt.status != QuizAttempt.STATUS_IN_PROGRESS:
+        return redirect('student_portal:quiz_result', attempt_id=attempt.id)
+
+    question_ids = request.POST.getlist('question_ids')
+    questions    = Question.objects.filter(id__in=question_ids)
+    time_taken   = int(request.POST.get('time_taken', 0))
+
+    correct = wrong = skipped = 0
+    MARKS_PER_Q = 1.0
+    NEG_MARKS   = 0.25   
+
+    for question in questions:
+        user_answer    = request.POST.get(f'q_{question.id}', '').strip().upper()
+        correct_answer = question.correct_answer.strip().upper()
+
+        if not user_answer:
+            skipped   += 1
+            is_correct = False
+        elif user_answer == correct_answer:
+            correct   += 1
+            is_correct = True
+        else:
+            wrong     += 1
+            is_correct = False
+
+        QuizAttemptResponse.objects.update_or_create(
+            attempt=attempt,
+            question=question,
+            defaults={
+                'selected_answer': user_answer,
+                'is_correct':      is_correct,
+            },
+        )
+
+    total_q        = len(question_ids)
+    marks          = (correct * MARKS_PER_Q) - (wrong * NEG_MARKS)
+    total_marks    = total_q * MARKS_PER_Q
+    raw_percentage = (marks / total_marks * 100) if total_marks else 0
+    percentage     = round(max(0, raw_percentage), 2)
+
+    attempt.status          = QuizAttempt.STATUS_SUBMITTED
+    attempt.submitted_at    = timezone.now()
+    attempt.total_questions = total_q
+    attempt.correct_count   = correct
+    attempt.wrong_count     = wrong
+    attempt.skipped_count   = skipped
+    attempt.marks_earned    = round(marks, 2)
+    attempt.total_marks     = total_marks
+    attempt.percentage      = percentage
+
+    # Persist time taken if the model has this field
+    if hasattr(attempt, 'time_taken_seconds'):
+        attempt.time_taken_seconds = time_taken
+
+    attempt.save()
+
+    return redirect('student_portal:quiz_result', attempt_id=attempt.id)
+ 
+ 
+
+ 
+# ─────────────────────────────────────────────
+# QUIZ RESULT
+# ─────────────────────────────────────────────
+
+@login_required(login_url='student_portal:login')
+def quiz_result(request, attempt_id):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+
+    attempt = get_object_or_404(
+        QuizAttempt.objects.select_related('subject', 'submodule'),
+        id=attempt_id,
+        student=student,
+    )
+
+    responses = (
+        attempt.responses
+        .select_related('question__subject')
+        .prefetch_related('question__media_files')
+        .order_by('question_id')
+    )
+
+    enriched = []
+    for resp in responses:
+        q = resp.question
+        options = {'A': q.option_a, 'B': q.option_b, 'C': q.option_c, 'D': q.option_d}
+        if q.option_e:
+            options['E'] = q.option_e
+
+        selected_clean = (resp.selected_answer or '').strip().upper()
+
+        enriched.append({
+            'response':       resp,
+            'question':       q,
+            'options':        options,
+            'selected':       selected_clean,
+            'correct_answer': q.correct_answer.upper(),
+            'is_correct':     resp.is_correct,
+            'is_skipped':     selected_clean == '',
+        })
+
+    return render(request, 'student_portal/quiz_result.html', {
+        'attempt':    attempt,
+        'enriched':   enriched,
+        'percentage': float(attempt.percentage),
+    })
+ 
+ 
+# ─────────────────────────────────────────────
+# QUIZ HISTORY
+# ─────────────────────────────────────────────
+ 
+@login_required(login_url='student_portal:login')
+def quiz_history(request):
+    student = _get_student_or_redirect(request)
+    if not student:
+        return redirect('student_portal:login')
+ 
+    attempts = (
+        QuizAttempt.objects.filter(student=student, status=QuizAttempt.STATUS_SUBMITTED)
+        .select_related('subject', 'submodule')
+        .order_by('-submitted_at')
+    )
+ 
+    return render(request, 'student_portal/quiz_history.html', {'attempts': attempts})
+from django.utils.timesince import timesince
+@login_required
+
+def get_notifications(request):
+    """
+    Returns real-time notifications for the student based on:
+    - New subscription plans added in the last 30 days
+    - New exams added to their accessible plans
+    - New subjects / submodules added to their accessible plans
+    """
+    student = getattr(request.user, 'student', None)
+    if not student:
+        return JsonResponse({'notifications': [], 'unread_count': 0})
+ 
+    from student_management.models import (
+        SubscriptionPlan, Exam, Subject, SubModule, Payment
+    )
+ 
+    now = timezone.now()
+    cutoff_30 = now - datetime.timedelta(days=30)
+    cutoff_7  = now - datetime.timedelta(days=7)
+ 
+    notifications = []
+ 
+    # ── 1. New subscription plans launched (last 30 days) ────────────────────
+    new_plans = SubscriptionPlan.objects.filter(
+        is_active=True,
+        created_at__gte=cutoff_30,
+    ).order_by('-created_at')[:5]
+ 
+    for plan in new_plans:
+        notifications.append({
+            'type':    'new_plan',
+            'icon':    'icon-tag',
+            'color':   'bg-primary',
+            'title':   f'New Plan: {plan.name}',
+            'desc':    f'₹{plan.price} · {plan.duration_days} days validity',
+            'time':    timesince(plan.created_at) + ' ago',
+            'created': plan.created_at.isoformat(),
+            'unread':  True,
+        })
+ 
+    # ── 2. New exams added to the student's accessible plans ─────────────────
+    active_payments = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=now,
+    ).prefetch_related('plan__exams')
+ 
+    accessible_exam_ids = set()
+    for payment in active_payments:
+        for exam in payment.plan.exams.filter(is_active=True):
+            accessible_exam_ids.add(exam.id)
+ 
+    new_exams = Exam.objects.filter(
+        id__in=accessible_exam_ids,
+        created_at__gte=cutoff_7,
+    ).select_related('exam_type').order_by('-created_at')[:5]
+ 
+    for exam in new_exams:
+        q_count = exam.selected_questions.count()
+        notifications.append({
+            'type':    'new_exam',
+            'icon':    'icon-clipboard-list',
+            'color':   'bg-success',
+            'title':   f'New Mock Test Added',
+            'desc':    f'{exam.title} · {q_count} questions · {exam.duration_minutes} min',
+            'time':    timesince(exam.created_at) + ' ago',
+            'created': exam.created_at.isoformat(),
+            'unread':  True,
+        })
+ 
+    # ── 3. New subjects added to accessible plans (last 30 days) ─────────────
+    accessible_subject_ids = set()
+    for payment in active_payments:
+        for subj in payment.plan.subjects.filter(is_active=True):
+            accessible_subject_ids.add(subj.id)
+ 
+    new_subjects = Subject.objects.filter(
+        id__in=accessible_subject_ids,
+        created_at__gte=cutoff_30,
+    ).order_by('-created_at')[:5]
+ 
+    for subj in new_subjects:
+        notifications.append({
+            'type':    'new_subject',
+            'icon':    'icon-book-open',
+            'color':   'bg-info',
+            'title':   f'New Subject Available',
+            'desc':    f'{subj.name} added to your plan',
+            'time':    timesince(subj.created_at) + ' ago',
+            'created': subj.created_at.isoformat(),
+            'unread':  True,
+        })
+ 
+    # ── 4. New submodules added to accessible subjects (last 30 days) ────────
+    accessible_sm_ids = set()
+    for payment in active_payments:
+        for sm in payment.plan.submodules.filter(is_active=True):
+            accessible_sm_ids.add(sm.id)
+ 
+    new_submodules = SubModule.objects.filter(
+        id__in=accessible_sm_ids,
+        created_at__gte=cutoff_30,
+    ).select_related('subject').order_by('-created_at')[:5]
+ 
+    for sm in new_submodules:
+        notifications.append({
+            'type':    'new_submodule',
+            'icon':    'icon-layers',
+            'color':   'bg-warning',
+            'title':   f'New Topic Added',
+            'desc':    f'{sm.name} · {sm.subject.name}',
+            'time':    timesince(sm.created_at) + ' ago',
+            'created': sm.created_at.isoformat(),
+            'unread':  True,
+        })
+ 
+    # ── 5. Plan expiry warnings ───────────────────────────────────────────────
+    expiring_soon = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=now,
+        expires_at__lte=now + datetime.timedelta(days=7),
+    ).select_related('plan').order_by('expires_at')
+ 
+    for payment in expiring_soon:
+        delta = payment.expires_at - now
+        days_left = delta.days
+        notifications.append({
+            'type':    'expiry_warning',
+            'icon':    'icon-clock',
+            'color':   'bg-danger',
+            'title':   f'Plan Expiring Soon',
+            'desc':    f'{payment.plan.name} expires in {days_left} day{"s" if days_left != 1 else ""}',
+            'time':    timesince(payment.paid_at) + ' ago' if payment.paid_at else '',
+            'created': payment.expires_at.isoformat(),
+            'unread':  days_left <= 3,
+        })
+ 
+    # Sort all by created date descending
+    notifications.sort(key=lambda x: x['created'], reverse=True)
+    notifications = notifications[:15]  # cap at 15
+ 
+    unread_count = sum(1 for n in notifications if n['unread'])
+ 
+    return JsonResponse({
+        'notifications': notifications,
+        'unread_count':  unread_count,
+    })

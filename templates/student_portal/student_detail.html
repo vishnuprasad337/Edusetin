@@ -1,0 +1,361 @@
+{% extends "student_portal/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  /* ── Blue design tokens ── */
+  :root {
+    --blue-50:  #e6f1fb;
+    --blue-100: #b5d4f4;
+    --blue-200: #85b7eb;
+    --blue-400: #378add;
+    --blue-600: #185fa5;
+    --blue-800: #0c447c;
+    --blue-900: #042c53;
+  }
+
+  /* ── Avatar ── */
+  .sd-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--blue-200);
+  }
+  .sd-avatar-initials {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--blue-50);
+    border: 3px solid var(--blue-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--blue-600);
+  }
+
+  /* ── Stat pill ── */
+  .sd-stat-pill {
+    background: var(--blue-50);
+    border: 1px solid var(--blue-100);
+    border-radius: 10px;
+    padding: 10px 16px;
+    flex: 1;
+    min-width: 110px;
+    text-align: center;
+  }
+  .sd-stat-pill .sd-stat-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--blue-800);
+    line-height: 1;
+  }
+  .sd-stat-pill .sd-stat-lbl {
+    font-size: 0.72rem;
+    color: var(--blue-600);
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 600;
+  }
+
+  /* ── Section header accent ── */
+  .sd-section-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--blue-600);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    border-left: 3px solid var(--blue-400);
+    padding-left: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Info row ── */
+  .sd-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(56,138,221,.08);
+    font-size: 0.875rem;
+  }
+  .sd-info-row:last-child { border-bottom: none; }
+  .sd-info-lbl { color: #6b7280; }
+  .sd-info-val { font-weight: 600; color: #111827; }
+
+  /* ── Payment table ── */
+  .sd-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .sd-table thead tr {
+    background: var(--blue-50);
+    border-bottom: 2px solid var(--blue-100);
+  }
+  .sd-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--blue-800);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .sd-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(56,138,221,.07);
+    vertical-align: middle;
+  }
+  .sd-table tbody tr:last-child td { border-bottom: none; }
+  .sd-table tbody tr:hover { background: var(--blue-50); }
+
+  /* ── Status badges ── */
+  .sd-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+  }
+  .sd-badge-success { background: #dcfce7; color: #166534; }
+  .sd-badge-pending { background: #fef9c3; color: #854d0e; }
+  .sd-badge-failed  { background: #fee2e2; color: #991b1b; }
+  .sd-badge-active  { background: var(--blue-50); color: var(--blue-800); }
+  .sd-badge-inactive{ background: #f3f4f6; color: #374151; }
+  .sd-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .7;
+  }
+
+  /* ── Edit button ── */
+  .sd-btn-edit {
+    background: var(--blue-600);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background .15s;
+  }
+  .sd-btn-edit:hover { background: var(--blue-800); color: #fff; text-decoration: none; }
+
+  /* ── Empty state ── */
+  .sd-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+  }
+  .sd-empty i { font-size: 2rem; margin-bottom: 8px; display: block; }
+</style>
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">Account details and payment history</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'student_portal:student_update' %}" class="sd-btn-edit">
+      <i class="icon-edit"></i> Edit Profile
+    </a>
+  </div>
+</div>
+
+{% if messages %}
+  {% for message in messages %}
+  <div class="ai-insight-banner mb-4"
+       style="border-color:#22c55e; background:rgba(34,197,94,.06); margin-bottom:1.5rem;">
+    <div class="ai-banner-icon" style="color:#22c55e;"><i class="icon-circle-check"></i></div>
+    <div class="ai-banner-content">
+      <p class="ai-banner-text mb-0">{{ message }}</p>
+    </div>
+  </div>
+  {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+
+  <!-- ── Left column ── -->
+  <div class="col-lg-4">
+
+    <!-- Profile card -->
+    <div class="admio-card mb-4">
+      <div class="admio-card-body d-flex flex-column align-items-center text-center gap-3 py-4">
+
+        {% if student.profile_image %}
+          <img src="{{ student.profile_image.url }}" alt="{{ student.full_name }}" class="sd-avatar">
+        {% else %}
+          <div class="sd-avatar-initials">{{ student.full_name|slice:":1"|upper }}</div>
+        {% endif %}
+
+        <div>
+          <div class="fw-700 fs-5 mb-1">{{ student.full_name }}</div>
+          <div class="text-secondary-c text-sm">{{ student.user.email }}</div>
+        </div>
+
+        <span class="sd-badge {% if student.is_active %}sd-badge-active{% else %}sd-badge-inactive{% endif %}">
+          {% if student.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+
+      </div>
+    </div>
+
+    <!-- Account stats -->
+    <div class="admio-card mb-4">
+      <div class="admio-card-body">
+        <div class="sd-section-title">Account Stats</div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="sd-stat-pill">
+            <div class="sd-stat-val">{{ student.exam_attempts.count }}</div>
+            <div class="sd-stat-lbl">Exams Taken</div>
+          </div>
+          <div class="sd-stat-pill">
+            <div class="sd-stat-val">{{ payments|length }}</div>
+            <div class="sd-stat-lbl">Payments</div>
+          </div>
+          <div class="sd-stat-pill">
+            <div class="sd-stat-val">
+              {% with active_count=payments|dictsortreversed:"created_at" %}
+                {{ student.payments.all|length }}
+              {% endwith %}
+            </div>
+            <div class="sd-stat-lbl">Total Orders</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account info -->
+    <div class="admio-card">
+      <div class="admio-card-body">
+        <div class="sd-section-title">Account Info</div>
+        <div class="sd-info-row">
+          <span class="sd-info-lbl">Member Since</span>
+          <span class="sd-info-val">{{ student.created_at|date:"d M Y" }}</span>
+        </div>
+        <div class="sd-info-row">
+          <span class="sd-info-lbl">Username</span>
+          <span class="sd-info-val">{{ student.user.username }}</span>
+        </div>
+        <div class="sd-info-row">
+          <span class="sd-info-lbl">Status</span>
+          <span class="sd-info-val">{% if student.is_active %}Active{% else %}Inactive{% endif %}</span>
+        </div>
+        <div class="sd-info-row" style="border-bottom:none;">
+          <span class="sd-info-lbl">Last Login</span>
+          <span class="sd-info-val">{{ student.user.last_login|date:"d M Y" }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Right column ── -->
+  <div class="col-lg-8">
+
+    <!-- Payment history -->
+    <div class="admio-card">
+      <div class="admio-card-header">
+        <h2 class="card-title mb-0" style="color:var(--blue-800,#0c447c);">
+          <i class="icon-credit-card me-2" style="color:#378add;"></i>
+          Payment History
+        </h2>
+        <span class="sd-badge sd-badge-active">{{ payments|length }} record{{ payments|length|pluralize }}</span>
+      </div>
+
+      <div class="admio-card-body" style="padding:0;">
+        {% if payments %}
+        <div style="overflow-x:auto;">
+          <table class="sd-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Plan</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Transaction ID</th>
+                <th>Date</th>
+                <th>Expires</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for payment in payments %}
+              <tr>
+                <td style="color:#9ca3af; font-size:0.75rem;">{{ forloop.counter }}</td>
+                <td>
+                  <div style="font-weight:600; color:#111827;">{{ payment.plan.name }}</div>
+                  <div style="font-size:0.75rem; color:#6b7280;">
+                    {{ payment.plan.duration_days }} day{{ payment.plan.duration_days|pluralize }}
+                  </div>
+                </td>
+                <td>
+                  <span style="font-weight:700; color:var(--blue-800,#0c447c);">
+                    ₹{{ payment.amount }}
+                  </span>
+                </td>
+                <td>
+                  {% if payment.status == 'success' %}
+                    <span class="sd-badge sd-badge-success">Paid</span>
+                  {% elif payment.status == 'pending' %}
+                    <span class="sd-badge sd-badge-pending">Pending</span>
+                  {% else %}
+                    <span class="sd-badge sd-badge-failed">Failed</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if payment.transaction_id %}
+                    <code style="font-size:0.72rem; background:#f3f4f6; padding:2px 6px; border-radius:4px; color:#374151;">
+                      {{ payment.transaction_id|truncatechars:20 }}
+                    </code>
+                  {% else %}
+                    <span style="color:#d1d5db;">—</span>
+                  {% endif %}
+                </td>
+                <td style="white-space:nowrap; color:#374151;">
+                  {{ payment.created_at|date:"d M Y" }}
+                  <div style="font-size:0.72rem; color:#9ca3af;">{{ payment.created_at|date:"H:i" }}</div>
+                </td>
+                <td style="white-space:nowrap;">
+                  {% if payment.expires_at %}
+                    <span style="color:#374151;">{{ payment.expires_at|date:"d M Y" }}</span>
+                  {% else %}
+                    <span style="color:#d1d5db;">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="sd-empty">
+          <i class="icon-receipt-x"></i>
+          <p class="mb-0 fw-600">No payments yet</p>
+          <p class="text-sm mt-1">Purchase a plan to see your payment history here.</p>
+          <a href="{% url 'student_portal:plan_list' %}" class="sd-btn-edit mt-3" style="display:inline-flex;">
+            <i class="icon-shopping-bag"></i> Browse Plans
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

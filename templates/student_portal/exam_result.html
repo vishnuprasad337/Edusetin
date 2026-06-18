@@ -1,0 +1,331 @@
+{% extends "student_portal/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  .result-ring{
+    width:160px; height:160px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    background: conic-gradient(#7c3aed {{ percentage }}%, var(--admio-border-color,#e5e7eb) {{ percentage }}% 100%);
+    margin:0 auto;
+  }
+  .result-ring-inner{
+    width:128px; height:128px;
+    border-radius:50%;
+    background: var(--admio-card-bg,#fff);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+  }
+  .result-ring-inner .pct{ font-size:1.8rem; font-weight:800; }
+  .result-ring-inner .lbl{ font-size:.8rem; color:var(--admio-text-secondary,#6b7280); }
+
+  .review-item{
+    border:2px solid var(--admio-border-color,#e5e7eb);
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:14px;
+  }
+  .review-item.correct  { border-color:#22c55e; background: rgba(34,197,94,.05); }
+  .review-item.wrong    { border-color:#ef4444; background: rgba(239,68,68,.05); }
+  .review-item.skipped  { border-color:var(--admio-border-color,#e5e7eb); }
+
+  .review-option{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; border-radius:10px;
+    border:1.5px solid var(--admio-border-color,#e5e7eb);
+    margin-bottom:6px; font-size:.92rem;
+    transition: all .15s;
+  }
+  .review-option.is-correct          { border-color:#22c55e; background: rgba(34,197,94,.08); }
+  .review-option.is-selected-wrong   { border-color:#ef4444; background: rgba(239,68,68,.08); }
+  .review-option.is-your-correct     { border-color:#22c55e; background: rgba(34,197,94,.12); }
+
+  .review-option-key{
+    width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.78rem; font-weight:700; flex-shrink:0;
+    background: var(--admio-input-bg,#f3f4f6);
+  }
+  .review-option.is-correct .review-option-key        { background:#22c55e; color:#fff; }
+  .review-option.is-selected-wrong .review-option-key  { background:#ef4444; color:#fff; }
+  .review-option.is-your-correct .review-option-key    { background:#22c55e; color:#fff; }
+
+  .opt-label{
+    font-size:.72rem; font-weight:600; padding:2px 8px;
+    border-radius:20px; white-space:nowrap; flex-shrink:0;
+  }
+  .opt-label.correct-label  { background:#dcfce7; color:#15803d; }
+  .opt-label.wrong-label    { background:#fee2e2; color:#b91c1c; }
+  .opt-label.your-label     { background:#dbeafe; color:#1d4ed8; }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Exam Result</h1>
+        <p class="page-subtitle">{{ exam.custom_name|default:exam.title }}</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'student_portal:exam_history' %}" class="btn-admio btn-white btn-sm">
+            <i class="icon-clock"></i> Exam History
+        </a>
+        <a href="{% url 'student_portal:exam_list' %}" class="btn-admio btn-ai btn-sm">
+            <i class="icon-list"></i> All Exams
+        </a>
+    </div>
+</div>
+
+<!-- Score Summary -->
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-4">
+        <div class="admio-card h-100">
+            <div class="admio-card-body d-flex flex-column align-items-center justify-content-center text-center">
+                <div class="result-ring mb-3">
+                    <div class="result-ring-inner">
+                        <span class="pct">{{ percentage }}%</span>
+                        <span class="lbl">Score</span>
+                    </div>
+                </div>
+                <div class="fw-700 fs-5 mb-1">
+                    {{ marks_earned }} / {{ total_marks }} Marks
+                </div>
+                {% if attempt.status == attempt.STATUS_TIMED_OUT %}
+                <span class="badge-admio badge-orange badge-dot">Timed Out</span>
+                {% else %}
+                <span class="badge-admio badge-green badge-dot">Submitted</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="admio-card h-100">
+            <div class="admio-card-header">
+                <h2 class="card-title mb-0">Performance Summary</h2>
+            </div>
+            <div class="admio-card-body">
+                <div class="row g-3">
+
+                    <div class="col-sm-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-icon green admio-bg-green"><i class="icon-check-check"></i></div>
+                            </div>
+                            <div class="stat-value">{{ attempt.correct_count }}</div>
+                            <div class="stat-label">Correct</div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-icon orange admio-bg-orange"><i class="icon-x"></i></div>
+                            </div>
+                            <div class="stat-value">{{ attempt.wrong_count }}</div>
+                            <div class="stat-label">Wrong</div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-icon cyan admio-bg-cyan"><i class="icon-minus-circle"></i></div>
+                            </div>
+                            <div class="stat-value">{{ attempt.skipped_count }}</div>
+                            <div class="stat-label">Skipped</div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-icon purple admio-bg-purple"><i class="icon-hourglass"></i></div>
+                            </div>
+                            <div class="stat-value text-truncate" style="font-size:1.6rem;">{{ time_display }}</div>
+                            <div class="stat-label">Time Taken</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <div class="row g-2 text-sm">
+                    <div class="col-6 col-md-3">
+                        <span class="text-secondary-c">Total Questions:</span>
+                        <span class="fw-700">{{ attempt.total_questions }}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-secondary-c">Exam Type:</span>
+                        <span class="fw-700">{{ exam.exam_type.get_name_display }}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-secondary-c">Tab Switches:</span>
+                        <span class="fw-700">{{ attempt.tab_switch_count }}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-secondary-c">Submitted:</span>
+                        <span class="fw-700">{{ attempt.submitted_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Subject-wise Performance -->
+{% if subject_performance %}
+<div class="admio-card mb-4">
+    <div class="admio-card-header">
+        <h2 class="card-title mb-0">Subject-wise Performance</h2>
+    </div>
+    <div class="admio-card-body admio-card-body-sm">
+        <div class="d-flex flex-column gap-3">
+            {% for subject_name, perf in subject_performance.items %}
+            <div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-sm fw-600">{{ subject_name }}</span>
+                    <span class="text-sm fw-700">{{ perf.correct }}/{{ perf.total }} ({{ perf.percentage }}%)</span>
+                </div>
+                <div class="progress-admio">
+                    <div class="progress-fill progress-purple" style="width: {{ perf.percentage }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Answer Review -->
+<div class="admio-card">
+    <div class="admio-card-header">
+        <h2 class="card-title mb-0">Answer Review</h2>
+    </div>
+    <div class="admio-card-body">
+
+        {% for item in enriched_responses %}
+        <div class="review-item {% if item.is_skipped %}skipped{% elif item.is_correct %}correct{% else %}wrong{% endif %}">
+
+            <!-- Question header -->
+            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                <span class="badge-admio badge-purple">Question {{ forloop.counter }}</span>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if item.question.subject %}
+                    <span class="badge-admio badge-gray">{{ item.question.subject.name }}</span>
+                    {% endif %}
+                    {% if item.is_skipped %}
+                    <span class="badge-admio badge-gray badge-dot">Skipped</span>
+                    {% elif item.is_correct %}
+                    <span class="badge-admio badge-green badge-dot">Correct</span>
+                    {% else %}
+                    <span class="badge-admio badge-red badge-dot">Wrong</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Question text -->
+            <h5 class="fw-700 mb-3">{{ item.question.question_text }}</h5>
+
+            <!-- Question media -->
+            {% for media in item.question.media_files.all %}
+                {% if media.media_type == 'QUESTION' %}
+                <img src="{{ media.effective_image.url }}" alt="Question media"
+                     class="img-fluid rounded mb-3" style="max-height:240px;">
+                {% endif %}
+            {% endfor %}
+
+            <!-- Options -->
+            <div class="d-flex flex-column gap-2">
+                {% for opt_key, opt_text in item.options.items %}
+
+                {# Determine this option's state #}
+                {% if opt_key == item.correct_answer and opt_key == item.selected %}
+                    {# Student picked this AND it's correct #}
+                    <div class="review-option is-your-correct">
+                        <span class="review-option-key">{{ opt_key }}</span>
+
+                        {# Option image if any #}
+                        {% for media in item.question.media_files.all %}
+                            {% if media.media_type == 'OPTION_'|add:opt_key %}
+                            <img src="{{ media.effective_image.url }}" alt="Option {{ opt_key }}"
+                                 class="img-fluid rounded" style="max-height:80px; margin-right:6px;">
+                            {% endif %}
+                        {% endfor %}
+
+                        <span class="flex-grow-1">{{ opt_text }}</span>
+                        <span class="opt-label correct-label">✓ Your Answer</span>
+                    </div>
+
+                {% elif opt_key == item.correct_answer %}
+                    {# Correct answer but student didn't pick it #}
+                    <div class="review-option is-correct">
+                        <span class="review-option-key">{{ opt_key }}</span>
+
+                        {% for media in item.question.media_files.all %}
+                            {% if media.media_type == 'OPTION_'|add:opt_key %}
+                            <img src="{{ media.effective_image.url }}" alt="Option {{ opt_key }}"
+                                 class="img-fluid rounded" style="max-height:80px; margin-right:6px;">
+                            {% endif %}
+                        {% endfor %}
+
+                        <span class="flex-grow-1">{{ opt_text }}</span>
+                        <span class="opt-label correct-label">Correct Answer</span>
+                    </div>
+
+                {% elif opt_key == item.selected %}
+                    {# Student picked this but it's wrong #}
+                    <div class="review-option is-selected-wrong">
+                        <span class="review-option-key">{{ opt_key }}</span>
+
+                        {% for media in item.question.media_files.all %}
+                            {% if media.media_type == 'OPTION_'|add:opt_key %}
+                            <img src="{{ media.effective_image.url }}" alt="Option {{ opt_key }}"
+                                 class="img-fluid rounded" style="max-height:80px; margin-right:6px;">
+                            {% endif %}
+                        {% endfor %}
+
+                        <span class="flex-grow-1">{{ opt_text }}</span>
+                        <span class="opt-label wrong-label">✗ Your Answer</span>
+                    </div>
+
+                {% else %}
+                    {# Neutral option — not selected, not correct #}
+                    <div class="review-option">
+                        <span class="review-option-key">{{ opt_key }}</span>
+
+                        {% for media in item.question.media_files.all %}
+                            {% if media.media_type == 'OPTION_'|add:opt_key %}
+                            <img src="{{ media.effective_image.url }}" alt="Option {{ opt_key }}"
+                                 class="img-fluid rounded" style="max-height:80px; margin-right:6px;">
+                            {% endif %}
+                        {% endfor %}
+
+                        <span class="flex-grow-1">{{ opt_text }}</span>
+                    </div>
+                {% endif %}
+
+                {% endfor %}
+            </div>
+
+            <!-- Explanation -->
+            {% if item.question.explanation %}
+            <div class="mt-3 p-3" style="background: var(--admio-input-bg,#f9fafb); border-radius:10px;">
+                <span class="fw-700 text-sm">Explanation: </span>
+                <span class="text-sm text-secondary-c">{{ item.question.explanation }}</span>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

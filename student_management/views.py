@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import FileResponse, Http404, JsonResponse
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q,Avg
 import os
 import io
 import re
@@ -9,7 +9,15 @@ import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from student_portal.models import Student
-from .models import Subject, Question, QuestionMedia, MediaLibrary, PendingMediaReference
+from .models import Subject, Question, QuestionMedia, MediaLibrary, PendingMediaReference,SubModule, Subject
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from student_portal.models import ExamAttempt,QuizAttempt
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+
+
 
 
 # ─────────────────────────────────────────────
@@ -123,29 +131,83 @@ def _get_media_slot_status(question, media_map):
 # DASHBOARD
 # ─────────────────────────────────────────────
 
+from django.db.models import Sum, Count
+from django.utils import timezone
+
 @login_required(login_url='admin_login')
 def student_management_dashboard(request):
-    total_students = Student.objects.count()
-    total_subjects = Subject.objects.count()
-    total_questions = Question.objects.count()
-    total_pyqs = Question.objects.filter(source='PYQ').count()
-    active_questions = Question.objects.filter(is_active=True).count()
+    now = timezone.now()
+
+    # ── Existing stats ────────────────────────────────────────────────
+    total_students    = Student.objects.count()
+    total_subjects    = Subject.objects.count()
+    total_questions   = Question.objects.count()
+    total_pyqs        = Question.objects.filter(source='PYQ').count()
+    active_questions  = Question.objects.filter(is_active=True).count()
     inactive_questions = Question.objects.filter(is_active=False).count()
 
-    recent_students = Student.objects.select_related('user').order_by('-created_at')[:5]
-    recent_subjects = Subject.objects.order_by('-created_at')[:5]
+    recent_students  = Student.objects.select_related('user').order_by('-created_at')[:5]
+    recent_subjects  = Subject.objects.order_by('-created_at')[:5]
     recent_questions = Question.objects.select_related('subject').order_by('-created_at')[:5]
 
+    # ── Subscription plans ────────────────────────────────────────────
+    active_plans       = SubscriptionPlan.objects.filter(is_active=True)
+    total_active_plans = active_plans.count()
+    recent_plans       = active_plans.order_by('-created_at')[:5]
+
+    # ── Payment stats ─────────────────────────────────────────────────
+    total_payments    = Payment.objects.count()
+    successful_payments = Payment.objects.filter(status=Payment.STATUS_SUCCESS)
+    pending_payments  = Payment.objects.filter(status=Payment.STATUS_PENDING).count()
+    failed_payments   = Payment.objects.filter(status=Payment.STATUS_FAILED).count()
+
+    total_revenue     = successful_payments.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+
+    # Active subscriptions — paid and not yet expired
+    active_subscriptions = Payment.objects.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=now,
+    ).count()
+
+    # Revenue this month
+    monthly_revenue = Payment.objects.filter(
+        status=Payment.STATUS_SUCCESS,
+        paid_at__year=now.year,
+        paid_at__month=now.month,
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    # Recent payments
+    recent_payments = Payment.objects.select_related(
+        'student__user', 'plan'
+    ).order_by('-created_at')[:5]
+
     return render(request, 'student_management/dashboard.html', {
-        'total_students': total_students,
-        'total_subjects': total_subjects,
-        'total_questions': total_questions,
-        'total_pyqs': total_pyqs,
-        'active_questions': active_questions,
-        'inactive_questions': inactive_questions,
-        'recent_students': recent_students,
-        'recent_subjects': recent_subjects,
-        'recent_questions': recent_questions,
+        # existing
+        'total_students':       total_students,
+        'total_subjects':       total_subjects,
+        'total_questions':      total_questions,
+        'total_pyqs':           total_pyqs,
+        'active_questions':     active_questions,
+        'inactive_questions':   inactive_questions,
+        'recent_students':      recent_students,
+        'recent_subjects':      recent_subjects,
+        'recent_questions':     recent_questions,
+
+        # plans
+        'total_active_plans':   total_active_plans,
+        'active_plans':         active_plans,
+        'recent_plans':         recent_plans,
+
+        # payments
+        'total_payments':       total_payments,
+        'pending_payments':     pending_payments,
+        'failed_payments':      failed_payments,
+        'total_revenue':        total_revenue,
+        'monthly_revenue':      monthly_revenue,
+        'active_subscriptions': active_subscriptions,
+        'recent_payments':      recent_payments,
     })
 
 
@@ -162,8 +224,46 @@ def student_list(request):
 @login_required(login_url='admin_login')
 def student_detail(request, id):
     student = get_object_or_404(Student.objects.select_related('user'), id=id)
-    return render(request, 'student_management/student_detail.html', {'student': student})
 
+    # Mock test (exam) attempts — only count completed/submitted ones
+    exam_attempts = ExamAttempt.objects.filter(
+        student=student,
+        status=ExamAttempt.STATUS_SUBMITTED,
+    )
+    quiz_attempts = QuizAttempt.objects.filter(
+        student=student,
+        status=QuizAttempt.STATUS_SUBMITTED,
+    )
+
+    total_mock_tests = exam_attempts.count()
+    total_quizzes = quiz_attempts.count()
+    total_results = total_mock_tests + total_quizzes
+
+    # Average score across both exam and quiz attempts
+    exam_avg = exam_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
+    quiz_avg = quiz_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
+    combined_count = total_mock_tests + total_quizzes
+    if combined_count:
+        average_score = round(
+            ((exam_avg * total_mock_tests) + (quiz_avg * total_quizzes)) / combined_count,
+            1,
+        )
+    else:
+        average_score = 0
+
+    
+    active_subscription = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+    ).select_related('plan').order_by('-expires_at').first()
+
+    return render(request, 'student_management/student_detail.html', {
+        'student': student,
+        'total_mock_tests': total_mock_tests,
+        'total_results': total_results,
+        'average_score': average_score,
+        'active_subscription': active_subscription,
+    })
 
 @login_required(login_url='admin_login')
 def student_activate(request, id):
@@ -312,17 +412,21 @@ def subject_delete(request, id):
 
 @login_required(login_url='admin_login')
 def question_list(request):
-    questions = Question.objects.select_related('subject').order_by('-created_at')
+    questions = Question.objects.select_related('subject', 'submodule').order_by('-created_at')
     subjects = Subject.objects.filter(is_active=True).order_by('name')
+    submodules = SubModule.objects.filter(is_active=True).select_related('subject').order_by('subject__name', 'order', 'name')
     sources = Question.SOURCE_CHOICES
     years = Question.objects.exclude(year__isnull=True).values_list('year', flat=True).distinct().order_by('-year')
 
     subject_id = request.GET.get('subject')
+    submodule_id = request.GET.get('submodule')
     source = request.GET.get('source')
     year = request.GET.get('year')
 
     if subject_id:
         questions = questions.filter(subject_id=subject_id)
+    if submodule_id:
+        questions = questions.filter(submodule_id=submodule_id)
     if source:
         questions = questions.filter(source=source)
     if year:
@@ -331,9 +435,11 @@ def question_list(request):
     context = {
         'questions': questions,
         'subjects': subjects,
+        'submodules':submodules,
         'sources': sources,
         'years': years,
         'selected_subject': subject_id,
+        'selected_submodule': submodule_id,
         'selected_source': source,
         'selected_year': year,
     }
@@ -343,10 +449,12 @@ def question_list(request):
 @login_required(login_url='admin_login')
 def question_create(request):
     subjects = Subject.objects.filter(is_active=True).order_by('name')
+    submodules = SubModule.objects.none()
     library_assets = MediaLibrary.objects.filter(is_active=True).order_by('name')
 
     if request.method == 'POST':
         subject_id = request.POST.get('subject')
+        submodule_id = request.POST.get('submodule', '').strip()
         question_text = request.POST.get('question_text', '').strip()
         option_a = request.POST.get('option_a', '').strip()
         option_b = request.POST.get('option_b', '').strip()
@@ -381,6 +489,7 @@ def question_create(request):
 
         errors = []
         subject = None
+        submodule = None
         year = None
 
         if not subject_id:
@@ -389,7 +498,12 @@ def question_create(request):
             subject = Subject.objects.filter(id=subject_id).first()
             if not subject:
                 errors.append("Selected subject does not exist.")
-
+        if submodule_id:
+            submodule = SubModule.objects.filter(id=submodule_id).first()
+            if not submodule:
+                errors.append("Selected submodule does not exist.")
+            elif subject and submodule.subject_id != subject.id:
+                errors.append("Selected submodule does not belong to the chosen subject.")
         if not question_text:
             errors.append("Question text is required.")
         if not option_a:
@@ -437,6 +551,7 @@ def question_create(request):
                 messages.error(request, err)
             return render(request, 'student_management/question_create.html', {
                 'subjects': subjects,
+                'submodules': submodules,
                 'library_assets': library_assets,
                 'post_data': request.POST,
             })
@@ -444,6 +559,7 @@ def question_create(request):
         # Create the question
         question = Question.objects.create(
             subject=subject,
+            submodule=submodule,
             question_text=question_text,
             option_a=option_a,
             option_b=option_b,
@@ -509,6 +625,7 @@ def question_create(request):
 
     return render(request, 'student_management/question_create.html', {
         'subjects': subjects,
+        'submodules': submodules,
         'library_assets': library_assets,
     })
 
@@ -539,9 +656,11 @@ def question_edit(request, id):
     question = get_object_or_404(Question.objects.select_related('subject'), id=id)
     subjects = Subject.objects.filter(is_active=True).order_by('name')
     library_assets = MediaLibrary.objects.filter(is_active=True).order_by('name')
+    submodules = SubModule.objects.filter(subject_id=question.subject_id, is_active=True).order_by('order', 'name')
 
     if request.method == 'POST':
         subject_id = request.POST.get('subject')
+        submodule_id = request.POST.get('submodule', '').strip()
         question_text = request.POST.get('question_text', '').strip()
         option_a = request.POST.get('option_a', '').strip()
         option_b = request.POST.get('option_b', '').strip()
@@ -556,6 +675,7 @@ def question_edit(request, id):
 
         errors = []
         subject = None
+        submodule = None
         year = None
 
         if not subject_id:
@@ -564,7 +684,12 @@ def question_edit(request, id):
             subject = Subject.objects.filter(id=subject_id).first()
             if not subject:
                 errors.append("Selected subject does not exist.")
-
+        if submodule_id:
+            submodule = SubModule.objects.filter(id=submodule_id).first()
+            if not submodule:
+                errors.append("Selected submodule does not exist.")
+            elif subject and submodule.subject_id != subject.id:
+                errors.append("Selected submodule does not belong to the chosen subject.")
         if not question_text:
             errors.append("Question text is required.")
         if not option_a:
@@ -616,9 +741,11 @@ def question_edit(request, id):
                 'subjects': subjects,
                 'media_map': media_map,
                 'library_assets': library_assets,
+                'submodules': submodules,
             })
 
         question.subject = subject
+        question.submodule = submodule
         question.question_text = question_text
         question.option_a = option_a
         question.option_b = option_b
@@ -712,6 +839,7 @@ def question_edit(request, id):
     return render(request, 'student_management/question_edit.html', {
         'question': question,
         'subjects': subjects,
+        'submodules': submodules,
         'media_map': media_map,
         'library_assets': library_assets,
     })
@@ -851,6 +979,7 @@ def question_import(request):
                 return str(val).strip() if val is not None else ''
 
             subject_name   = get_cell('Subject')
+            submodule_name = get_cell('Submodule') if 'Submodule' in df.columns else ''
             question_text  = get_cell('Question')
             option_a       = get_cell('Option A')
             option_b       = get_cell('Option B')
@@ -907,7 +1036,11 @@ def question_import(request):
                 subject = Subject.objects.filter(name__iexact=subject_name).first()
                 if not subject:
                     add_error('Subject', subject_name, "Subject not found in database")
-
+            submodule = None
+            if submodule_name and subject:
+                submodule = SubModule.objects.filter(subject=subject, name__iexact=submodule_name).first()
+                if not submodule:
+                    add_error('Submodule', submodule_name, "Submodule not found for the selected subject")
             if not question_text:
                 add_error('Question', question_text, 'Question text is required')
             if not option_a:
@@ -996,6 +1129,7 @@ def question_import(request):
                 has_any_media = any(media_flags.values())
                 question = Question.objects.create(
                     subject=subject,
+                    submodule=submodule,
                     question_text=question_text,
                     option_a=option_a,
                     option_b=option_b,
@@ -1156,6 +1290,7 @@ def download_question_template(request):
 
         headers = [
             'Subject',
+            'Submodule',
             'Question',
             'Option A',
             'Option B',
@@ -1210,6 +1345,7 @@ def download_question_template(request):
         # Sample row
         sample_row = [
             'Mathematics',
+            'Algebra',
             'What is 2 + 2?',
             '3',
             '4',
@@ -1678,3 +1814,642 @@ def media_assets_api(request):
             'usage_count': asset.usage_count,
         })
     return JsonResponse({'results': results})
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django import forms
+from .models import ExamType, Exam
+
+class ExamTypeForm(forms.ModelForm):
+    class Meta:
+        model = ExamType
+        fields = ['name', 'description', 'is_active']
+        widgets = {
+            'name': forms.Select(choices=[
+                ('', '-- Select Type --'),
+                ('PYQ',    'PYQ Test'),
+                ('MOCK',   'Mock Test'),
+                ('QUIZ',   'Quick Quiz'),
+                ('CUSTOM', 'Custom'),
+            ]),
+        }
+
+class ExamTypeForm(forms.ModelForm):
+    name = forms.ChoiceField(
+        choices=[('', '-- Select Type --')] + ExamType.TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+    class Meta:
+        model = ExamType
+        fields = ['name', 'description', 'is_active']
+
+class ExamForm(forms.ModelForm):
+    class Meta:
+        model = Exam
+        fields = [
+            'exam_type', 'title', 'description',
+            'duration_minutes', 'marks_per_question', 'negative_marks',
+            'total_questions', 'pyq_years',
+            'subjects', 'submodules', 'selected_questions',
+            'is_active',
+        ]
+        widgets = {
+            'subjects': forms.CheckboxSelectMultiple(),
+            'submodules': forms.CheckboxSelectMultiple(),
+            'selected_questions': forms.CheckboxSelectMultiple(),
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['subjects'].queryset = Subject.objects.filter(is_active=True)
+        self.fields['submodules'].queryset = SubModule.objects.filter(
+            is_active=True
+        ).select_related('subject').order_by('subject__name', 'order', 'name')
+        self.fields['selected_questions'].queryset = Question.objects.filter(is_active=True)
+        self.fields['description'].required = False
+        self.fields['submodules'].required = False
+def examtype_list(request):
+    exam_types = ExamType.objects.all()
+    add_form = ExamTypeForm()
+    edit_forms = {et.pk: ExamTypeForm(instance=et) for et in exam_types}
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        pk = request.POST.get('pk')
+
+        if action == 'add':
+            form = ExamTypeForm(request.POST)
+            if form.is_valid():
+                instance = form.save(commit=False)
+                if instance.name == 'CUSTOM':
+                    instance.custom_name = request.POST.get('custom_name', '').strip() or None
+                else:
+                    instance.custom_name = None
+                instance.save()
+                messages.success(request, 'Exam type added.')
+                return redirect('student_management:examtype_list')
+            else:
+                add_form = form
+
+        elif action == 'edit' and pk:
+            instance = get_object_or_404(ExamType, pk=pk)
+            form = ExamTypeForm(request.POST, instance=instance)
+            if form.is_valid():
+                obj = form.save(commit=False)
+                if obj.name == 'CUSTOM':
+                    obj.custom_name = request.POST.get('custom_name', '').strip() or None
+                else:
+                    obj.custom_name = None
+                obj.save()
+                messages.success(request, 'Exam type updated.')
+                return redirect('student_management:examtype_list')
+            else:
+                edit_forms[instance.pk] = form
+
+        elif action == 'delete' and pk:
+            instance = get_object_or_404(ExamType, pk=pk)
+            instance.delete()
+            messages.success(request, 'Exam type deleted.')
+            return redirect('student_management:examtype_list')
+
+    edit_forms_list = [(et.pk, edit_forms[et.pk]) for et in exam_types]
+    return render(request, 'student_management/examtype_list.html', {
+        'exam_types': exam_types,
+        'add_form': add_form,
+        'edit_forms_list': edit_forms_list,
+    })
+def exam_list(request):
+    exams = Exam.objects.select_related('exam_type').prefetch_related('subjects', 'submodules')
+
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        pk = request.POST.get('pk')
+        exam = get_object_or_404(Exam, pk=pk)
+        exam.delete()
+        messages.success(request, 'Exam deleted.')
+        return redirect('student_management:exam_list')
+
+    return render(request, 'student_management/exam_list.html', {'exams': exams})
+
+def exam_add(request):
+    form = ExamForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Exam created.')
+        return redirect('student_management:exam_list')  # ← fixed
+    return render(request, 'student_management/exam_add.html', {'form': form})
+
+
+def exam_edit(request, pk):
+    exam = get_object_or_404(Exam, pk=pk)
+    form = ExamForm(request.POST or None, instance=exam)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Exam updated.')
+        return redirect('student_management:exam_list')  # ← fixed
+    return render(request, 'student_management/exam_edit.html', {'form': form, 'exam': exam})
+
+
+
+import json
+from django.http import JsonResponse
+ 
+ 
+def ajax_subjects_by_examtype(request):
+    """
+    GET /student_management/ajax/subjects/?exam_type_id=<id>
+    Returns all active subjects (no ExamType→Subject relation in current model).
+    """
+    if request.headers.get("X-Requested-With") != "XMLHttpRequest":
+        return JsonResponse({"error": "Bad request"}, status=400)
+ 
+    exam_type_id = request.GET.get("exam_type_id")
+    if not exam_type_id:
+        return JsonResponse({"subjects": []})
+ 
+    try:
+        ExamType.objects.get(pk=exam_type_id)
+    except ExamType.DoesNotExist:
+        return JsonResponse({"subjects": []})
+ 
+    # No ExamType→Subject link in your model, so return all active subjects.
+    # If you add a M2M later, swap this line for:
+    #   subjects = exam_type.subjects.filter(is_active=True)
+    subjects = Subject.objects.filter(is_active=True).order_by("name")
+    data = [{"id": s.pk, "name": str(s)} for s in subjects]
+    return JsonResponse({"subjects": data})
+ 
+ 
+@login_required(login_url='admin_login')
+def ajax_questions_by_filter(request):
+    # Define questions FIRST before any if blocks
+    questions = Question.objects.filter(is_active=True).select_related('subject', 'submodule')
+
+    years_only = request.GET.get('years_only')
+    if years_only:
+        years = list(
+            questions.exclude(year__isnull=True)
+            .values_list('year', flat=True)
+            .distinct()
+            .order_by('-year')
+        )
+        return JsonResponse({'years': years})
+
+    subject_ids = request.GET.getlist('subject_ids')
+    submodule_ids = request.GET.getlist('submodule_ids')
+    year_filters = request.GET.getlist('years')
+
+    if subject_ids:
+        questions = questions.filter(subject_id__in=subject_ids)
+    if submodule_ids:
+        questions = questions.filter(submodule_id__in=submodule_ids)
+    if year_filters:
+        questions = questions.filter(year__in=year_filters)
+
+    data = [
+        {
+            'id':        q.id,
+            'text':      q.question_text,
+            'subject':   q.subject.name if q.subject else None,
+            'submodule': q.submodule.name if q.submodule else None,
+            'year':      q.year,
+            'source':    q.source,
+        }
+        for q in questions.order_by('subject__name', 'id')
+    ]
+    return JsonResponse({'questions': data})
+
+@login_required
+def submodule_list(request):
+    empty_slug_submodules = SubModule.objects.filter(slug='')
+    for sm in empty_slug_submodules:
+        sm.save()
+
+    submodules = SubModule.objects.select_related('subject').all()
+
+    search = request.GET.get('search', '').strip()
+    subject_id = request.GET.get('subject', '').strip()
+    status = request.GET.get('status', '').strip()
+
+    if search:
+        submodules = submodules.filter(
+            Q(name__icontains=search) | Q(subject__name__icontains=search)
+        )
+
+    if subject_id:
+        submodules = submodules.filter(subject_id=subject_id)
+
+    if status == 'active':
+        submodules = submodules.filter(is_active=True)
+    elif status == 'inactive':
+        submodules = submodules.filter(is_active=False)
+
+    paginator = Paginator(submodules, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'submodules': page_obj.object_list,
+        'subjects': Subject.objects.filter(is_active=True).order_by('name'),
+        'search': search,
+        'selected_subject': subject_id,
+        'selected_status': status,
+    }
+    return render(request, 'student_management/submodule_list.html', context)
+@login_required
+def submodule_add(request):
+    subjects = Subject.objects.filter(is_active=True).order_by('name')
+    initial = {
+        'subject_id': '',
+        'name': '',
+        'description': '',
+        'order': 0,
+        'is_active': True,
+    }
+
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject')
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        order = request.POST.get('order') or 0
+        is_active = request.POST.get('is_active') == 'on'
+        image = request.FILES.get('image')
+
+        errors = {}
+
+        if not subject_id:
+            errors['subject'] = 'Subject is required.'
+        if not name:
+            errors['name'] = 'Name is required.'
+        elif SubModule.objects.filter(subject_id=subject_id, name__iexact=name).exists():
+            errors['name'] = 'A submodule with this name already exists for the selected subject.'
+
+        try:
+            order = int(order)
+        except (TypeError, ValueError):
+            errors['order'] = 'Order must be a number.'
+
+        if not errors:
+            submodule = SubModule.objects.create(
+                subject_id=subject_id,
+                name=name,
+                description=description,
+                order=order,
+                is_active=is_active,
+                image=image,
+            )
+            messages.success(request, f'Submodule "{submodule.name}" was created successfully.')
+            return redirect('student_management:submodule_list')
+        else:
+            for field, error in errors.items():
+                messages.error(request, error)
+
+            initial = {
+                'subject_id': subject_id or '',
+                'name': name,
+                'description': description,
+                'order': order,
+                'is_active': is_active,
+            }
+            context = {
+                'subjects': subjects,
+                'submodule': None,
+                'initial': initial,
+                'errors': errors,
+            }
+            return render(request, 'student_management/submodule_form.html', context)
+
+    context = {'subjects': subjects, 'submodule': None, 'initial': initial, 'errors': {}}
+    return render(request, 'student_management/submodule_form.html', context)
+
+
+@login_required
+def submodule_edit(request, slug):
+    submodule = get_object_or_404(SubModule, slug=slug)
+    subjects = Subject.objects.filter(is_active=True).order_by('name')
+    initial = {
+        'subject_id': submodule.subject_id,
+        'name': submodule.name,
+        'description': submodule.description or '',
+        'order': submodule.order,
+        'is_active': submodule.is_active,
+    }
+
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject')
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        order = request.POST.get('order') or 0
+        is_active = request.POST.get('is_active') == 'on'
+        image = request.FILES.get('image')
+        remove_image = request.POST.get('remove_image') == 'on'
+
+        errors = {}
+
+        if not subject_id:
+            errors['subject'] = 'Subject is required.'
+        if not name:
+            errors['name'] = 'Name is required.'
+        elif SubModule.objects.filter(subject_id=subject_id, name__iexact=name).exclude(pk=submodule.pk).exists():
+            errors['name'] = 'A submodule with this name already exists for the selected subject.'
+
+        try:
+            order = int(order)
+        except (TypeError, ValueError):
+            errors['order'] = 'Order must be a number.'
+
+        if not errors:
+            submodule.subject_id = subject_id
+            submodule.name = name
+            submodule.description = description
+            submodule.order = order
+            submodule.is_active = is_active
+
+            if remove_image and submodule.image:
+                submodule.image.delete(save=False)
+                submodule.image = None
+
+            if image:
+                if submodule.image:
+                    submodule.image.delete(save=False)
+                submodule.image = image
+
+            submodule.save()
+            messages.success(request, f'Submodule "{submodule.name}" was updated successfully.')
+            return redirect('student_management:submodule_list')
+        else:
+            for field, error in errors.items():
+                messages.error(request, error)
+
+            initial = {
+                'subject_id': subject_id or '',
+                'name': name,
+                'description': description,
+                'order': order,
+                'is_active': is_active,
+            }
+            context = {
+                'subjects': subjects,
+                'submodule': submodule,
+                'initial': initial,
+                'errors': errors,
+            }
+            return render(request, 'student_management/submodule_form.html', context)
+
+    context = {'subjects': subjects, 'submodule': submodule, 'initial': initial, 'errors': {}}
+    return render(request, 'student_management/submodule_form.html', context)
+
+
+@login_required
+def submodule_delete(request, slug):
+    submodule = get_object_or_404(SubModule, slug=slug)
+
+    if request.method == 'POST':
+        name = submodule.name
+        if submodule.image:
+            submodule.image.delete(save=False)
+        submodule.delete()
+        messages.success(request, f'Submodule "{name}" was deleted successfully.')
+    else:
+        messages.error(request, 'Invalid request method.')
+
+    return redirect('student_management:submodule_list')
+@login_required(login_url='admin_login')
+def submodules_by_subject_api(request):
+    subject_id = request.GET.get('subject_id', '').strip()
+    if not subject_id:
+        return JsonResponse({'submodules': []})
+    submodules = SubModule.objects.filter(
+        subject_id=subject_id,
+        is_active=True
+    ).order_by('name').values('id', 'name')
+    return JsonResponse({'submodules': list(submodules)})
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.db.models import Q
+from django import forms
+from .models import SubscriptionPlan, Subject, SubModule, Exam
+
+
+class SubscriptionPlanForm(forms.ModelForm):
+    subjects = forms.ModelMultipleChoiceField(
+        queryset=Subject.objects.filter(is_active=True),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+    submodules = forms.ModelMultipleChoiceField(
+        queryset=SubModule.objects.filter(is_active=True),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+    exams = forms.ModelMultipleChoiceField(
+        queryset=Exam.objects.filter(is_active=True),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    class Meta:
+        model = SubscriptionPlan
+        fields = ["name", "price", "duration_days", "subjects", "submodules", "exams", "is_active"]
+
+
+def plan_list(request):
+    query = request.GET.get("q", "")
+    plans = SubscriptionPlan.objects.prefetch_related("subjects", "exams", "submodules")
+    if query:
+        plans = plans.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    return render(request, "student_management/plan_list.html", {"plans": plans, "query": query})
+
+
+def plan_detail(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    return render(request, "student_management/plan_detail.html", {"plan": plan})
+
+
+def plan_create(request):
+    form = SubscriptionPlanForm(request.POST or None)
+    if form.is_valid():
+        plan = form.save()
+        messages.success(request, f'Plan "{plan.name}" created successfully.')
+        return redirect("student_management:plan_list")
+    return render(request, "student_management/plan_form.html", {"form": form, "title": "Create Plan"})
+
+
+def plan_update(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    form = SubscriptionPlanForm(request.POST or None, instance=plan)
+    if form.is_valid():
+        plan = form.save()
+        messages.success(request, f'Plan "{plan.name}" updated successfully.')
+        return redirect("student_management:plan_list")
+    return render(request, "student_management/plan_form.html", {"form": form, "title": "Edit Plan", "plan": plan})
+
+
+def plan_delete(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    name = plan.name
+    plan.delete()
+    messages.success(request, f'Plan "{name}" deleted.')
+    return redirect("student_management:plan_list")
+
+from student_portal.models import Student
+from .models import Payment, SubscriptionPlan
+
+
+@login_required(login_url='admin_login')
+def payment_list(request):
+    payments = Payment.objects.select_related('student', 'plan').order_by('-created_at')
+
+    search    = request.GET.get('search', '').strip()
+    status    = request.GET.get('status', '').strip()
+    plan_id   = request.GET.get('plan', '').strip()
+
+    if search:
+        payments = payments.filter(
+            Q(student__full_name__icontains=search) |
+            Q(plan__name__icontains=search) |
+            Q(transaction_id__icontains=search)
+        )
+    if status:
+        payments = payments.filter(status=status)
+    if plan_id:
+        payments = payments.filter(plan_id=plan_id)
+
+    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('name')
+
+    return render(request, 'student_management/payment_list.html', {
+        'payments': payments,
+        'plans': plans,
+        'search': search,
+        'selected_status': status,
+        'selected_plan': plan_id,
+        'status_choices': Payment.STATUS_CHOICES,
+    })
+
+
+@login_required(login_url='admin_login')
+def payment_detail(request, id):
+    payment = get_object_or_404(
+        Payment.objects.select_related('student', 'plan'), id=id
+    )
+    return render(request, 'student_management/payment_detail.html', {
+        'payment': payment,
+    })
+
+
+@login_required(login_url='admin_login')
+def payment_create(request):
+    students = Student.objects.filter(is_active=True).order_by('full_name')
+    plans    = SubscriptionPlan.objects.filter(is_active=True).order_by('name')
+
+    if request.method == 'POST':
+        student_id     = request.POST.get('student', '').strip()
+        plan_id        = request.POST.get('plan', '').strip()
+        amount         = request.POST.get('amount', '').strip()
+        transaction_id = request.POST.get('transaction_id', '').strip()
+        status         = request.POST.get('status', Payment.STATUS_PENDING).strip()
+
+        errors  = []
+        student = None
+        plan    = None
+
+        if not student_id:
+            errors.append("Please select a student.")
+        else:
+            student = Student.objects.filter(id=student_id).first()
+            if not student:
+                errors.append("Selected student does not exist.")
+
+        if not plan_id:
+            errors.append("Please select a plan.")
+        else:
+            plan = SubscriptionPlan.objects.filter(id=plan_id).first()
+            if not plan:
+                errors.append("Selected plan does not exist.")
+
+        if not amount:
+            errors.append("Amount is required.")
+        else:
+            try:
+                amount = float(amount)
+                if amount < 0:
+                    errors.append("Amount cannot be negative.")
+            except ValueError:
+                errors.append("Amount must be a valid number.")
+
+        if errors:
+            for err in errors:
+                messages.error(request, err)
+            return render(request, 'student_management/payment_form.html', {
+                'students': students,
+                'plans': plans,
+                'status_choices': Payment.STATUS_CHOICES,
+                'post_data': request.POST,
+                'title': 'Create Payment',
+            })
+
+        from django.utils import timezone
+        from datetime import timedelta
+
+        payment = Payment.objects.create(
+            student=student,
+            plan=plan,
+            amount=amount,
+            transaction_id=transaction_id,
+            status=status,
+            paid_at=timezone.now() if status == Payment.STATUS_SUCCESS else None,
+            expires_at=(
+                timezone.now() + timedelta(days=plan.duration_days)
+                if status == Payment.STATUS_SUCCESS else None
+            ),
+        )
+        messages.success(request, f"Payment for {student.full_name} created successfully.")
+        return redirect('student_management:payment_detail', id=payment.id)
+
+    return render(request, 'student_management/payment_form.html', {
+        'students': students,
+        'plans': plans,
+        'status_choices': Payment.STATUS_CHOICES,
+        'title': 'Create Payment',
+    })
+
+
+@login_required(login_url='admin_login')
+def payment_update_status(request, id):
+    payment = get_object_or_404(Payment, id=id)
+
+    if request.method == 'POST':
+        new_status     = request.POST.get('status', '').strip()
+        valid_statuses = [s[0] for s in Payment.STATUS_CHOICES]
+
+        if new_status not in valid_statuses:
+            messages.error(request, "Invalid status selected.")
+            return redirect('student_management:payment_detail', id=payment.id)
+
+        from django.utils import timezone
+        from datetime import timedelta
+
+        payment.status = new_status
+
+        if new_status == Payment.STATUS_SUCCESS and not payment.paid_at:
+            payment.paid_at    = timezone.now()
+            payment.expires_at = timezone.now() + timedelta(days=payment.plan.duration_days)
+
+        payment.save()
+        messages.success(request, f"Payment status updated to {payment.get_status_display()}.")
+
+    return redirect('student_management:payment_detail', id=payment.id)
+
+
+@login_required(login_url='admin_login')
+def payment_delete(request, id):
+    payment = get_object_or_404(Payment, id=id)
+    if request.method == 'POST':
+        payment.delete()
+        messages.success(request, "Payment record deleted successfully.")
+        return redirect('student_management:payment_list')
+    return redirect('student_management:payment_detail', id=payment.id)

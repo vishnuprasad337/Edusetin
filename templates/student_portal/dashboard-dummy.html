@@ -1,17 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zxx">
 <head>
     <meta charset="utf-8">
-    <meta name="description" content="Edusetin — timed mock tests, subject-wise practice quizzes and real performance analytics for serious exam aspirants.">
+    <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="theme-color" content="#0E1530">
 
-    <title>Edusetin — Mock Tests, Practice Quizzes &amp; Performance Analytics</title>
-    <link rel="shortcut icon" href="{% static 'student_portal/assets/img/edu.png' %}" type="image/png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <title>Akpager - Multipurpose Landing page HTML Template || Home Nine</title>
+    <link rel="shortcut icon" href="{% static 'landing_page/assets/images/logos/favicon.png' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'landing_page/assets/css/flaticon.min.css' %}">
     <link rel="stylesheet" href="{% static 'landing_page/assets/css/fontawesome-5.14.0.min.css' %}">
@@ -21,197 +19,6 @@
     <link rel="stylesheet" href="{% static 'landing_page/assets/css/aos.css' %}">
     <link rel="stylesheet" href="{% static 'landing_page/assets/css/slick.min.css' %}">
     <link rel="stylesheet" href="{% static 'landing_page/assets/css/style.css' %}">
-
-    <style>
-    /* ============================================================
-       EDUSETIN THEME — layered on top of the base template styles.
-       Token system kept in :root so palette/type can be tuned in
-       one place.
-       ============================================================ */
-    :root{
-        --es-navy:#0E1530;
-        --es-navy-2:#161F45;
-        --es-indigo:#2B3A8C;
-        --es-gold:#F2B134;
-        --es-gold-soft:#FCE2A8;
-        --es-mint:#27AE82;
-        --es-paper:#FAF9F6;
-        --es-paper-2:#F1EFE9;
-        --es-ink:#10142B;
-        --es-slate:#5B6478;
-        --es-slate-2:#9296A8;
-        --es-line:rgba(16,20,43,.09);
-        --es-font-display:'Space Grotesk',sans-serif;
-        --es-font-body:'Inter',sans-serif;
-        --es-font-mono:'IBM Plex Mono',monospace;
-    }
-
-    html{scroll-behavior:smooth;}
-    section[id]{scroll-margin-top:96px;}
-    body{font-family:var(--es-font-body); color:var(--es-ink); background:var(--es-paper);}
-    h1,h2,h3,h4,h5,h6{font-family:var(--es-font-display); letter-spacing:-0.01em; color:var(--es-ink);}
-    a{transition:color .2s ease;}
-    a:focus-visible,button:focus-visible{outline:2px solid var(--es-gold); outline-offset:3px;}
-
-    /* ---------- Header ---------- */
-    .main-header{background:transparent; transition:background .35s ease, box-shadow .35s ease, padding .35s ease;}
-    .main-header .navigation > li > a{color:rgba(255,255,255,.86); font-family:var(--es-font-display); font-weight:500; font-size:15px;}
-    .main-header .navigation > li > a:hover{color:var(--es-gold);}
-    .main-header .menu-btns .light-btn{color:#fff; font-family:var(--es-font-display); font-weight:600;}
-    .main-header.es-scrolled{background:rgba(250,249,246,.92); backdrop-filter:blur(10px); box-shadow:0 8px 30px -16px rgba(16,20,43,.25);}
-    .main-header.es-scrolled .navigation > li > a{color:var(--es-ink);}
-    .main-header.es-scrolled .navigation > li > a:hover{color:var(--es-indigo);}
-    .main-header.es-scrolled .menu-btns .light-btn{color:var(--es-ink);}
-    .es-logo{display:flex; align-items:center; gap:10px;}
-    .es-logo img{height:36px; width:auto; display:block;}
-    .es-logo-word{font-family:var(--es-font-display); font-weight:700; font-size:20px; letter-spacing:-.02em; color:#fff;}
-    .main-header.es-scrolled .es-logo-word{color:var(--es-ink);}
-    .mobile-logo img{height:32px;}
-
-    /* ---------- Buttons ---------- */
-    .theme-btn{background:var(--es-gold); color:var(--es-ink) !important; border-radius:999px; font-family:var(--es-font-display); font-weight:600; box-shadow:0 14px 26px -12px rgba(242,177,52,.65); border:none; transition:transform .25s ease, box-shadow .25s ease;}
-    .theme-btn:hover{transform:translateY(-2px); box-shadow:0 18px 32px -12px rgba(242,177,52,.7); color:var(--es-ink) !important;}
-    .theme-btn.style-two{background:transparent; color:#fff !important; border:1.5px solid rgba(255,255,255,.4); box-shadow:none;}
-    .theme-btn.style-two:hover{background:rgba(255,255,255,.1); border-color:#fff; transform:translateY(-2px);}
-    .es-link-arrow{display:inline-flex; align-items:center; gap:8px; font-family:var(--es-font-display); font-weight:600; color:var(--es-ink);}
-    .es-link-arrow i{transition:transform .2s ease;}
-    .es-link-arrow:hover i{transform:translateX(4px);}
-    .es-link-arrow:hover{color:var(--es-indigo);}
-
-    /* ---------- Eyebrow ---------- */
-    .es-eyebrow{display:inline-flex; align-items:center; gap:8px; font-family:var(--es-font-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--es-gold); margin-bottom:18px;}
-    .es-eyebrow::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--es-gold); display:inline-block;}
-    .es-eyebrow--dark{color:var(--es-indigo);}
-    .es-eyebrow--dark::before{background:var(--es-indigo);}
-
-    /* ---------- Hero ---------- */
-    .hero-area-nine{background:var(--es-navy); position:relative; overflow:hidden;}
-    .hero-area-nine .hero-content h1{color:#fff; font-size:50px; line-height:1.12; font-weight:700;}
-    .hero-area-nine .hero-content p{color:rgba(255,255,255,.68); font-size:18px; max-width:480px;}
-    .hero-area-nine .icon-list li{color:rgba(255,255,255,.75); font-family:var(--es-font-mono); font-size:13px;}
-    .hero-area-nine .icon-list li i{color:var(--es-mint);}
-    .es-hero-ctas{display:flex; flex-wrap:wrap; align-items:center; gap:22px; margin-top:36px;}
-    .es-stat-mini{display:flex; gap:22px; margin-top:46px; flex-wrap:wrap;}
-    .es-stat-mini .es-num{font-family:var(--es-font-mono); font-size:24px; color:#fff; font-weight:600;}
-    .es-stat-mini .es-cap{font-size:12px; color:rgba(255,255,255,.55); max-width:120px;}
-
-    .es-hero-visual{position:relative; min-height:460px; display:flex; align-items:center; justify-content:center;}
-    .es-bubblefield{position:absolute; inset:-40px; width:calc(100% + 80px); height:calc(100% + 80px); opacity:.55; pointer-events:none;}
-    .es-orb{position:absolute; border-radius:50%; filter:blur(2px); pointer-events:none; will-change:transform;}
-    .es-orb--gold{width:120px; height:120px; background:radial-gradient(circle at 35% 30%, rgba(242,177,52,.55), rgba(242,177,52,0) 70%); top:6%; right:8%;}
-    .es-orb--mint{width:160px; height:160px; background:radial-gradient(circle at 35% 30%, rgba(39,174,130,.45), rgba(39,174,130,0) 70%); bottom:2%; left:0;}
-    .es-orb--indigo{width:90px; height:90px; background:radial-gradient(circle at 35% 30%, rgba(43,58,140,.55), rgba(43,58,140,0) 70%); top:55%; right:-2%;}
-    .es-result-card{width:100%; max-width:380px; filter:drop-shadow(0 30px 60px -20px rgba(0,0,0,.55)); will-change:transform; position:relative;}
-
-    /* ---------- Stats bar (replaces client-logo grid) ---------- */
-    .es-stats-area{background:var(--es-paper); border-bottom:1px solid var(--es-line);}
-    .es-stats-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:32px; text-align:center;}
-    .es-stats-grid .es-stat-num{font-family:var(--es-font-mono); font-size:34px; font-weight:600; color:var(--es-ink);}
-    .es-stats-grid .es-stat-label{color:var(--es-slate); font-size:14px; margin-top:6px;}
-    @media(max-width:767px){.es-stats-grid{grid-template-columns:repeat(2,1fr); row-gap:34px;}}
-
-    /* ---------- Tabs ---------- */
-    .advanced-tab{border-bottom:1px solid var(--es-line); gap:0;}
-    .advanced-tab .nav-link{background:transparent !important; border:none !important; color:var(--es-slate); font-family:var(--es-font-display); font-weight:600; font-size:15px; padding:10px 0; margin-right:34px; position:relative;}
-    .advanced-tab .nav-link.active{color:var(--es-ink);}
-    .advanced-tab .nav-link.active::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:3px; border-radius:3px; background:var(--es-gold);}
-    .advanced-tab-area .content ul.icon-list li{color:var(--es-slate);}
-    .advanced-tab-area .content ul.icon-list li i{color:var(--es-mint);}
-    .advanced-tab-area .image{display:flex; justify-content:center;}
-    .advanced-tab-area .image .es-result-card{max-width:340px;}
-
-    /* ---------- Core features (dark) ---------- */
-    .service-area-nine{background:var(--es-navy) !important;}
-    .service-area-nine .section-title h2{color:#fff;}
-    .es-feat-card{background:var(--es-navy-2); border:1px solid rgba(255,255,255,.07); border-radius:18px; padding:34px 26px; height:100%; transition:transform .25s ease, border-color .25s ease;}
-    .es-feat-card:hover{transform:translateY(-6px); border-color:rgba(242,177,52,.4);}
-    .es-feat-icon{width:46px; height:46px; border-radius:12px; background:rgba(242,177,52,.14); display:flex; align-items:center; justify-content:center; margin-bottom:20px;}
-    .es-feat-icon svg{width:22px; height:22px;}
-    .es-feat-card h5{color:#fff; font-size:17px; margin-bottom:10px;}
-    .es-feat-card p{color:rgba(255,255,255,.6); font-size:14px; margin:0;}
-
-    /* ---------- About ---------- */
-    .about-area-nine{background:var(--es-paper) !important;}
-    .about-content-nine{color:var(--es-ink) !important;}
-    .about-content-nine p{color:var(--es-slate);}
-    .about-content-nine .feature-icon-box .icon{background:var(--es-mint); color:#fff; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center;}
-    .about-content-nine .feature-icon-box h5{color:var(--es-ink);}
-    .about-content-nine .feature-icon-box p{color:var(--es-slate); font-size:14px;}
-    .es-compare-card{background:#fff; border:1px solid var(--es-line); border-radius:20px; padding:30px; box-shadow:0 30px 60px -32px rgba(16,20,43,.35);}
-
-    /* ---------- How it works (steps) ---------- */
-    .feature-image-box-area{background:var(--es-paper);}
-    .es-steps{display:grid; grid-template-columns:repeat(3,1fr); gap:30px; counter-reset:step;}
-    @media(max-width:991px){.es-steps{grid-template-columns:1fr;}}
-    .es-step{position:relative; padding:30px 26px; background:#fff; border:1px solid var(--es-line); border-radius:18px;}
-    .es-step-num{font-family:var(--es-font-mono); font-size:13px; color:var(--es-gold); letter-spacing:.06em; margin-bottom:18px;}
-    .es-step-icon{width:44px; height:44px; border-radius:12px; background:var(--es-paper-2); display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
-    .es-step-icon svg{width:22px; height:22px;}
-    .es-step h4{font-size:18px; margin-bottom:8px;}
-    .es-step p{color:var(--es-slate); font-size:14px; margin:0;}
-
-    /* ---------- Dashboard preview (replaces tooltip area) ---------- */
-    .tooltip-area{background:var(--es-navy) !important; background-image:none !important;}
-    .tooltip-area .section-title h2{color:#fff;}
-    .tooltip-area .section-title p{color:rgba(255,255,255,.62);}
-    .es-dash-wrap{position:relative; max-width:880px; margin:0 auto;}
-    .es-dash-svg{width:100%; height:auto; filter:drop-shadow(0 40px 80px -30px rgba(0,0,0,.6));}
-    .es-hotspot{position:absolute; width:16px; height:16px; border-radius:50%; background:var(--es-gold); border:3px solid rgba(242,177,52,.35); cursor:pointer; transform:translate(-50%,-50%);}
-    .es-hotspot::after{content:''; position:absolute; inset:-8px; border-radius:50%; border:1px solid rgba(242,177,52,.5); animation:esPulse 2.4s ease-out infinite;}
-    .es-hotspot-label{position:absolute; bottom:130%; left:50%; transform:translateX(-50%) translateY(4px); background:#fff; color:var(--es-ink); font-size:12px; font-family:var(--es-font-display); font-weight:600; padding:7px 12px; border-radius:8px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; box-shadow:0 14px 26px -10px rgba(0,0,0,.35);}
-    .es-hotspot:hover .es-hotspot-label,.es-hotspot:focus .es-hotspot-label,.es-hotspot--active .es-hotspot-label{opacity:1; transform:translateX(-50%) translateY(-4px);}
-    @keyframes esPulse{0%{transform:scale(.7); opacity:.8;}100%{transform:scale(2.1); opacity:0;}}
-    @media(max-width:767px){.es-hotspot-label{font-size:11px; padding:5px 9px;}}
-
-    /* ---------- Pricing ---------- */
-    .pricing-area{background:var(--es-paper) !important;}
-    .es-plan-card{background:#fff; border:1px solid var(--es-line); border-radius:20px; padding:34px 30px; height:100%; display:flex; flex-direction:column; position:relative; transition:transform .25s ease, box-shadow .25s ease;}
-    .es-plan-card:hover{transform:translateY(-6px); box-shadow:0 30px 60px -28px rgba(16,20,43,.3);}
-    .es-plan-card--featured{border-color:var(--es-gold); box-shadow:0 30px 60px -28px rgba(242,177,52,.35);}
-    .es-plan-tag{position:absolute; top:-13px; left:30px; background:var(--es-gold); color:var(--es-ink); font-family:var(--es-font-mono); font-size:11px; letter-spacing:.05em; padding:5px 12px; border-radius:999px;}
-    .es-plan-name{font-size:19px; margin-bottom:6px;}
-    .es-plan-price{font-family:var(--es-font-mono); font-size:36px; font-weight:600; color:var(--es-ink); margin:10px 0 2px;}
-    .es-plan-price span{font-size:14px; color:var(--es-slate); font-family:var(--es-font-body); font-weight:400;}
-    .es-plan-meta{color:var(--es-slate); font-size:13px; margin-bottom:22px;}
-    .es-plan-list{list-style:none; padding:0; margin:0 0 26px; flex:1;}
-    .es-plan-list li{display:flex; gap:9px; align-items:flex-start; color:var(--es-slate); font-size:14px; margin-bottom:11px;}
-    .es-plan-list li i{color:var(--es-mint); margin-top:3px;}
-
-    /* ---------- Testimonials ---------- */
-    .testimonials-nine-area{background:var(--es-navy) !important;}
-    .testimonials-nine-area .section-title h2{color:#fff;}
-    .testimonial-item-two{background:var(--es-navy-2) !important; border:1px solid rgba(255,255,255,.07);}
-    .testimonial-item-two .author h6{color:#fff !important;}
-    .testimonial-item-two .author span{color:rgba(255,255,255,.55) !important;}
-    .testimonial-item-two .author-text{color:rgba(255,255,255,.72) !important;}
-    .testimonial-item-two .line{background:rgba(255,255,255,.1) !important;}
-
-    /* ---------- CTA ---------- */
-    .cta-nine-area{background-color:var(--es-navy) !important;}
-    .cta-nine-area .section-title h2{color:#fff;}
-    .cta-nine-area .section-title span{color:var(--es-gold);}
-
-    /* ---------- Footer ---------- */
-    .main-footer{background:var(--es-paper) !important;}
-    .main-footer a{color:var(--es-slate);}
-    .main-footer a:hover{color:var(--es-indigo);}
-    .footer-title{font-family:var(--es-font-display);}
-
-    /* ---------- Custom cursor ---------- */
-    .es-cursor-ring,.es-cursor-dot{position:fixed; top:0; left:0; border-radius:50%; pointer-events:none; z-index:9999; mix-blend-mode:normal;}
-    .es-cursor-ring{width:34px; height:34px; margin:-17px 0 0 -17px; border:1.5px solid rgba(242,177,52,.8); transition:width .2s ease, height .2s ease, margin .2s ease, border-color .2s ease, background .2s ease;}
-    .es-cursor-dot{width:6px; height:6px; margin:-3px 0 0 -3px; background:var(--es-gold);}
-    .es-cursor-ring--active{width:54px; height:54px; margin:-27px 0 0 -27px; background:rgba(242,177,52,.12);}
-    body.es-cursor-on{cursor:none;}
-    body.es-cursor-on a,body.es-cursor-on button{cursor:none;}
-    @media(pointer:coarse){.es-cursor-ring,.es-cursor-dot{display:none !important;}}
-    @media(prefers-reduced-motion:reduce){
-        .es-cursor-ring,.es-cursor-dot{display:none !important;}
-        .es-orb,.es-result-card,[data-depth]{transform:none !important;}
-        .es-hotspot::after{animation:none;}
-        html{scroll-behavior:auto;}
-    }
-    </style>
 </head>
 <body class="home-nine">
 <div class="page-wrapper">
@@ -225,18 +32,19 @@
             <div class="container container-1660 clearfix">
                 <div class="header-inner py-20 rel d-flex align-items-center">
                     <div class="logo-outer">
-                        <a href="{% url 'student_portal:home' %}" class="es-logo">
-                            <img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin logo">
-                            <span class="es-logo-word">Edusetin</span>
-                        </a>
+                        <div class="logo">
+                            <a href="index.html">
+                                <img src="{% static 'landing_page/assets/images/logos/logo6.png' %}" alt="Logo" title="Logo">
+                            </a>
+                        </div>
                     </div>
 
                     <div class="nav-outer ms-lg-5 ps-lg-5 clearfix">
                         <nav class="main-menu navbar-expand-lg">
                             <div class="navbar-header py-10">
                                 <div class="mobile-logo">
-                                    <a href="{% url 'student_portal:home' %}">
-                                        <img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin logo">
+                                    <a href="index.html">
+                                        <img src="{% static 'landing_page/assets/images/logos/logo6.png' %}" alt="Logo" title="Logo">
                                     </a>
                                 </div>
                                 <button type="button" class="navbar-toggle" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
@@ -248,19 +56,27 @@
                             <div class="navbar-collapse collapse clearfix">
                                 <ul class="navigation onepage clearfix">
                                     <li><a href="#home">Home</a></li>
-                                    <li><a href="#features">Features</a></li>
-                                    <li><a href="#how-it-works">How it Works</a></li>
-                                    <li><a href="#about">About</a></li>
-                                    <li><a href="#pricing">Pricing</a></li>
-                                    <li><a href="#testimonials">Testimonials</a></li>
+                                    <li><a href="#services">services</a></li>
+                                    <li><a href="#about">about</a></li>
+                                    <li><a href="#featuers">featuers</a></li>
+                                    <li><a href="#pricing">pricing</a></li>
+                                    <li><a href="#testimonials">testimonials</a></li>
                                 </ul>
                             </div>
                         </nav>
                     </div>
 
+                    <div class="nav-search ms-xl-2 ms-4 me-lg-auto py-10">
+                        <button class="far fa-search"></button>
+                        <form action="#" class="hide">
+                            <input type="text" placeholder="Search" class="searchbox" required="">
+                            <button type="submit" class="searchbutton far fa-search"></button>
+                        </form>
+                    </div>
+
                     <div class="menu-btns ms-lg-auto">
-                        <a href="{% url 'student_portal:login' %}" class="light-btn">Log in</a>
-                        <a href="{% url 'student_portal:register' %}" class="theme-btn">Get Started <i class="far fa-arrow-right"></i></a>
+                        <a href="cantact.html" class="light-btn">Sign Up</a>
+                        <a href="contact.html" class="theme-btn style-two">Get Started <i class="far fa-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -269,135 +85,167 @@
 
 
     <!-- Hero area start -->
-    <section id="home" class="hero-area-nine pt-165 rpt-150 pb-130 rpb-100 rel z-1">
+    <section id="about" class="hero-area-nine pt-165 rpt-150 pb-130 rpb-100 rel z-1">
         <div class="container">
             <div class="row gap-70 align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content style-nine mb-100 rmb-55" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow">Built for serious exam aspirants</span>
-                        <h1 data-aos="fade-up" data-aos-delay="50" data-aos-duration="1500" data-aos-offset="50">Practice Like It's Exam Day — Every Single Day</h1>
-                        <p>Timed mock tests, subject-wise quizzes and real performance analytics that show exactly what to fix before your next attempt.</p>
-
-                        <div class="es-hero-ctas">
-                            <a href="{% url 'student_portal:register' %}" class="theme-btn">Start Free — No Card Needed <i class="far fa-arrow-right"></i></a>
-                            <a href="{% url 'student_portal:plan_list' %}" class="es-link-arrow" style="color:#fff;">Explore plans <i class="far fa-arrow-right"></i></a>
-                        </div>
-
+                        <h1 data-aos="fade-up" data-aos-delay="50" data-aos-duration="1500" data-aos-offset="50">Connectivity & Networking with AI Power Chatbot</h1>
+                        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem laudantium, totam rem aperiam inventore veritatis</p>
+                        <form class="newsletter-form mt-40" action="#">
+                            <label for="email-address"><i class="fas fa-envelope"></i></label>
+                            <input id="email-address" type="email" placeholder="Email Address" required="">
+                            <button type="submit"><b>Free Trail <i class="far fa-arrow-right"></i></b></button>
+                        </form>
                         <ul class="icon-list pt-15">
-                            <li><i class="fal fa-check"></i> OTP-verified sign-up</li>
-                            <li><i class="fal fa-check"></i> Exam-condition timers &amp; negative marking</li>
-                            <li><i class="fal fa-check"></i> Cancel anytime</li>
+                            <li><i class="fal fa-check"></i> Free 14-day trial</li>
+                            <li><i class="fal fa-check"></i> No credit card required</li>
                         </ul>
-
-                        <div class="es-stat-mini">
-                            <div><div class="es-num">10k+</div><div class="es-cap">mock attempts logged</div></div>
-                            <div><div class="es-num">500+</div><div class="es-cap">questions added monthly</div></div>
-                            <div><div class="es-num">24/7</div><div class="es-cap">practice access</div></div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
-                    <div class="es-hero-visual">
-                        <svg class="es-bubblefield" viewBox="0 0 600 600" aria-hidden="true">
-                            <defs>
-                                <pattern id="esOmrHero" width="26" height="26" patternUnits="userSpaceOnUse">
-                                    <circle cx="6" cy="6" r="2.6" fill="rgba(242,177,52,0.16)"/>
-                                </pattern>
-                            </defs>
-                            <rect width="600" height="600" fill="url(#esOmrHero)"/>
-                        </svg>
-                        <div class="es-orb es-orb--gold" data-depth="0.05"></div>
-                        <div class="es-orb es-orb--mint" data-depth="0.08"></div>
-                        <div class="es-orb es-orb--indigo" data-depth="0.06"></div>
-                        <div data-depth="0.025">
-                            {}
+                    <div class="hero-nine-image">
+                        <img src="{% static 'landing_page/assets/images/hero/hero-nine.png' %}" alt="Hero">
+                        <div class="shapes">
+                            <div class="shape one" data-aos="zoom-in-left" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/shapes/hero-nine1.png' %}" alt="Shape">
+                            </div>
+                            <div class="shape two" data-aos="zoom-in-right" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/shapes/hero-nine2.png' %}" alt="Shape">
+                            </div>
+                            <div class="shape three" data-aos="zoom-in-left" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/shapes/hero-nine3.png' %}" alt="Shape">
+                            </div>
+                            <div class="shape four" data-aos="zoom-in-right" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/shapes/hero-nine4.png' %}" alt="Shape">
+                            </div>
+                            <div class="shape five" data-aos="zoom-in-left" data-aos-delay="200" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/shapes/hero-nine5.png' %}" alt="Shape">
+                            </div>
+                            <div class="shape six" data-aos="zoom-in-right" data-aos-delay="200" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/shapes/hero-nine6.png' %}" alt="Shape">
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="hero-nine-shapes">
+            <div class="shape one">
+                <img src="{% static 'landing_page/assets/images/shapes/hero-nine.png' %}" alt="Shape">
+            </div>
+            <div class="shape two">
+                <img src="{% static 'landing_page/assets/images/shapes/hero-nine.png' %}" alt="Shape">
             </div>
         </div>
     </section>
     <!-- Hero area End -->
 
 
-    <!-- Stats strip (replaces generic client-logo grid) -->
-    <section class="es-stats-area py-70">
+    <!-- Client Logo Area Start -->
+    <section class="client-logo-area pt-100 pb-90 rpb-60 rel z-2">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-xl-8 col-lg-9 col-md-11">
-                    <div class="section-title text-center mb-50" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow es-eyebrow--dark" style="justify-content:center;display:flex;">Why students switch to Edusetin</span>
-                        <h2>Numbers that matter more than promises</h2>
+                    <div class="section-title text-center mb-60" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
+                        <span class="subtitle-three mb-10">Meet Our Global Clients</span>
+                        <h2>We've 1253+ Global Clients & lot's of Project Complete</h2>
                     </div>
                 </div>
             </div>
-            <div class="es-stats-grid" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                <div><div class="es-stat-num">10,000+</div><div class="es-stat-label">Mock attempts logged</div></div>
-                <div><div class="es-stat-num">500+</div><div class="es-stat-label">Practice questions added every month</div></div>
-                <div><div class="es-stat-num">92%</div><div class="es-stat-label">Improve within 4 attempts</div></div>
-                <div><div class="es-stat-num">24/7</div><div class="es-stat-label">Practice access, any device</div></div>
+            <div class="row align-items-center justify-content-center row-cols-xl-5 row-cols-lg-4 row-cols-md-3 row-cols-2">
+                <div class="col">
+                    <div class="client-logo-item style-four py-45 rpy-25" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
+                        <a href="#"><img src="{% static 'landing_page/assets/images/client-logos/client-logo1.png' %}" alt="Client Logo"></a>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="client-logo-item style-four py-65 rpy-25" data-aos="fade-up" data-aos-delay="50" data-aos-duration="1500" data-aos-offset="50">
+                        <a href="#"><img src="{% static 'landing_page/assets/images/client-logos/client-logo2.png' %}" alt="Client Logo"></a>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="client-logo-item style-four py-45 rpy-25" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
+                        <a href="#"><img src="{% static 'landing_page/assets/images/client-logos/client-logo3.png' %}" alt="Client Logo"></a>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="client-logo-item style-four py-65 rpy-25" data-aos="fade-up" data-aos-delay="150" data-aos-duration="1500" data-aos-offset="50">
+                        <a href="#"><img src="{% static 'landing_page/assets/images/client-logos/client-logo4.png' %}" alt="Client Logo"></a>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="client-logo-item style-four py-45 rpy-25" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1500" data-aos-offset="50">
+                        <a href="#"><img src="{% static 'landing_page/assets/images/client-logos/client-logo5.png' %}" alt="Client Logo"></a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
-    <!-- Stats strip End -->
+    <!-- Client Logo Area End -->
 
 
     <!-- Tab Area Start -->
-    <section class="advanced-tab-area pt-130 rpt-100 pb-130 rpb-100">
+    <section class="advanced-tab-area pb-130 rpb-100">
         <div class="container">
             <ul class="nav advanced-tab mb-55" role="tablist" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
                 <li>
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabOne1">Mock Tests</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOne1"><i class="far fa-arrow-right"></i> Lead Generation</button>
                 </li>
                 <li>
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOne2">Practice Quizzes</button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabOne2"><i class="far fa-arrow-right"></i> Customer Support</button>
                 </li>
                 <li>
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOne3">Performance Analytics</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOne3"><i class="far fa-arrow-right"></i> Revenue Growth</button>
                 </li>
                 <li>
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOne4">Flexible Plans</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOne4"><i class="far fa-arrow-right"></i> Sales & eCommerce</button>
                 </li>
             </ul>
             <div class="tab-content">
-                <div class="tab-pane fade show active" id="tabOne1">
+                <div class="tab-pane fade" id="tabOne1">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-lg-6">
                             <div class="content rmb-55">
                                 <div class="section-title mb-30">
-                                    <h2>Sit a Real Mock Test, Not a Guessing Game</h2>
+                                    <h2>Dedicated Customer Support Your Satisfaction Our Priority</h2>
                                 </div>
-                                <p>Strict countdown timers, negative marking and auto-submit on timeout — the only surprise on exam day should be your score. Resume an in-progress attempt exactly where you left off.</p>
+                                <p>AI chatbots are revolutionizing the way businesses interact with their customers. These intelligent digital assistants are designed to provide instant, round-the-clock support, answering queries and resolving issues with efficiency and accuracy. By leveraging natural language processing and machine learning,</p>
                                 <ul class="icon-list mt-20 mb-40">
-                                    <li><i class="fal fa-check"></i> Exam-condition timers</li>
-                                    <li><i class="fal fa-check"></i> Negative marking enabled</li>
-                                    <li><i class="fal fa-check"></i> Tab-switch integrity tracking</li>
+                                    <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                    <li><i class="fal fa-check"></i> Connect Securely</li>
+                                    <li><i class="fal fa-check"></i> Message Experience</li>
                                 </ul>
-                                <a href="{% url 'student_portal:exam_list' %}" class="theme-btn">Browse Mock Tests <i class="far fa-arrow-right"></i></a>
+                                <a href="#" class="theme-btn style-two">Learn More <i class="far fa-arrow-right"></i></a>
                             </div>
                         </div>
                         <div class="col-xl-5 col-lg-6">
-                            <div class="image">{}</div>
+                            <div class="image">
+                                <img src="{% static 'landing_page/assets/images/tabs/tab1.png' %}" alt="Tab">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="tabOne2">
+                <div class="tab-pane fade show active" id="tabOne2">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-xl-5 col-lg-6">
-                            <div class="image" data-aos="fade-left" data-aos-duration="1500" data-aos-offset="50">{}</div>
+                            <div class="image" data-aos="fade-left" data-aos-duration="1500" data-aos-offset="50">
+                                <img src="{% static 'landing_page/assets/images/tabs/tab1.png' %}" alt="Tab">
+                            </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="content rmt-55" data-aos="fade-right" data-aos-duration="1500" data-aos-offset="50">
                                 <div class="section-title mb-30">
-                                    <h2>Drill Any Subject, Any Topic, Your Pace</h2>
+                                    <h2>Dedicated Customer Support Your Satisfaction Our Priority</h2>
                                 </div>
-                                <p>Build a custom quiz from 5 to 50 questions across any subject or topic you have access to — freshly shuffled every time you start.</p>
+                                <p>AI chatbots are revolutionizing the way businesses interact with their customers. These intelligent digital assistants are designed to provide instant, round-the-clock support, answering queries and resolving issues with efficiency and accuracy. By leveraging natural language processing and machine learning,</p>
                                 <ul class="icon-list mt-20 mb-40">
-                                    <li><i class="fal fa-check"></i> Pick subject &amp; sub-topic</li>
-                                    <li><i class="fal fa-check"></i> Choose 5–50 questions</li>
-                                    <li><i class="fal fa-check"></i> Instant question-by-question review</li>
+                                    <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                    <li><i class="fal fa-check"></i> Connect Securely</li>
+                                    <li><i class="fal fa-check"></i> Message Experience</li>
                                 </ul>
-                                <a href="{% url 'student_portal:quiz_setup' %}" class="theme-btn">Start a Quiz <i class="far fa-arrow-right"></i></a>
+                                <a href="#" class="theme-btn style-two">Learn More <i class="far fa-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -407,39 +255,43 @@
                         <div class="col-lg-6">
                             <div class="content rmb-55">
                                 <div class="section-title mb-30">
-                                    <h2>See Exactly Where to Improve Next</h2>
+                                    <h2>Dedicated Customer Support Your Satisfaction Our Priority</h2>
                                 </div>
-                                <p>Track your accuracy trend, your percentile rank against every other student, and how each subject compares to the platform average.</p>
+                                <p>AI chatbots are revolutionizing the way businesses interact with their customers. These intelligent digital assistants are designed to provide instant, round-the-clock support, answering queries and resolving issues with efficiency and accuracy. By leveraging natural language processing and machine learning,</p>
                                 <ul class="icon-list mt-20 mb-40">
-                                    <li><i class="fal fa-check"></i> Accuracy trend over recent attempts</li>
-                                    <li><i class="fal fa-check"></i> Live rank &amp; percentile</li>
-                                    <li><i class="fal fa-check"></i> Subject vs. platform average</li>
+                                    <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                    <li><i class="fal fa-check"></i> Connect Securely</li>
+                                    <li><i class="fal fa-check"></i> Message Experience</li>
                                 </ul>
-                                <a href="{% url 'student_portal:dashboard' %}" class="theme-btn">View Dashboard <i class="far fa-arrow-right"></i></a>
+                                <a href="#" class="theme-btn style-two">Learn More <i class="far fa-arrow-right"></i></a>
                             </div>
                         </div>
                         <div class="col-xl-5 col-lg-6">
-                            <div class="image">{}</div>
+                            <div class="image">
+                                <img src="{% static 'landing_page/assets/images/tabs/tab1.png' %}" alt="Tab">
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="tabOne4">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-xl-5 col-lg-6">
-                            <div class="image">{}</div>
+                            <div class="image">
+                                <img src="{% static 'landing_page/assets/images/tabs/tab1.png' %}" alt="Tab">
+                            </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="content rmt-55">
                                 <div class="section-title mb-30">
-                                    <h2>Pay for the Subjects You Actually Need</h2>
+                                    <h2>Dedicated Customer Support Your Satisfaction Our Priority</h2>
                                 </div>
-                                <p>Plans unlock specific subjects, sub-topics or full mock-test packs — upgrade any time as your prep changes.</p>
+                                <p>AI chatbots are revolutionizing the way businesses interact with their customers. These intelligent digital assistants are designed to provide instant, round-the-clock support, answering queries and resolving issues with efficiency and accuracy. By leveraging natural language processing and machine learning,</p>
                                 <ul class="icon-list mt-20 mb-40">
-                                    <li><i class="fal fa-check"></i> Subject &amp; topic-level access</li>
-                                    <li><i class="fal fa-check"></i> Secure Razorpay checkout</li>
-                                    <li><i class="fal fa-check"></i> Reminders before renewal</li>
+                                    <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                    <li><i class="fal fa-check"></i> Connect Securely</li>
+                                    <li><i class="fal fa-check"></i> Message Experience</li>
                                 </ul>
-                                <a href="{% url 'student_portal:plan_list' %}" class="theme-btn">Compare Plans <i class="far fa-arrow-right"></i></a>
+                                <a href="#" class="theme-btn style-two">Learn More <i class="far fa-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -451,51 +303,70 @@
 
 
     <!-- Services Area Start -->
-    <section id="features" class="service-area-nine pt-130 rpt-100 pb-100 rpb-70">
+    <section id="services" class="service-area-nine bgc-black pt-130 rpt-100 pb-100 rpb-70">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-xl-9 col-lg-11">
-                    <div class="section-title text-center mb-55" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow" style="justify-content:center;display:flex;">Core features</span>
-                        <h2>Everything You Need to Outscore Last Time</h2>
+                    <div class="section-title text-center text-white mb-55" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
+                        <h2>Unlocking the Power of Chatbot Capabilities Enhancing Customer Engagement</h2>
                     </div>
                 </div>
             </div>
-            <div class="row justify-content-center g-4">
+            <div class="row justify-content-center">
                 <div class="col-xl-3 col-lg-4 col-sm-6">
-                    <div class="es-feat-card" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                        <div class="es-feat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#F2B134" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    <div class="iconic-box style-three" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
+                        <div class="icon">
+                            <img src="{% static 'landing_page/assets/images/icons/iconic-box1.png' %}" alt="Icon">
                         </div>
-                        <h5>Exam-Condition Mock Tests</h5>
-                        <p>Strict timers, negative marking and auto-submit, just like the real thing.</p>
+                        <div class="content">
+                            <h5><a href="service-details.html">Automate response</a></h5>
+                            <p>The intelligent digital stants are designed provid instant round-the-clock support</p>
+                        </div>
+                        <div class="bg">
+                            <img src="{% static 'landing_page/assets/images/shapes/iconic-box-three-bg.png' %}" alt="Shape">
+                        </div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-lg-4 col-sm-6">
-                    <div class="es-feat-card" data-aos="fade-up" data-aos-delay="50" data-aos-duration="1500" data-aos-offset="50">
-                        <div class="es-feat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#F2B134" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 7.8-8 9-4.5-1.2-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+                    <div class="iconic-box style-three" data-aos="fade-up" data-aos-delay="50" data-aos-duration="1500" data-aos-offset="50">
+                        <div class="icon">
+                            <img src="{% static 'landing_page/assets/images/icons/iconic-box2.png' %}" alt="Icon">
                         </div>
-                        <h5>Built-in Integrity Tracking</h5>
-                        <p>Tab-switches are logged automatically, so every score you see is one you can trust.</p>
+                        <div class="content">
+                            <h5><a href="service-details.html">Artificial intelligence</a></h5>
+                            <p>The intelligent digital stants are designed provid instant round-the-clock support</p>
+                        </div>
+                        <div class="bg">
+                            <img src="{% static 'landing_page/assets/images/shapes/iconic-box-three-bg.png' %}" alt="Shape">
+                        </div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-lg-4 col-sm-6">
-                    <div class="es-feat-card" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
-                        <div class="es-feat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#F2B134" stroke-width="1.8"><path d="M4 19V10M11 19V5M18 19v-7"/></svg>
+                    <div class="iconic-box style-three" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
+                        <div class="icon">
+                            <img src="{% static 'landing_page/assets/images/icons/iconic-box3.png' %}" alt="Icon">
                         </div>
-                        <h5>Deep Performance Analytics</h5>
-                        <p>Accuracy trends, percentile rank and subject-by-subject comparison after every attempt.</p>
+                        <div class="content">
+                            <h5><a href="service-details.html">Mobile & Web Chat</a></h5>
+                            <p>The intelligent digital stants are designed provid instant round-the-clock support</p>
+                        </div>
+                        <div class="bg">
+                            <img src="{% static 'landing_page/assets/images/shapes/iconic-box-three-bg.png' %}" alt="Shape">
+                        </div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-lg-4 col-sm-6">
-                    <div class="es-feat-card" data-aos="fade-up" data-aos-delay="150" data-aos-duration="1500" data-aos-offset="50">
-                        <div class="es-feat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#F2B134" stroke-width="1.8"><rect x="4" y="2" width="11" height="16" rx="2"/><rect x="16" y="7" width="5" height="13" rx="1.4"/></svg>
+                    <div class="iconic-box style-three" data-aos="fade-up" data-aos-delay="150" data-aos-duration="1500" data-aos-offset="50">
+                        <div class="icon">
+                            <img src="{% static 'landing_page/assets/images/icons/iconic-box4.png' %}" alt="Icon">
                         </div>
-                        <h5>Learn Anywhere, Any Device</h5>
-                        <p>Resume an in-progress mock test exactly where you left off, on any screen.</p>
+                        <div class="content">
+                            <h5><a href="service-details.html">Sales & Marketing</a></h5>
+                            <p>The intelligent digital stants are designed provid instant round-the-clock support</p>
+                        </div>
+                        <div class="bg">
+                            <img src="{% static 'landing_page/assets/images/shapes/iconic-box-three-bg.png' %}" alt="Shape">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -505,59 +376,34 @@
 
 
     <!-- About Area Start -->
-    <section id="about" class="about-area-nine pb-110 rpb-80 rel z-1">
+    <section id="about" class="about-area-nine bgc-black pb-110 rpb-80 rel z-1">
         <div class="container">
             <div class="row gap-90 align-items-center">
                 <div class="col-lg-6">
-                    <div class="about-content-nine rmb-35" data-aos="fade-right" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow es-eyebrow--dark">About Edusetin</span>
+                    <div class="about-content-nine text-white rmb-35" data-aos="fade-right" data-aos-duration="1500" data-aos-offset="50">
                         <div class="section-title mb-30">
-                            <h2>Built Around How You Actually Study</h2>
+                            <h2>Discover Comprehensive Chatbot Features for Customer Engagement</h2>
                         </div>
-                        <p>Edusetin pairs serious exam simulation with analytics that tell you what to study next — not just how you did.</p>
+                        <p>Chatbots offer a diverse range of features designed to enhance user interactions and streamline customer support.</p>
                         <div class="feature-icon-box mt-35">
                             <div class="icon"><i class="far fa-check"></i></div>
                             <div class="content">
-                                <h5>Personalized weak-subject suggestions</h5>
-                                <p>When a subject average dips, Edusetin surfaces fresh practice for exactly that topic.</p>
+                                <h5>Onboarding, conversion & messages.</h5>
+                                <p>Tasks, such as answering frequently asked questions or processing routine transactions</p>
                             </div>
                         </div>
                         <div class="feature-icon-box">
                             <div class="icon"><i class="far fa-check"></i></div>
                             <div class="content">
-                                <h5>Secure, verified accounts</h5>
-                                <p>Every sign-up is confirmed with a one-time email code before your account goes live.</p>
+                                <h5>Send messages to targeted audiences</h5>
+                                <p>Tasks, such as answering frequently asked questions or processing routine transactions</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="es-compare-card" data-aos="fade-left" data-aos-duration="1500" data-aos-offset="50">
-                        <svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chart comparing your subject scores against the platform average" style="width:100%;height:auto;">
-                            <text x="0" y="20" font-family="Space Grotesk, sans-serif" font-size="15" font-weight="700" fill="#10142B">You vs. platform average</text>
-                            <g font-family="Inter, sans-serif" font-size="12" fill="#5B6478">
-                                <text x="0" y="58">Mathematics</text>
-                                <rect x="0" y="66" width="420" height="10" rx="5" fill="#F1EFE9"/>
-                                <rect x="0" y="66" width="300" height="10" rx="5" fill="#9296A8" opacity=".55"/>
-                                <rect x="0" y="66" width="356" height="10" rx="5" fill="#27AE82"/>
-
-                                <text x="0" y="118">Physics</text>
-                                <rect x="0" y="126" width="420" height="10" rx="5" fill="#F1EFE9"/>
-                                <rect x="0" y="126" width="260" height="10" rx="5" fill="#9296A8" opacity=".55"/>
-                                <rect x="0" y="126" width="318" height="10" rx="5" fill="#F2B134"/>
-
-                                <text x="0" y="178">Chemistry</text>
-                                <rect x="0" y="186" width="420" height="10" rx="5" fill="#F1EFE9"/>
-                                <rect x="0" y="186" width="240" height="10" rx="5" fill="#9296A8" opacity=".55"/>
-                                <rect x="0" y="186" width="372" height="10" rx="5" fill="#2B3A8C"/>
-                            </g>
-                            <g font-family="Inter, sans-serif" font-size="11" fill="#9296A8">
-                                <rect x="0" y="228" width="12" height="12" rx="3" fill="#27AE82"/>
-                                <text x="18" y="238">Your score</text>
-                                <rect x="100" y="228" width="12" height="12" rx="3" fill="#9296A8" opacity=".55"/>
-                                <text x="118" y="238">Platform average</text>
-                            </g>
-                        </svg>
+                    <div class="about-nine-right-images mb-20 text-lg-end" data-aos="fade-left" data-aos-duration="1500" data-aos-offset="50">
+                        <img src="{% static 'landing_page/assets/images/about/about-nine.png' %}" alt="About">
                     </div>
                 </div>
             </div>
@@ -566,154 +412,229 @@
     <!-- About Area End -->
 
 
-    <!-- How it works Start -->
-    <section id="how-it-works" class="feature-image-box-area pt-130 rpt-100 pb-100 rpb-70">
+    <!-- Feature Image box Area Start -->
+    <section id="features" class="feature-image-box-area pt-130 rpt-100 pb-100 rpb-70">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-xl-8 col-lg-11">
                     <div class="section-title text-center mb-55" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow es-eyebrow--dark" style="justify-content:center;display:flex;">How it works</span>
-                        <h2>From Sign-up to Your First Mock Score in Minutes</h2>
+                        <h2>Unlocking the Potential Chatbot for Seamless Customer Interactions</h2>
                     </div>
                 </div>
             </div>
-            <div class="es-steps">
-                <div class="es-step" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                    <div class="es-step-num">STEP 01</div>
-                    <div class="es-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2B3A8C" stroke-width="1.8"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div>
-                    <h4>Choose Your Plan</h4>
-                    <p>Pick the subjects, topics or mock-test pack that match what you're preparing for.</p>
+            <div class="row justify-content-center">
+                <div class="col-xl-4 col-md-6">
+                    <div class="feature-image-box style-two" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
+                        <img src="{% static 'landing_page/assets/images/fancy-box/feature-image-box1.png' %}" alt="Feature">
+                        <div class="content">
+                            <h4><a href="service-details.html">Comprehensive Chatbot Features Revolutionizing Customer Engagement</a></h4>
+                            <ul class="icon-list">
+                                <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                <li><i class="fal fa-check"></i> Message Experience</li>
+                                <li><i class="fal fa-check"></i> Connect Securely</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="es-step" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
-                    <div class="es-step-num">STEP 02</div>
-                    <div class="es-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2B3A8C" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
-                    <h4>Attempt &amp; Practice</h4>
-                    <p>Sit full mock tests or build quick custom quizzes whenever you have ten minutes to spare.</p>
+                <div class="col-xl-4 col-md-6">
+                    <div class="feature-image-box style-two" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
+                        <img src="{% static 'landing_page/assets/images/fancy-box/feature-image-box2.png' %}" alt="Feature">
+                        <div class="content">
+                            <h4><a href="service-details.html">Mastering Chatbot Feature Elevate Customer Service & Efficiency</a></h4>
+                            <ul class="icon-list">
+                                <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                <li><i class="fal fa-check"></i> Message Experience</li>
+                                <li><i class="fal fa-check"></i> Connect Securely</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="es-step" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1500" data-aos-offset="50">
-                    <div class="es-step-num">STEP 03</div>
-                    <div class="es-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2B3A8C" stroke-width="1.8"><path d="M4 19V10M11 19V5M18 19v-7"/></svg></div>
-                    <h4>Track &amp; Improve</h4>
-                    <p>Review every question, watch your accuracy trend climb, and see exactly where to focus next.</p>
+                <div class="col-xl-4 col-md-6">
+                    <div class="feature-image-box style-two" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1500" data-aos-offset="50">
+                        <img src="{% static 'landing_page/assets/images/fancy-box/feature-image-box3.png' %}" alt="Feature">
+                        <div class="content">
+                            <h4><a href="service-details.html">Chatbot Features: Your Guide to Enhanced User Engagement</a></h4>
+                            <ul class="icon-list">
+                                <li><i class="fal fa-check"></i> Get AI Power Chat Files</li>
+                                <li><i class="fal fa-check"></i> Message Experience</li>
+                                <li><i class="fal fa-check"></i> Connect Securely</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- How it works End -->
+    <!-- Feature Image box Area End -->
 
 
-    <!-- Dashboard preview (replaces tooltip area) Start -->
-    <section class="tooltip-area rel pt-130 rpt-100 pb-130 rpb-100">
+    <!-- Tooltip Area Start -->
+    <section class="tooltip-area bgs-cover rel pt-130 rpt-100" style="background-image: url({% static 'landing_page/assets/images/backgrounds/tolltip.png' %});">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xl-9 col-lg-11 mb-80 rmb-50 text-center" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
+                <div class="col-xl-9 col-lg-11 mb-135 rmb-80 text-center" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
                     <div class="section-title mb-35">
-                        <h2>Your Whole Prep Journey, on One Screen</h2>
-                        <p>Every mock test and quiz feeds straight into a dashboard built to answer one question: what should I study next?</p>
+                        <h2>Connect Your Social Network and grow your social networking easily</h2>
+                        <p>AI chatbots are revolutionizing the way businesses interact with their customers. These intelligent digital assistants are designed to provide instant, round-the-clock support, answering queries and resolving</p>
                     </div>
-                    <a href="{% url 'student_portal:register' %}" class="theme-btn">Get Started Free <i class="far fa-arrow-right"></i></a>
+                    <a href="contact.html" class="theme-btn">Get Started Now <i class="far fa-arrow-right"></i></a>
                 </div>
             </div>
-
-            <div class="es-dash-wrap" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                <svg class="es-dash-svg" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Edusetin dashboard preview showing rank, accuracy trend and subject comparison">
-                    <rect x="2" y="2" width="756" height="416" rx="22" fill="#FFFFFF" stroke="rgba(16,20,43,0.08)"/>
-
-                    <!-- rank card -->
-                    <rect x="26" y="26" width="220" height="170" rx="16" fill="#0E1530"/>
-                    <text x="48" y="62" font-family="Inter, sans-serif" font-size="12" fill="rgba(255,255,255,.6)">YOUR RANK</text>
-                    <text x="48" y="106" font-family="Space Grotesk, sans-serif" font-size="38" font-weight="700" fill="#fff">#128</text>
-                    <rect x="48" y="124" width="84" height="24" rx="12" fill="#F2B134"/>
-                    <text x="60" y="140" font-family="IBM Plex Mono, monospace" font-size="11" fill="#10142B">TOP 7%</text>
-                    <text x="48" y="174" font-family="Inter, sans-serif" font-size="11" fill="rgba(255,255,255,.5)">out of 1,840 active students</text>
-
-                    <!-- accuracy trend -->
-                    <rect x="266" y="26" width="468" height="170" rx="16" fill="#F8F7F3"/>
-                    <text x="288" y="52" font-family="Inter, sans-serif" font-size="12" fill="#5B6478">ACCURACY TREND</text>
-                    <polyline points="288,150 350,130 412,140 474,100 536,108 598,72 660,66" fill="none" stroke="#27AE82" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="660" cy="66" r="5" fill="#27AE82"/>
-                    <text x="600" y="50" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="700" fill="#10142B">+14%</text>
-
-                    <!-- subject comparison -->
-                    <rect x="26" y="216" width="708" height="178" rx="16" fill="#F8F7F3"/>
-                    <text x="48" y="246" font-family="Inter, sans-serif" font-size="12" fill="#5B6478">SUBJECT vs. AVERAGE</text>
-                    <g font-family="Inter, sans-serif" font-size="11" fill="#5B6478">
-                        <text x="48" y="278">Maths</text>
-                        <rect x="48" y="286" width="660" height="8" rx="4" fill="#E9E6DD"/>
-                        <rect x="48" y="286" width="560" height="8" rx="4" fill="#27AE82"/>
-
-                        <text x="48" y="316">Physics</text>
-                        <rect x="48" y="324" width="660" height="8" rx="4" fill="#E9E6DD"/>
-                        <rect x="48" y="324" width="460" height="8" rx="4" fill="#F2B134"/>
-
-                        <text x="48" y="354">Chemistry</text>
-                        <rect x="48" y="362" width="660" height="8" rx="4" fill="#E9E6DD"/>
-                        <rect x="48" y="362" width="600" height="8" rx="4" fill="#2B3A8C"/>
-                    </g>
-                </svg>
-
-                <button type="button" class="es-hotspot" style="top:14%; left:18%;" aria-label="Rank and percentile">
-                    <span class="es-hotspot-label">Live rank &amp; percentile</span>
-                </button>
-                <button type="button" class="es-hotspot" style="top:18%; left:86%;" aria-label="Accuracy trend">
-                    <span class="es-hotspot-label">Accuracy trend over time</span>
-                </button>
-                <button type="button" class="es-hotspot" style="top:64%; left:55%;" aria-label="Subject comparison">
-                    <span class="es-hotspot-label">Subject vs. platform average</span>
-                </button>
-                <button type="button" class="es-hotspot" style="top:45%; left:8%;" aria-label="Weak subject suggestions">
-                    <span class="es-hotspot-label">Personalized weak-subject picks</span>
-                </button>
+            <div class="tooltips-wrap">
+                <div class="tooltip-item active">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon1.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip1.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
+                <div class="tooltip-item">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon2.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip2.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
+                <div class="tooltip-item">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon3.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip3.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
+                <div class="tooltip-item">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon4.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip4.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
+                <div class="tooltip-item">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon5.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip5.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
+                <div class="tooltip-item">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon6.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip6.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
+                <div class="tooltip-item">
+                    <div class="tooltip-btn">
+                        <img src="{% static 'landing_page/assets/images/tooltips/tooltip-icon7.png' %}" alt="Icon">
+                    </div>
+                    <div class="tooltip-content">
+                        <div class="image"><img src="{% static 'landing_page/assets/images/tooltips/tooltip7.png' %}" alt="Tooltip"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
-    <!-- Dashboard preview End -->
+    <!-- Tooltip Area End -->
 
 
     <!-- Pricing Area Start -->
-    <section id="pricing" class="pricing-area pt-130 rpt-100 pb-100 rpb-70 rel">
+    <section id="pricing" class="pricing-area bg-white pt-220 rpt-150 pb-100 rpb-70 rel">
         <div class="container">
             <div class="row justify-content-center justify-content-md-start">
                 <div class="col-xl-4 col-md-8 col-sm-10">
                     <div class="price-left-tab mt-75 mb-55" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow es-eyebrow--dark">Pricing</span>
                         <div class="section-title mb-45">
-                            <h2>Simple Plans, No Surprises</h2>
+                            <h2>Explore Our Pricing Package & choose plan</h2>
                         </div>
-                        <p>Every plan unlocks a clear set of subjects, topics and mock tests — pick what matches your prep, upgrade any time.</p>
-                        <a href="{% url 'student_portal:plan_list' %}" class="theme-btn mt-25">View All Plans <i class="far fa-arrow-right"></i></a>
+                        
+                        <p>AI chatbots are revolutionizing the way businesses interact with their customers These intelligent digital assistants</p>
+                        <a href="contact.html" class="theme-btn mt-25">Get Started <i class="far fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <div class="col-xl-8">
-                    <div class="row justify-content-center g-4">
-                        {% for plan in plans %}
-                        <div class="col-md-6 col-sm-10" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}" data-aos-duration="1500" data-aos-offset="50">
-                            <div class="es-plan-card{% if forloop.first %} es-plan-card--featured{% endif %}">
-                                {% if forloop.first %}<span class="es-plan-tag">Most popular</span>{% endif %}
-                                <div class="es-plan-name">{{ plan.name }}</div>
-                                <div class="es-plan-price">₹{{ plan.price }}</div>
-                                <div class="es-plan-meta">{{ plan.duration_days }} days access</div>
-                                <ul class="es-plan-list">
-                                    <li><i class="fal fa-check"></i> {{ plan.subjects.count }} subject{{ plan.subjects.count|pluralize }} included</li>
-                                    <li><i class="fal fa-check"></i> {{ plan.exams.count }} mock test{{ plan.exams.count|pluralize }} included</li>
-                                    <li><i class="fal fa-check"></i> Full performance analytics</li>
-                                </ul>
-                                {% if user.is_authenticated %}
-                                <a href="{% url 'student_portal:plan_checkout' plan.uuid %}" class="theme-btn">Choose Plan <i class="far fa-arrow-right"></i></a>
-                                {% else %}
-                                <a href="{% url 'student_portal:register' %}" class="theme-btn">Get Started <i class="far fa-arrow-right"></i></a>
-                                {% endif %}
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="monthly">
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 col-sm-10" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
+                                    <div class="pricing-item style-three">
+                                        <div class="circle"><img src="{% static 'landing_page/assets/images/shapes/price-circle.png' %}" alt="Shape"></div>
+                                        <div class="price"><span class="prev">$</span>19<span class="next">/month</span></div>
+                                        <div class="text">Smart Pricing for good services</div>
+                                        <a href="#" class="theme-btn">Choose Package <i class="far fa-arrow-right"></i></a>
+                                        <h4 class="title">Regular Plan</h4>
+                                        <ul class="list">
+                                            <li>Email marketing</li>
+                                            <li>Unlimited chat history</li>
+                                            <li>Unlimited landing pages</li>
+                                            <li class="hide">Automation templates</li>
+                                            <li class="hide">Great Customer Support</li>
+                                            <li class="hide">Unlimited lead funnels</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-10" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1500" data-aos-offset="50">
+                                    <div class="pricing-item style-three">
+                                        <div class="circle"><img src="{% static 'landing_page/assets/images/shapes/price-circle.png' %}" alt="Shape"></div>
+                                        <div class="price"><span class="prev">$</span>39<span class="next">/month</span></div>
+                                        <div class="text">Smart Pricing for good services</div>
+                                        <a href="#" class="theme-btn">Choose Package <i class="far fa-arrow-right"></i></a>
+                                        <h4 class="title">Standard Plan</h4>
+                                        <ul class="list">
+                                            <li>Email marketing</li>
+                                            <li>Unlimited chat history</li>
+                                            <li>Unlimited landing pages</li>
+                                            <li>Automation templates</li>
+                                            <li>Great Customer Support</li>
+                                            <li>Unlimited lead funnels</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        {% empty %}
-                        <div class="col-md-8" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
-                            <div class="es-plan-card">
-                                <div class="es-plan-name">Plans launching soon</div>
-                                <p style="color:var(--es-slate);">We're finalizing subject and mock-test bundles. Create a free account now and we'll let you know the moment plans go live.</p>
-                                <a href="{% url 'student_portal:register' %}" class="theme-btn">Get Started <i class="far fa-arrow-right"></i></a>
+                        <div class="tab-pane fade" id="yearly">
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 col-sm-10">
+                                    <div class="pricing-item style-three">
+                                        <div class="circle"><img src="{% static 'landing_page/assets/images/shapes/price-circle.png' %}" alt="Shape"></div>
+                                        <div class="price"><span class="prev">$</span>79<span class="next">/yearly</span></div>
+                                        <div class="text">Smart Pricing for good services</div>
+                                        <a href="#" class="theme-btn">Choose Package <i class="far fa-arrow-right"></i></a>
+                                        <h4 class="title">Regular Plan</h4>
+                                        <ul class="list">
+                                            <li>Email marketing</li>
+                                            <li>Unlimited chat history</li>
+                                            <li>Unlimited landing pages</li>
+                                            <li class="hide">Automation templates</li>
+                                            <li class="hide">Great Customer Support</li>
+                                            <li class="hide">Unlimited lead funnels</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-10">
+                                    <div class="pricing-item style-three">
+                                        <div class="circle"><img src="{% static 'landing_page/assets/images/shapes/price-circle.png' %}" alt="Shape"></div>
+                                        <div class="price"><span class="prev">$</span>99<span class="next">/yearly</span></div>
+                                        <div class="text">Smart Pricing for good services</div>
+                                        <a href="#" class="theme-btn">Choose Package <i class="far fa-arrow-right"></i></a>
+                                        <h4 class="title">Standard Plan</h4>
+                                        <ul class="list">
+                                            <li>Email marketing</li>
+                                            <li>Unlimited chat history</li>
+                                            <li>Unlimited landing pages</li>
+                                            <li>Automation templates</li>
+                                            <li>Great Customer Support</li>
+                                            <li>Unlimited lead funnels</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -728,8 +649,7 @@
             <div class="row justify-content-center">
                 <div class="col-xl-7 col-lg-9 col-md-11">
                     <div class="section-title text-center mb-55" data-aos="fade-up" data-aos-delay="50" data-aos-duration="1500" data-aos-offset="50">
-                        <span class="es-eyebrow" style="justify-content:center;display:flex;">Testimonials</span>
-                        <h2>What Students Are Saying</h2>
+                        <h2>1523+ Global Clients Say About Our Software</h2>
                     </div>
                 </div>
             </div>
@@ -737,67 +657,75 @@
                 <div class="testimonial-item-two">
                     <div class="author">
                         <div class="image">
-                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author1.png' %}" alt="Ananya R.">
+                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author1.png' %}" alt="Author">
                         </div>
                         <div class="content">
-                            <h6>Ananya R.</h6>
-                            <span>NEET Aspirant, 2nd Attempt</span>
+                            <h6>Dennis J. Lester</h6>
+                            <span>CEO & Founder</span>
                             <div class="ratting">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
                     <div class="line"></div>
-                    <div class="author-text">The weak-subject suggestions caught a gap in my Biology prep I hadn't even noticed. Two weeks later that subject stopped dragging my average down.</div>
+                    <div class="author-text">Alignment refers to the practice of arranging visual elements on pages such as text, shapes, images, menu items, and CTA buttons foundation upon which designers gather</div>
                 </div>
                 <div class="testimonial-item-two">
                     <div class="author">
                         <div class="image">
-                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author2.png' %}" alt="Karthik S.">
+                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author2.png' %}" alt="Author">
                         </div>
                         <div class="content">
-                            <h6>Karthik S.</h6>
-                            <span>SSC CGL Candidate</span>
+                            <h6>Rene A. Watkins</h6>
+                            <span>Web Designer</span>
                             <div class="ratting">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
                     <div class="line"></div>
-                    <div class="author-text">Negative marking and a real countdown timer made the mock tests actually feel like exam day. Walking into the real thing felt routine.</div>
+                    <div class="author-text">Alignment refers to the practice of arranging visual elements on pages such as text, shapes, images, menu items, and CTA buttons foundation upon which designers gather</div>
                 </div>
                 <div class="testimonial-item-two">
                     <div class="author">
                         <div class="image">
-                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author1.png' %}" alt="Megha P.">
+                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author1.png' %}" alt="Author">
                         </div>
                         <div class="content">
-                            <h6>Megha P.</h6>
-                            <span>Bank PO Aspirant</span>
+                            <h6>Dennis J. Lester</h6>
+                            <span>CEO & Founder</span>
                             <div class="ratting">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
                     <div class="line"></div>
-                    <div class="author-text">Seeing my subject scores against the platform average told me exactly which topics were actually weak versus which just felt hard.</div>
+                    <div class="author-text">Alignment refers to the practice of arranging visual elements on pages such as text, shapes, images, menu items, and CTA buttons foundation upon which designers gather</div>
                 </div>
                 <div class="testimonial-item-two">
                     <div class="author">
                         <div class="image">
-                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author2.png' %}" alt="Rohit V.">
+                            <img src="{% static 'landing_page/assets/images/testimonials/testi-author2.png' %}" alt="Author">
                         </div>
                         <div class="content">
-                            <h6>Rohit V.</h6>
-                            <span>UPSC Prelims</span>
+                            <h6>Rene A. Watkins</h6>
+                            <span>Web Designer</span>
                             <div class="ratting">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
                     <div class="line"></div>
-                    <div class="author-text">I only needed two subjects, and the plan let me pay for exactly that instead of a bundle full of topics I'd never touch.</div>
+                    <div class="author-text">Alignment refers to the practice of arranging visual elements on pages such as text, shapes, images, menu items, and CTA buttons foundation upon which designers gather</div>
                 </div>
+            </div>
+        </div>
+        <div class="testimonial-nine-shapes">
+            <div class="shape one">
+                <img src="{% static 'landing_page/assets/images/shapes/testimonial-left.png' %}" alt="Shape">
+            </div>
+            <div class="shape two">
+                <img src="{% static 'landing_page/assets/images/shapes/testimonial-right.png' %}" alt="Shape">
             </div>
         </div>
     </section>
@@ -810,10 +738,10 @@
             <div class="row justify-content-center">
                 <div class="col-xl-6 col-lg-8 col-md-10 text-center" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
                     <div class="section-title mb-40">
-                        <span class="subtitle-three mb-10">Get started today</span>
-                        <h2>Ready to See Where You Actually Stand?</h2>
+                        <span class="subtitle-three mb-10">Get Started Us</span>
+                        <h2>Get Ready to Grow your social networking?</h2>
                     </div>
-                    <a href="{% url 'student_portal:register' %}" class="theme-btn">Get Started Free <i class="far fa-arrow-right"></i></a>
+                    <a href="contact.html" class="theme-btn style-two">Contact Us <i class="far fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
@@ -829,7 +757,7 @@
                     <div class="col-lg-5 col-md-7">
                         <div class="footer-widget widget-about" data-aos="fade-up" data-aos-duration="1500" data-aos-offset="50">
                             <div class="section-title">
-                                <h2>Stay in the Loop</h2>
+                                <h2>Get Our Newsletters</h2>
                             </div>
                             <form action="#">
                                 <div class="newsletter-form bgc-lighter">
@@ -838,7 +766,7 @@
                                 </div>
                                 <div class="radio-part">
                                     <input id="update-news" type="radio">
-                                    <label for="update-news">Get new mock tests &amp; offers in your inbox</label>
+                                    <label for="update-news">Get 7 days updates news & offers</label>
                                 </div>
                             </form>
                         </div>
@@ -847,8 +775,9 @@
                         <div class="footer-widget widget-contact-info" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
                             <h6 class="footer-title">Get In Touch</h6>
                             <ul>
-                                <li><a href="mailto:support@edusetin.com">support@edusetin.com</a></li>
-                                <li><a href="{% url 'student_portal:plan_list' %}">View pricing &amp; plans</a></li>
+                                <li><a href="mailto:info@example.com">info@example.com</a></li>
+                                <li>55 main Street, 2nd block Melbourne, Australia</li>
+                                <li><a href="tel:+00012345688">+000 (123) 456 88</a></li>
                             </ul>
                         </div>
                     </div>
@@ -856,10 +785,10 @@
                         <div class="footer-widget widget-links" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1500" data-aos-offset="50">
                             <h6 class="footer-title">Resources</h6>
                             <ul>
-                                <li><a href="{% url 'student_portal:exam_list' %}">Mock Tests</a></li>
-                                <li><a href="{% url 'student_portal:quiz_setup' %}">Practice Quizzes</a></li>
-                                <li><a href="#about">About Us</a></li>
-                                <li><a href="{% url 'student_portal:plan_list' %}">Pricing</a></li>
+                                <li><a href="shop.html">Product</a></li>
+                                <li><a href="services.html">Services</a></li>
+                                <li><a href="about.html">About Us</a></li>
+                                <li><a href="services.html">Benefits</a></li>
                             </ul>
                         </div>
                     </div>
@@ -867,10 +796,10 @@
                         <div class="footer-widget widget-links" data-aos="fade-up" data-aos-delay="150" data-aos-duration="1500" data-aos-offset="50">
                             <h6 class="footer-title">Quick Link</h6>
                             <ul>
-                                <li><a href="#features">Features</a></li>
-                                <li><a href="#how-it-works">How it Works</a></li>
-                                <li><a href="{% url 'student_portal:login' %}">Log in</a></li>
-                                <li><a href="{% url 'student_portal:register' %}">Sign Up</a></li>
+                                <li><a href="services.html">Features</a></li>
+                                <li><a href="pricing.html">Pricing Plan</a></li>
+                                <li><a href="about.html">Best Program</a></li>
+                                <li><a href="contact.html">Press Kit</a></li>
                             </ul>
                         </div>
                     </div>
@@ -881,12 +810,12 @@
                 <div class="row align-items-center">
                     <div class="col-xl-8 col-lg-6">
                         <div class="footer-bottom-logo mb-25 rmb-0 rmt-25 text-lg-start text-center" data-aos="fade-left" data-aos-duration="1500" data-aos-offset="50">
-                            <a href="{% url 'student_portal:home' %}"><img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin logo" style="height:30px;"></a>
+                            <a href="index.html"><img src="{% static 'landing_page/assets/images/logos/logo6.png' %}" alt="Logo"></a>
                         </div>
                     </div>
                     <div class="col-xl-4 col-lg-6">
                         <div class="copyright-text mb-25 pt-10 text-lg-end text-center" data-aos="fade-right" data-aos-duration="1500" data-aos-offset="50">
-                            <p>Copyright @{% now "Y" %}, <a href="{% url 'student_portal:home' %}">Edusetin</a> All Rights Reserved</p>
+                            <p>Copyright @2026, <a href="index.html">Vynzora</a> All Rights Reserved</p>
                         </div>
                     </div>
                 </div>
@@ -912,97 +841,6 @@
 <script src="{% static 'landing_page/assets/js/isotope.pkgd.min.js' %}"></script>
 <script src="{% static 'landing_page/assets/js/aos.js' %}"></script>
 <script src="{% static 'landing_page/assets/js/script.js' %}"></script>
-
-<!-- Edusetin: scroll + cursor motion (additive, respects reduced-motion) -->
-<script>
-(function(){
-    'use strict';
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var hasFinePointer = window.matchMedia('(pointer: fine)').matches;
-
-    var header = document.querySelector('.main-header');
-    function onScrollHeader(){
-        if(!header) return;
-        if(window.scrollY > 40){ header.classList.add('es-scrolled'); }
-        else { header.classList.remove('es-scrolled'); }
-    }
-    window.addEventListener('scroll', onScrollHeader, {passive:true});
-    onScrollHeader();
-
-    // Hotspot tap toggle (works on touch + desktop, keyboard accessible via buttons)
-    document.querySelectorAll('.es-hotspot').forEach(function(spot){
-        spot.addEventListener('click', function(e){
-            e.stopPropagation();
-            var isActive = spot.classList.contains('es-hotspot--active');
-            document.querySelectorAll('.es-hotspot--active').forEach(function(s){ s.classList.remove('es-hotspot--active'); });
-            if(!isActive){ spot.classList.add('es-hotspot--active'); }
-        });
-    });
-    document.addEventListener('click', function(){
-        document.querySelectorAll('.es-hotspot--active').forEach(function(s){ s.classList.remove('es-hotspot--active'); });
-    });
-
-    if(reduceMotion) return;
-
-    // Custom cursor (fine-pointer desktops only)
-    if(hasFinePointer){
-        var ring = document.createElement('div');
-        ring.className = 'es-cursor-ring';
-        var dot = document.createElement('div');
-        dot.className = 'es-cursor-dot';
-        document.body.appendChild(ring);
-        document.body.appendChild(dot);
-
-        var mx = 0, my = 0, rx = 0, ry = 0, started = false;
-        window.addEventListener('mousemove', function(e){
-            mx = e.clientX; my = e.clientY;
-            dot.style.transform = 'translate3d(' + mx + 'px,' + my + 'px,0)';
-            if(!started){ started = true; document.body.classList.add('es-cursor-on'); }
-        }, {passive:true});
-
-        (function loop(){
-            rx += (mx - rx) * 0.16;
-            ry += (my - ry) * 0.16;
-            ring.style.transform = 'translate3d(' + rx + 'px,' + ry + 'px,0)';
-            requestAnimationFrame(loop);
-        })();
-
-        document.querySelectorAll('a, button, .es-hotspot').forEach(function(el){
-            el.addEventListener('mouseenter', function(){ ring.classList.add('es-cursor-ring--active'); });
-            el.addEventListener('mouseleave', function(){ ring.classList.remove('es-cursor-ring--active'); });
-        });
-    }
-
-    // Hero cursor-parallax for floating shapes
-    var hero = document.querySelector('.es-hero-visual');
-    if(hero && hasFinePointer){
-        var shapes = hero.querySelectorAll('[data-depth]');
-        hero.addEventListener('mousemove', function(e){
-            var r = hero.getBoundingClientRect();
-            var cx = (e.clientX - r.left) - r.width / 2;
-            var cy = (e.clientY - r.top) - r.height / 2;
-            shapes.forEach(function(el){
-                var depth = parseFloat(el.getAttribute('data-depth')) || 0.02;
-                el.style.transform = 'translate3d(' + (cx * depth) + 'px,' + (cy * depth) + 'px,0)';
-            });
-        }, {passive:true});
-        hero.addEventListener('mouseleave', function(){
-            shapes.forEach(function(el){ el.style.transform = 'translate3d(0,0,0)'; });
-        });
-    }
-
-    // Gentle scroll parallax for ambient orbs across the page
-    var orbs = document.querySelectorAll('.es-orb');
-    function onScrollParallax(){
-        var y = window.scrollY;
-        orbs.forEach(function(el, i){
-            var speed = 0.04 + (i % 3) * 0.025;
-            el.style.transform = 'translate3d(0,' + (y * speed * 0.18) + 'px,0)';
-        });
-    }
-    window.addEventListener('scroll', onScrollParallax, {passive:true});
-})();
-</script>
 
 </body>
 </html>

@@ -4,130 +4,661 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP | EdusetIn</title>
+    <title>Verify OTP | EduSetIn</title>
     <link rel="stylesheet" href="{% static 'admin-static/assets/css/bootstrap.min.css' %}">
+    <link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --blue-50:  #e6f1fb;
+            --blue-100: #b5d4f4;
+            --blue-200: #85b7eb;
+            --blue-400: #378add;
+            --blue-600: #185fa5;
+            --blue-800: #0c447c;
+            --blue-900: #042c53;
+            --ink:      #0f1a2e;
+            --muted:    #6b7280;
+            --border:   #e2e8f0;
+            --surface:  #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: #f8f9fa;
-            height: 100vh;
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            color: var(--ink);
+            background: #f0f6ff;
+        }
+
+        /* ── Background Canvas ── */
+        #edusetin-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .auth-aside,
+        .auth-main {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Left panel ── */
+        .auth-aside {
+            width: 440px;
+            flex-shrink: 0;
+            background: var(--blue-900);
+            color: #fff;
+            padding: 48px 44px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-aside::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 320px; height: 320px;
+            border-radius: 50%;
+            background: rgba(55,138,221,.12);
+            pointer-events: none;
+        }
+        .auth-aside::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(21,96,165,.18);
+            pointer-events: none;
+        }
+
+        /* Brand */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 52px;
+        }
+        .brand-mark {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            background: var(--blue-600);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-mark img {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+        .brand-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .brand-tag {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            color: rgba(255,255,255,.4);
+            margin-top: 3px;
+        }
+
+        .aside-heading {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.18;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 14px;
+        }
+        .aside-heading em {
+            font-style: normal;
+            color: var(--blue-200);
+        }
+        .aside-sub {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,.55);
+            position: relative;
+            z-index: 1;
+            margin-bottom: 40px;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        .feature-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .feature-icon {
+            flex-shrink: 0;
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: rgba(133,183,235,.12);
+            border: 1px solid rgba(133,183,235,.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            color: var(--blue-200);
+        }
+        .feature-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+        .feature-desc {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,.45);
+            margin-top: 3px;
+        }
+
+        .trust-row {
+            margin-top: auto;
+            padding-top: 36px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .trust-avatars { display: flex; }
+        .trust-avatars span {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: var(--blue-400);
+            border: 2px solid var(--blue-900);
+            margin-left: -8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .trust-avatars span:first-child { margin-left: 0; }
+        .trust-text { font-size: 0.76rem; color: rgba(255,255,255,.5); line-height: 1.4; }
+        .trust-stars { color: #facc15; font-size: 0.72rem; letter-spacing: 2px; }
+
+        /* ── Right panel ── */
+        .auth-main {
+            flex: 1;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 48px 40px;
+            overflow-y: auto;
         }
-        .otp-container {
-            max-width: 450px;
+
+        .auth-card {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.7);
+            padding: 44px 48px;
             width: 100%;
-            padding: 2rem;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 460px;
+            box-shadow: 0 4px 32px -8px rgba(12,68,124,.12), 0 1px 0 rgba(255,255,255,.8) inset;
         }
-        .form-title {
-            margin-bottom: 0.5rem;
+
+        /* OTP icon badge */
+        .otp-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--blue-50), var(--blue-100));
+            border: 1.5px solid var(--blue-200);
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .auth-heading {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: var(--blue-900);
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        .auth-subheading {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .auth-subheading strong { color: var(--blue-800); }
+
+        /* Expiry badge */
+        .expiry-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #fef9c3;
+            border: 1px solid #fde047;
+            color: #854d0e;
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: #333;
-            text-align: center;
+            margin-bottom: 24px;
         }
-        .form-subtitle {
-            text-align: center;
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
+        .expiry-pulse {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #eab308;
+            animation: blink 1.2s infinite;
         }
-        .otp-icon {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .25; }
+        }
+
+        /* Fields */
+        .field-wrap { margin-bottom: 16px; }
+        .field-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--blue-800);
+            display: block;
+            margin-bottom: 7px;
+            letter-spacing: 0.02em;
         }
         .otp-input {
-            font-size: 1.5rem;
-            letter-spacing: 0.5rem;
+            width: 100%;
+            padding: 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 1.6rem;
+            font-family: inherit;
+            font-weight: 700;
+            letter-spacing: 0.6rem;
             text-align: center;
-            font-weight: 600;
+            background: rgba(248,250,252,0.8);
+            color: var(--ink);
+            transition: border-color .15s, box-shadow .15s;
         }
-        .divider {
-            border: 0;
-            border-top: 1px solid #e9ecef;
-            margin: 1.25rem 0;
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--blue-400);
+            box-shadow: 0 0 0 3px rgba(55,138,221,.14);
+            background: #fff;
+        }
+        .field-hint {
+            font-size: 0.76rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .form-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 22px 0;
+        }
+
+        /* Buttons */
+        .btn-verify {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: var(--blue-600);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.96rem;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 0.01em;
+            transition: background .15s, transform .1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-verify:hover { background: var(--blue-800); transform: translateY(-1px); }
+        .btn-verify:active { transform: translateY(0); }
+
+        .btn-resend {
+            width: 100%;
+            padding: 11px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.88rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color .15s, color .15s, background .15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin-top: 10px;
+        }
+        .btn-resend:hover {
+            border-color: var(--blue-400);
+            color: var(--blue-600);
+            background: var(--blue-50);
+        }
+
+        .back-row {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+        .back-row a {
+            color: var(--blue-600);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .back-row a:hover { text-decoration: underline; }
+
+        .footer-strip {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .footer-item i { color: var(--blue-400); font-size: 12px; }
+
+        /* Alerts */
+        .alert-stack { margin-bottom: 16px; }
+        .alert-stack .alert {
+            font-size: 0.84rem;
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        @media (max-width: 900px) {
+            .auth-aside { width: 360px; padding: 40px 32px; }
+            .auth-card  { padding: 36px 32px; }
+        }
+        @media (max-width: 720px) {
+            body { flex-direction: column; }
+            .auth-aside { display: none; }
+            .auth-main  { padding: 24px 16px; }
+            .auth-card  { padding: 32px 24px; border-radius: 16px; }
+            .footer-strip { justify-content: center; }
         }
     </style>
 </head>
 <body>
+    <canvas id="edusetin-bg"></canvas>
 
-<div class="otp-container">
-    <h3 class="form-title">Verify Your Email</h3>
-    <p class="form-subtitle mb-2">
-        We sent a 6-digit code to <strong>{{ masked_email }}</strong>.<br>
-        Enter the code below to complete registration.
-    </p>
-    <div class="text-center mb-4">
-        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill" style="font-size: 0.85rem; font-weight: 500;">
-            Code expires in 10 minutes
-        </span>
-    </div>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Left panel (identical to register) -->
+    <aside class="auth-aside">
+        <div class="brand">
+            <div class="brand-mark">
+                <img src="{% static 'admin-static/assets/img/favicon.ico' %}" alt="EdusetIn">
             </div>
-        {% endfor %}
-    {% endif %}
-
-    <!-- OTP Verify Form -->
-    <form method="POST" action="{% url 'student_portal:verify_otp' %}">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="otp" class="form-label">Verification Code</label>
-            <input
-                type="text"
-                id="otp"
-                name="otp"
-                class="form-control otp-input"
-                placeholder="______"
-                maxlength="6"
-                minlength="6"
-                inputmode="numeric"
-                pattern="[0-9]{6}"
-                autocomplete="one-time-code"
-                autofocus
-                required
-            >
-            <div class="form-text text-muted">Enter the 6-digit code from your email. It expires in 10 minutes.</div>
+            <div>
+                <div class="brand-name">edusetin</div>
+                <div class="brand-tag">IMAT PREP PLATFORM</div>
+            </div>
         </div>
 
-        <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-primary">Verify &amp; Create Account</button>
+        <h1 class="aside-heading">Begin Your<br>IMAT Journey<br><em>Today</em></h1>
+        <p class="aside-sub">Join thousands of aspirants preparing smarter with topic-wise practice, timed mock tests, and AI-powered performance insights.</p>
+
+        <div class="feature-list">
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-book-open"></i></div>
+                <div>
+                    <div class="feature-title">Topic-wise Practice</div>
+                    <div class="feature-desc">Master every concept with structured quizzes</div>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div>
+                    <div class="feature-title">IMAT Pattern Mock Tests</div>
+                    <div class="feature-desc">60 questions &middot; 100 minutes &middot; Real exam feel</div>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <div>
+                    <div class="feature-title">AI Performance Insights</div>
+                    <div class="feature-desc">Spot weak topics and improve score faster</div>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <div class="feature-title">Past Papers</div>
+                    <div class="feature-desc">Practice with real previous year papers</div>
+                </div>
+            </div>
         </div>
-    </form>
 
-    <hr class="divider">
-
-    <!-- Resend OTP Form -->
-    <form method="POST" action="{% url 'student_portal:resend_otp' %}">
-        {% csrf_token %}
-        <div class="d-grid">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                Resend OTP
-            </button>
+        <div class="trust-row">
+            <div class="trust-avatars">
+                <span>AK</span><span>SR</span><span>MJ</span>
+            </div>
+            <div>
+                <div class="trust-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <div class="trust-text">Trusted by 15,000+ IMAT aspirants</div>
+            </div>
         </div>
-    </form>
+    </aside>
 
-    <div class="text-center mt-3">
-        <a href="{% url 'student_portal:register' %}" class="text-muted text-decoration-none small">
-            ← Back to Registration
-        </a>
-    </div>
-</div>
+    <!-- Right panel -->
+    <main class="auth-main">
+        <div class="auth-card">
+
+            <div class="otp-badge">✉️</div>
+            <h2 class="auth-heading">Verify Your Email</h2>
+            <p class="auth-subheading">
+                We sent a 6-digit code to <strong>{{ masked_email }}</strong>.<br>
+                Enter it below to complete registration.
+            </p>
+
+            <div class="expiry-badge">
+                <span class="expiry-pulse"></span> Code expires in 10 minutes
+            </div>
+
+            <div class="alert-stack">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Verify Form -->
+            <form method="POST" action="{% url 'student_portal:verify_otp' %}">
+                {% csrf_token %}
+
+                <div class="field-wrap">
+                    <label for="otp" class="field-label">Verification Code</label>
+                    <input
+                        type="text"
+                        id="otp"
+                        name="otp"
+                        class="otp-input"
+                        placeholder="· · · · · ·"
+                        maxlength="6"
+                        minlength="6"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        autocomplete="one-time-code"
+                        autofocus
+                        required
+                    >
+                    <div class="field-hint">Enter the 6-digit code sent to your email inbox.</div>
+                </div>
+
+                <button type="submit" class="btn-verify">
+                    <i class="fas fa-shield-check"></i> Verify &amp; Create Account
+                </button>
+            </form>
+
+            <!-- Resend Form -->
+            <form method="POST" action="{% url 'student_portal:resend_otp' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-resend">
+                    <i class="fas fa-rotate-right"></i> Resend OTP
+                </button>
+            </form>
+
+            <div class="back-row">
+                <a href="{% url 'student_portal:register' %}">← Back to Registration</a>
+            </div>
+
+            <div class="footer-strip">
+                <div class="footer-item"><i class="fas fa-shield-alt"></i> Secure &amp; safe</div>
+                <div class="footer-item"><i class="fas fa-graduation-cap"></i> Expert content</div>
+                <div class="footer-item"><i class="fas fa-clock"></i> Anytime access</div>
+                <div class="footer-item"><i class="fas fa-headset"></i> 24/7 support</div>
+            </div>
+
+        </div>
+    </main>
 
 <script src="{% static 'admin-static/assets/js/bootstrap.min.js' %}"></script>
 <script>
-    // Allow only numeric input in the OTP field
+    // Numeric-only OTP input
     document.getElementById('otp').addEventListener('input', function () {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
     });
-</script>
 
+    // Animated background (identical to register.html)
+    (function () {
+        const canvas = document.getElementById("edusetin-bg");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+
+        let w, h;
+        function resize() {
+            w = canvas.width  = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener("resize", resize);
+
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+        document.addEventListener("mousemove", (e) => {
+            targetX = (e.clientX / w - 0.5) * 30;
+            targetY = (e.clientY / h - 0.5) * 30;
+        });
+
+        const orbs = [
+            { rx: 0.18, ry: 0.28, radius: 340, color: "37,99,235",   speed: 0.00028 },
+            { rx: 0.82, ry: 0.62, radius: 380, color: "99,102,241",  speed: 0.00022 },
+            { rx: 0.50, ry: 0.88, radius: 300, color: "14,165,233",  speed: 0.00032 },
+            { rx: 0.72, ry: 0.18, radius: 260, color: "56,189,248",  speed: 0.00038 },
+        ];
+
+        function drawOrbs(t) {
+            ctx.save();
+            ctx.globalCompositeOperation = "multiply";
+            orbs.forEach((orb, i) => {
+                const x = w * orb.rx + Math.sin(t * orb.speed + i * 1.8) * 90 + mouseX * 0.45;
+                const y = h * orb.ry + Math.cos(t * orb.speed + i * 1.8) * 70 + mouseY * 0.45;
+                const g = ctx.createRadialGradient(x, y, 0, x, y, orb.radius);
+                g.addColorStop(0, `rgba(${orb.color},0.18)`);
+                g.addColorStop(0.5, `rgba(${orb.color},0.07)`);
+                g.addColorStop(1, `rgba(${orb.color},0)`);
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(x, y, orb.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        function drawGrid(t) {
+            const gap = 38;
+            ctx.save();
+            for (let x = 0; x < w; x += gap) {
+                for (let y = 0; y < h; y += gap) {
+                    const pulse = Math.sin(t * 0.0009 + x * 0.028 + y * 0.028);
+                    const size  = 1.2 + pulse * 0.7;
+                    const alpha = 0.10 + pulse * 0.04;
+                    ctx.fillStyle = `rgba(37,99,235,${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(x + mouseX * 0.12, y + mouseY * 0.12, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawWaves(t) {
+            ctx.save();
+            ctx.globalAlpha = 0.045;
+            ctx.strokeStyle = "#2563eb";
+            ctx.lineWidth   = 1.2;
+            const count = 6;
+            for (let i = 0; i < count; i++) {
+                const yBase = (h / (count - 1)) * i;
+                ctx.beginPath();
+                for (let x = 0; x <= w; x += 4) {
+                    const y = yBase
+                        + Math.sin((x / w) * Math.PI * 3 + t * 0.0006 + i * 0.9) * 28
+                        + Math.sin((x / w) * Math.PI * 5 + t * 0.0004 + i * 0.5) * 14;
+                    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function animate(t) {
+            mouseX += (targetX - mouseX) * 0.05;
+            mouseY += (targetY - mouseY) * 0.05;
+            ctx.clearRect(0, 0, w, h);
+            drawOrbs(t);
+            drawGrid(t);
+            drawWaves(t);
+            requestAnimationFrame(animate);
+        }
+
+        animate(0);
+    })();
+</script>
 </body>
 </html>

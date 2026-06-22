@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from .forms import StudentRegistrationForm, StudentLoginForm
 from .models import Student,ExamAttempt, AttemptResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
 
 # ─────────────────────────────────────────────
 # HELPERS
@@ -49,7 +50,7 @@ def _clear_registration_session(request):
 # ─────────────────────────────────────────────
 # REGISTRATION (Step 1)
 # ─────────────────────────────────────────────
-
+@never_cache
 def student_register(request):
     if request.user.is_authenticated:
         # Only redirect to dashboard if user actually has a Student profile
@@ -258,7 +259,7 @@ def resend_otp(request):
 # ─────────────────────────────────────────────
 # LOGIN
 # ─────────────────────────────────────────────
-
+@never_cache
 def student_login(request):
     if request.user.is_authenticated:
         # Only redirect to dashboard if user actually has a Student profile
@@ -313,7 +314,7 @@ SPARSE_EXAM_THRESHOLD = 3
 
 MOCK_TEST_TYPE_NAME = 'mock_test'
 
-
+@never_cache
 @login_required(login_url='student_portal:login')
 def student_dashboard(request):
     if not hasattr(request.user, 'student'):
@@ -1376,7 +1377,7 @@ from django.contrib.auth import update_session_auth_hash
  
 from .forms import StudentUpdateForm
  
- 
+@never_cache 
 @login_required
 def student_detail(request):
     try:
@@ -1395,7 +1396,7 @@ def student_detail(request):
         'payments': payments,
     })
  
- 
+@never_cache
 @login_required
 def student_update(request):
     try:
@@ -1421,18 +1422,18 @@ def student_update(request):
 
 import random
 from .models import QuizAttempt, QuizAttemptResponse
- 
- 
+
+
 def _get_accessible_subject_ids(student):
     """Return set of subject IDs the student can access via active payments."""
     from student_management.models import Payment
     from django.utils import timezone
- 
+
     active_payments = student.payments.filter(
         status=Payment.STATUS_SUCCESS,
         expires_at__gt=timezone.now(),
     ).prefetch_related('plan__subjects', 'plan__submodules', 'plan__exams')
- 
+
     subject_ids = set()
     for payment in active_payments:
         for subj in payment.plan.subjects.filter(is_active=True):
@@ -1443,52 +1444,52 @@ def _get_accessible_subject_ids(student):
             for subj in exam.subjects.filter(is_active=True):
                 subject_ids.add(subj.id)
     return subject_ids
- 
- 
+
+
 def _get_accessible_submodule_ids(student, subject_id):
     """Return set of submodule IDs in a subject accessible to the student."""
     from student_management.models import Payment, SubModule
     from django.utils import timezone
- 
+
     active_payments = student.payments.filter(
         status=Payment.STATUS_SUCCESS,
         expires_at__gt=timezone.now(),
     ).prefetch_related('plan__subjects', 'plan__submodules', 'plan__exams')
- 
+
     submodule_ids = set()
     for payment in active_payments:
-        # If the plan includes the whole subject, all its submodules are accessible
         if payment.plan.subjects.filter(id=subject_id).exists():
-            ids = SubModule.objects.filter(subject_id=subject_id, is_active=True).values_list('id', flat=True)
+            ids = SubModule.objects.filter(
+                subject_id=subject_id, is_active=True
+            ).values_list('id', flat=True)
             submodule_ids.update(ids)
-        # Specific submodules granted
         for submod in payment.plan.submodules.filter(subject_id=subject_id, is_active=True):
             submodule_ids.add(submod.id)
-        # Via exams
         for exam in payment.plan.exams.filter(is_active=True):
             if exam.subjects.filter(id=subject_id).exists():
-                ids = SubModule.objects.filter(subject_id=subject_id, is_active=True).values_list('id', flat=True)
+                ids = SubModule.objects.filter(
+                    subject_id=subject_id, is_active=True
+                ).values_list('id', flat=True)
                 submodule_ids.update(ids)
             for submod in exam.submodules.filter(subject_id=subject_id, is_active=True):
                 submodule_ids.add(submod.id)
     return submodule_ids
- 
- 
+
+
 # ─────────────────────────────────────────────
 # QUIZ SETUP  — choose subject / submodule / count
 # ─────────────────────────────────────────────
- 
+@never_cache
 @login_required(login_url='student_portal:login')
 def quiz_setup(request):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
 
-    from student_management.models import Subject, SubModule, SubscriptionPlan
+    from student_management.models import Subject, SubModule
     from django.utils import timezone
     import json
 
-    # Get the student's currently active payment/plan
     active_payment = student.payments.filter(
         status='success',
         expires_at__gt=timezone.now(),
@@ -1502,22 +1503,29 @@ def quiz_setup(request):
         })
 
     plan = active_payment.plan
-
-    # Only subjects & submodules explicitly attached to their plan
     plan_subjects   = plan.subjects.filter(is_active=True).order_by('name')
     plan_submodules = plan.submodules.filter(is_active=True)
 
-    # Build subject → submodules map (only plan submodules, under plan subjects)
     subject_submodules = {}
     for subj in plan_subjects:
-        sms = plan_submodules.filter(subject=subj).order_by('order', 'name')
+        # ALL submodules of this subject (to show in UI)
+        all_sms = SubModule.objects.filter(
+            subject=subj, is_active=True
+        ).order_by('order', 'name')
+
+        # Only the ones in this plan
+        plan_sm_ids = set(
+            plan_submodules.filter(subject=subj).values_list('id', flat=True)
+        )
+
         subject_submodules[subj.id] = [
             {
-                'id':    sm.id,
-                'name':  sm.name,
-                'image': sm.image.url if sm.image else None,
+                'id':      sm.id,
+                'name':    sm.name,
+                'image':   sm.image.url if sm.image else None,
+                'in_plan': sm.id in plan_sm_ids,   # ← locked/unlocked flag
             }
-            for sm in sms
+            for sm in all_sms
         ]
 
     return render(request, 'student_portal/quiz_setup.html', {
@@ -1525,61 +1533,109 @@ def quiz_setup(request):
         'subject_submodules_json': json.dumps(subject_submodules),
         'has_subscription':        True,
     })
+
+
 # ─────────────────────────────────────────────
 # QUIZ GENERATE  — POST: create attempt + questions
 # ─────────────────────────────────────────────
- 
+@never_cache
 @login_required(login_url='student_portal:login')
 def quiz_generate(request):
     if request.method != 'POST':
         return redirect('student_portal:quiz_setup')
- 
+
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
- 
+
     from student_management.models import Question, Subject, SubModule
- 
+    from django.utils import timezone
+
+    # ── fetch active payment ──
+    active_payment = student.payments.filter(
+        status='success',
+        expires_at__gt=timezone.now(),
+    ).select_related('plan').order_by('-expires_at').first()
+
+    if not active_payment:
+        messages.error(request, "No active subscription found.")
+        return redirect('student_portal:plan_list')
+
+    plan = active_payment.plan
+
     subject_id    = request.POST.get('subject_id', '').strip()
-    submodule_id  = request.POST.get('submodule_id', '').strip()
+    submodule_ids = request.POST.get('submodule_ids', '').strip()  # comma-separated
     num_questions = int(request.POST.get('num_questions', 10))
-    num_questions = max(5, min(num_questions, 50))  # clamp 5-50
- 
-    
+    num_questions = max(5, min(num_questions, 50))
+
+    # ── validate subject access ──
     accessible_subject_ids = _get_accessible_subject_ids(student)
     if not subject_id or int(subject_id) not in accessible_subject_ids:
         messages.error(request, "You don't have access to this subject.")
         return redirect('student_portal:quiz_setup')
- 
+
     subject = Subject.objects.get(id=subject_id)
-    submodule = None
- 
+
+    # ── plan submodules for this subject ──
+    plan_submodule_ids = list(
+        plan.submodules.filter(subject_id=subject_id, is_active=True)
+        .values_list('id', flat=True)
+    )
+
+    # ── block if no submodules in plan for this subject ──
+    if not plan_submodule_ids:
+        messages.error(request, "No topics are available for this subject in your plan. Please upgrade.")
+        return redirect('student_portal:quiz_setup')
+
     qs = Question.objects.filter(subject_id=subject_id, is_active=True)
- 
-    if submodule_id:
-        accessible_sm_ids = _get_accessible_submodule_ids(student, int(subject_id))
-        if int(submodule_id) not in accessible_sm_ids:
-            messages.error(request, "You don't have access to this submodule.")
+    submodule = None
+
+    if submodule_ids:
+        # Parse the comma-separated list sent from the form
+        requested_ids = []
+        for sid in submodule_ids.split(','):
+            sid = sid.strip()
+            if sid.isdigit():
+                requested_ids.append(int(sid))
+
+        # Validate — only allow IDs that are actually in the plan
+        plan_sm_set    = set(plan_submodule_ids)
+        allowed_ids    = [i for i in requested_ids if i in plan_sm_set]
+
+        if not allowed_ids:
+            messages.error(request, "You don't have access to the selected topic(s).")
             return redirect('student_portal:quiz_setup')
-        submodule = SubModule.objects.get(id=submodule_id)
-        qs = qs.filter(submodule_id=submodule_id)
- 
+
+        qs = qs.filter(submodule_id__in=allowed_ids)
+
+        # If exactly one submodule selected, pass it for display
+        if len(allowed_ids) == 1:
+            submodule = SubModule.objects.get(id=allowed_ids[0])
+
+    else:
+        # No specific submodule chosen → restrict to ALL plan submodules
+        qs = qs.filter(submodule_id__in=plan_submodule_ids)
+
+    # ── pull questions ──
     question_pool = list(qs.values_list('id', flat=True))
     if not question_pool:
-        messages.error(request, "No questions available for the selected topic.")
+        messages.error(request, "No questions available for the selected topic(s).")
         return redirect('student_portal:quiz_setup')
- 
+
     selected_ids = random.sample(question_pool, min(num_questions, len(question_pool)))
-    questions    = list(Question.objects.filter(id__in=selected_ids).select_related('subject').prefetch_related('media_files'))
+    questions    = list(
+        Question.objects.filter(id__in=selected_ids)
+        .select_related('subject')
+        .prefetch_related('media_files')
+    )
     random.shuffle(questions)
- 
-    
+
     attempt = QuizAttempt.objects.create(
         student=student,
         subject=subject,
         submodule=submodule,
     )
- 
+
     return render(request, 'student_portal/quiz_take.html', {
         'attempt':   attempt,
         'questions': questions,
@@ -1587,13 +1643,10 @@ def quiz_generate(request):
         'submodule': submodule,
     })
  
- 
-
- 
 # ─────────────────────────────────────────────
 # QUIZ SUBMIT
 # ─────────────────────────────────────────────
-
+@never_cache
 @login_required(login_url='student_portal:login')
 @require_POST
 def quiz_submit(request, attempt_id):
@@ -1670,7 +1723,7 @@ def quiz_submit(request, attempt_id):
 # ─────────────────────────────────────────────
 # QUIZ RESULT
 # ─────────────────────────────────────────────
-
+@never_cache
 @login_required(login_url='student_portal:login')
 def quiz_result(request, attempt_id):
     student = _get_student_or_redirect(request)
@@ -1719,7 +1772,7 @@ def quiz_result(request, attempt_id):
 # ─────────────────────────────────────────────
 # QUIZ HISTORY
 # ─────────────────────────────────────────────
- 
+@never_cache 
 @login_required(login_url='student_portal:login')
 def quiz_history(request):
     student = _get_student_or_redirect(request)
@@ -1881,6 +1934,17 @@ def get_notifications(request):
         'notifications': notifications,
         'unread_count':  unread_count,
     })
-
+@never_cache
 def landing_page(request):
-    return render(request, 'student_portal/index.html')
+    from student_management.models import SubscriptionPlan
+    plans = SubscriptionPlan.objects.filter(is_active=True).prefetch_related(
+        'subjects', 'submodules', 'exams'
+    ).order_by('price')
+    return render(request, 'student_portal/index.html', {'plans': plans})
+ 
+
+
+
+
+
+

@@ -1,5 +1,3 @@
-
-
 {% extends 'student_portal/base.html' %}
 {% load static %}
 
@@ -50,16 +48,11 @@
 [data-theme="dark"] .qs-step-line.done { background: var(--qs-green); }
 [data-theme="dark"] .qs-section-label { color: #94a3b8; }
 [data-theme="dark"] .qs-section-label i { color: #60a5fa; }
-
-/* Step 1 subject cards */
 [data-theme="dark"] .qs-subj-card { background: #1e293b; border-color: #334155; }
 [data-theme="dark"] .qs-subj-card:hover { border-color: #60a5fa; box-shadow: 0 6px 20px rgba(37,99,235,0.18); }
-[data-theme="dark"] .qs-subj-card.selected { background: rgba(37,99,235,0.15); border-color: #3b82f6; box-shadow: 0 4px 14px rgba(37,99,235,0.22); }
+[data-theme="dark"] .qs-subj-card.selected { background: rgba(37,99,235,0.15); border-color: #3b82f6; }
 [data-theme="dark"] .qs-subj-name { color: #f1f5f9; }
 [data-theme="dark"] .qs-subj-qty  { color: #64748b; }
-[data-theme="dark"] .qs-ring .qs-check { background: var(--qs-primary); border-color: #1e293b; }
-
-/* Step 2 topic grid */
 [data-theme="dark"] .qs-s2-header { background: #1e293b; border-color: #334155; }
 [data-theme="dark"] .qs-s2-title  { color: #f1f5f9; }
 [data-theme="dark"] .qs-s2-hint   { color: #94a3b8; }
@@ -71,19 +64,12 @@
 [data-theme="dark"] .qs-all-chip { background: #1e293b; border-color: #334155; color: #94a3b8; }
 [data-theme="dark"] .qs-all-chip:hover { border-color: #60a5fa; color: #93c5fd; }
 [data-theme="dark"] .qs-all-chip.selected { background: var(--qs-primary); color: #fff; border-color: var(--qs-primary); }
-
-/* Topic grid cards */
 [data-theme="dark"] .qs-topic-card { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .qs-topic-card:hover { border-color: #60a5fa; }
+[data-theme="dark"] .qs-topic-card:hover:not(.locked) { border-color: #60a5fa; }
 [data-theme="dark"] .qs-topic-card.selected { background: rgba(37,99,235,0.15); border-color: #3b82f6; }
 [data-theme="dark"] .qs-topic-name { color: #f1f5f9; }
 [data-theme="dark"] .qs-topic-qty  { color: #64748b; }
-[data-theme="dark"] .qs-topic-check { border-color: #1e293b; }
-
-/* Step 2 footer */
 [data-theme="dark"] .qs-s2-footer { background: #0f172a; border-color: #334155; }
-
-/* Step 3 */
 [data-theme="dark"] .qs-q-box { background: rgba(37,99,235,0.10); border-color: rgba(96,165,250,0.18); }
 [data-theme="dark"] .qs-q-big { color: #60a5fa; }
 [data-theme="dark"] .qs-q-lbl { color: #94a3b8; }
@@ -95,45 +81,78 @@
 [data-theme="dark"] .qs-sum-item { background: #0f172a; border-color: #334155; }
 [data-theme="dark"] .qs-sum-label { color: #64748b; }
 [data-theme="dark"] .qs-sum-val   { color: #f1f5f9; }
-
-/* Footer / buttons */
 [data-theme="dark"] .qs-footer { background: #0f172a; border-color: #334155; }
 [data-theme="dark"] .qs-btn-back { background: #1e293b; border-color: #334155; color: #cbd5e1; }
 [data-theme="dark"] .qs-btn-back:hover { background: #334155; border-color: #475569; }
-
-/* No-subscription block */
 [data-theme="dark"] .qs-nosub { color: #64748b; }
 [data-theme="dark"] .qs-nosub i { color: #475569; }
 [data-theme="dark"] .qs-nosub h3 { color: #f1f5f9; }
 [data-theme="dark"] .qs-nosub p  { color: #94a3b8; }
-
-/* Launch overlay */
 [data-theme="dark"] .qs-launch .spinner { border-color: rgba(96,165,250,0.15); border-top-color: #60a5fa; }
 [data-theme="dark"] .qs-launch .launch-title { color: #f1f5f9; }
 [data-theme="dark"] .qs-launch .launch-sub   { color: #94a3b8; }
 
+/* ── LOCKED CARD ── */
+[data-theme="dark"] .qs-topic-card.locked { background: #151e2d; border-color: #1e293b; opacity: 0.72; }
+[data-theme="dark"] .qs-lock-badge { background: #1e293b; color: #64748b; border-color: #334155; }
+.qs-topic-card.locked { opacity: 0.65; cursor: not-allowed; background: #f8fafc; border-style: dashed; }
+.qs-topic-card.locked:hover { transform: none !important; box-shadow: none !important; border-color: #e2e8f0 !important; }
+.qs-topic-card.locked .qs-topic-icon-wrap { filter: grayscale(0.6); }
+.qs-lock-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: #f1f5f9; border: 1px solid #e2e8f0;
+    border-radius: 6px; padding: 2px 6px;
+    font-size: 10px; font-weight: 700; color: #94a3b8;
+    display: flex; align-items: center; gap: 3px;
+    pointer-events: none;
+}
+.qs-lock-badge i { font-size: 10px; }
+
+/* ── TOAST ── */
+#qsToast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1e293b; color: #fff;
+    padding: 12px 20px 12px 16px;
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    z-index: 9999; opacity: 0;
+    transition: all 0.32s cubic-bezier(0.22,0.68,0,1.2);
+    pointer-events: none; min-width: 280px; max-width: 380px;
+    border: 1px solid #334155;
+}
+#qsToast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+#qsToast .toast-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(245,158,11,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+#qsToast .toast-icon i { font-size: 16px; color: #f59e0b; }
+#qsToast .toast-body { flex: 1; }
+#qsToast .toast-title { font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 1px; }
+#qsToast .toast-sub { font-size: 12px; color: #94a3b8; }
+#qsToast .toast-upgrade {
+    background: #f59e0b; color: #fff; border: none;
+    padding: 5px 12px; border-radius: 7px; font-size: 12px;
+    font-weight: 700; cursor: pointer; white-space: nowrap;
+    text-decoration: none; display: inline-block;
+    transition: background .2s;
+}
+#qsToast .toast-upgrade:hover { background: #d97706; }
+
 /* ─── BASE STYLES ─── */
 .qs-hero {
-    background: transparent;
-    border-radius: var(--qs-radius);
-    padding: 12px 0 20px;
-    color: var(--qs-heading);
-    margin-bottom: 24px;
-    display: flex; align-items: center; gap: 16px;
-    position: relative; overflow: hidden;
+    background: transparent; border-radius: var(--qs-radius);
+    padding: 12px 0 20px; color: var(--qs-heading); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px; position: relative; overflow: hidden;
 }
-.qs-hero::before { display: none; }
 .qs-hero-ic {
     width:52px; height:52px; border-radius:14px;
     background: rgba(37,99,235,0.08);
     display:flex; align-items:center; justify-content:center;
-    font-size:28px; flex-shrink:0; position:relative; z-index:1;
-    color: var(--qs-primary);
+    font-size:28px; flex-shrink:0; color: var(--qs-primary);
 }
-.qs-hero h1 { font-size:2rem; font-weight:700; margin:0 0 4px; letter-spacing:-0.02em; position:relative; z-index:1; color:var(--qs-heading); }
-.qs-hero p  { font-size:1.1rem; opacity:0.75; margin:0; position:relative; z-index:1; color:var(--qs-text); }
+.qs-hero h1 { font-size:2rem; font-weight:700; margin:0 0 4px; letter-spacing:-0.02em; color:var(--qs-heading); }
+.qs-hero p  { font-size:1.1rem; opacity:0.75; margin:0; color:var(--qs-text); }
 
-.qs-stepper { display:flex; align-items:center; margin-bottom:20px; gap:0; }
+.qs-stepper { display:flex; align-items:center; margin-bottom:20px; }
 .qs-step { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
 .qs-step-circle {
     width:34px; height:34px; border-radius:50%;
@@ -151,10 +170,8 @@
 .qs-step-line.done { background:var(--qs-green); }
 
 .qs-panel {
-    background:var(--qs-card-bg);
-    border:1px solid var(--qs-border);
-    border-radius:var(--qs-radius);
-    overflow:hidden;
+    background:var(--qs-card-bg); border:1px solid var(--qs-border);
+    border-radius:var(--qs-radius); overflow:hidden;
     box-shadow:0 4px 24px rgba(0,0,0,0.05);
 }
 .qs-section { display:none; }
@@ -173,7 +190,7 @@
 }
 .qs-section-label i { font-size:16px; color:var(--qs-primary); }
 
-/* ─── STEP 1: SUBJECT GRID ─── */
+/* ─── STEP 1 ─── */
 .qs-subj-grid {
     display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
     gap:12px; flex:1; align-content:start;
@@ -209,7 +226,7 @@
 .qs-subj-name { font-size:0.82rem; font-weight:700; color:var(--qs-heading); margin-bottom:2px; line-height:1.2; }
 .qs-subj-qty  { font-size:0.7rem; color:#94a3b8; }
 
-/* ─── STEP 2: TOPIC GRID (side-by-side) ─── */
+/* ─── STEP 2 ─── */
 .qs-s2-wrap { display:flex; flex-direction:column; background:var(--qs-card-bg); }
 .qs-s2-header {
     padding:20px 28px 16px; border-bottom:1px solid var(--qs-border);
@@ -245,81 +262,44 @@
 .qs-all-chip:hover { border-color:var(--qs-primary); color:var(--qs-primary); }
 .qs-all-chip.selected { background:var(--qs-primary); color:#fff; border-color:var(--qs-primary); box-shadow:0 3px 12px rgba(37,99,235,0.25); }
 
-/* ── TOPIC CARD GRID (replaces bubble path) ── */
-.qs-topic-outer {
-    padding:20px 28px 16px;
-    overflow-y:auto;
-    max-height:52vh;
-}
+.qs-topic-outer { padding:20px 28px 16px; overflow-y:auto; max-height:52vh; }
 .qs-topic-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
-    gap:12px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:12px;
 }
 .qs-topic-card {
-    border:2px solid var(--qs-border);
-    border-radius:16px;
-    padding:18px 14px 14px;
-    cursor:pointer;
+    border:2px solid var(--qs-border); border-radius:16px;
+    padding:18px 14px 14px; cursor:pointer;
     transition:all 0.28s var(--qs-ease);
-    background:var(--qs-card-bg);
-    text-align:center;
-    position:relative;
-    opacity:0;
-    transform:translateY(18px) scale(0.94);
+    background:var(--qs-card-bg); text-align:center;
+    position:relative; opacity:0; transform:translateY(18px) scale(0.94);
 }
-.qs-topic-card.appeared {
-    opacity:1;
-    transform:translateY(0) scale(1);
-    transition:opacity 0.38s ease, transform 0.38s var(--qs-ease);
-}
-.qs-topic-card:hover {
-    transform:translateY(-3px) scale(1.02);
-    border-color:var(--qs-primary);
-    box-shadow:0 8px 24px rgba(37,99,235,0.13);
-}
-.qs-topic-card.selected {
-    border-color:var(--qs-primary);
-    box-shadow:0 6px 20px rgba(37,99,235,0.18);
-    transform:translateY(-2px) scale(1.02);
-}
+.qs-topic-card.appeared { opacity:1; transform:translateY(0) scale(1); transition:opacity 0.38s ease, transform 0.38s var(--qs-ease); }
+.qs-topic-card:hover:not(.locked) { transform:translateY(-3px) scale(1.02); border-color:var(--qs-primary); box-shadow:0 8px 24px rgba(37,99,235,0.13); }
+.qs-topic-card.selected { border-color:var(--qs-primary); box-shadow:0 6px 20px rgba(37,99,235,0.18); transform:translateY(-2px) scale(1.02); }
 .qs-topic-icon-wrap {
-    width:60px; height:60px; border-radius:50%;
-    margin:0 auto 10px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:26px;
-    border:2.5px solid transparent;
-    transition:transform 0.28s var(--qs-ease);
-    position:relative;
+    width:60px; height:60px; border-radius:50%; margin:0 auto 10px;
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+    border:2.5px solid transparent; transition:transform 0.28s var(--qs-ease); position:relative;
 }
-.qs-topic-card:hover .qs-topic-icon-wrap,
-.qs-topic-card.selected .qs-topic-icon-wrap {
-    transform:scale(1.1) rotate(-5deg);
-}
+.qs-topic-card:hover:not(.locked) .qs-topic-icon-wrap,
+.qs-topic-card.selected .qs-topic-icon-wrap { transform:scale(1.1) rotate(-5deg); }
 .qs-topic-check {
     position:absolute; bottom:-3px; right:-3px;
-    width:20px; height:20px; border-radius:50%;
-    color:#fff; font-size:10px;
+    width:20px; height:20px; border-radius:50%; color:#fff; font-size:10px;
     display:none; align-items:center; justify-content:center;
     border:2px solid var(--qs-card-bg);
     animation:qsPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
 }
 .qs-topic-card.selected .qs-topic-check { display:flex; }
-.qs-topic-name {
-    font-size:0.8rem; font-weight:700; color:var(--qs-heading);
-    margin-bottom:3px; line-height:1.3;
-}
-.qs-topic-qty { font-size:0.68rem; color:#94a3b8; }
+.qs-topic-name { font-size:0.8rem; font-weight:700; color:var(--qs-heading); margin-bottom:3px; line-height:1.3; }
+.qs-topic-qty  { font-size:0.68rem; color:#94a3b8; }
 
-/* empty state */
 .qs-topic-empty {
     display:flex; flex-direction:column; align-items:center;
     justify-content:center; text-align:center; padding:40px 20px;
     color:#94a3b8; grid-column:1/-1;
 }
 .qs-topic-empty i { font-size:36px; color:#cbd5e1; margin-bottom:10px; display:block; }
-[data-theme="dark"] .qs-topic-empty i { color:#475569; }
-[data-theme="dark"] .qs-topic-empty { color:#64748b; }
 
 .qs-s2-footer { border-top:1px solid var(--qs-border); padding:12px 20px; display:flex; gap:10px; align-items:center; background:var(--qs-bg); }
 
@@ -333,10 +313,9 @@
 .qs-presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
 .qs-preset { padding:6px 16px; border:2px solid var(--qs-border); border-radius:24px; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s var(--qs-ease); background:var(--qs-card-bg); color:var(--qs-muted); }
 .qs-preset:hover    { border-color:var(--qs-primary); color:var(--qs-primary); }
-.qs-preset.selected { background:var(--qs-primary); color:#fff; border-color:var(--qs-primary); box-shadow:0 3px 10px rgba(37,99,235,0.22); }
+.qs-preset.selected { background:var(--qs-primary); color:#fff; border-color:var(--qs-primary); }
 .qs-slider { width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:8px; background:var(--qs-border); outline:none; cursor:pointer; }
-.qs-slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--qs-primary); cursor:pointer; box-shadow:0 2px 10px rgba(37,99,235,0.30); transition:transform 0.15s; }
-.qs-slider::-webkit-slider-thumb:hover { transform:scale(1.12); }
+.qs-slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--qs-primary); cursor:pointer; box-shadow:0 2px 10px rgba(37,99,235,0.30); }
 .qs-slider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--qs-primary); border:none; cursor:pointer; }
 .qs-slider-lbls { display:flex; justify-content:space-between; font-size:0.68rem; color:#94a3b8; margin-top:5px; font-weight:500; }
 .qs-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:18px; }
@@ -351,10 +330,10 @@
 .qs-btn-back { border:2px solid var(--qs-border); background:var(--qs-card-bg); flex-shrink:0; }
 .qs-btn-back:hover { background:var(--qs-bg); border-color:#cbd5e1; }
 .qs-btn-next { flex:1; background:var(--qs-primary); color:#fff; justify-content:center; box-shadow:0 3px 14px rgba(37,99,235,0.18); }
-.qs-btn-next:hover { background:var(--qs-primary-d); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,0.22); }
+.qs-btn-next:hover { background:var(--qs-primary-d); transform:translateY(-1px); }
 .qs-btn-next:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
 .qs-btn-launch { background:var(--qs-green); box-shadow:0 3px 14px rgba(5,150,105,0.18); }
-.qs-btn-launch:hover { background:var(--qs-green-d); box-shadow:0 6px 20px rgba(5,150,105,0.22); }
+.qs-btn-launch:hover { background:var(--qs-green-d); }
 
 .qs-launch { display:none; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px 52px; text-align:center; min-height:280px; }
 .qs-launch.visible { display:flex; animation:qsFadeUp 0.5s ease; }
@@ -364,23 +343,19 @@
 .qs-launch .launch-sub   { font-size:0.84rem; color:var(--qs-muted); animation:qsPulse 1.6s ease-in-out infinite; }
 @keyframes qsPulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
 
-.qs-nosub { text-align:center; padding:64px 20px 56px; color:#94a3b8; }
+.qs-nosub { text-align:center; padding:64px 20px 56px; }
 .qs-nosub i { font-size:48px; color:#cbd5e1; margin-bottom:14px; display:block; }
 .qs-nosub h3 { font-size:1.15rem; font-weight:700; color:var(--qs-heading); margin-bottom:6px; }
-.qs-nosub p  { font-size:0.88rem; max-width:380px; margin:0 auto 18px; }
-.qs-nosub .btn-cta { display:inline-block; padding:11px 28px; border-radius:var(--qs-radius-sm); background:var(--qs-primary); color:#fff; font-weight:700; text-decoration:none; transition:all 0.2s var(--qs-ease); }
-.qs-nosub .btn-cta:hover { background:var(--qs-primary-d); transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,99,235,0.18); }
+.qs-nosub p  { font-size:0.88rem; color:var(--qs-muted); max-width:380px; margin:0 auto 18px; }
+.qs-nosub .btn-cta { display:inline-block; padding:11px 28px; border-radius:var(--qs-radius-sm); background:var(--qs-primary); color:#fff; font-weight:700; text-decoration:none; }
 
 .qs-pills-wrap { display:flex; flex-wrap:wrap; gap:5px; margin-top:3px; }
 .qs-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 9px 2px 7px; border-radius:20px; font-size:0.7rem; font-weight:700; white-space:nowrap; }
 
-/* ─── CANVAS ─── */
 #imat-bg-canvas { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
 
 @media (max-width:680px) {
-    .qs-hero { padding:12px 0 16px; gap:12px; }
     .qs-hero h1 { font-size:1.5rem; }
-    .qs-hero p { font-size:0.95rem; }
     .qs-inner { padding:18px 14px 14px; min-height:300px; }
     .qs-footer { padding:12px 14px; flex-wrap:wrap; }
     .qs-subj-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
@@ -395,8 +370,8 @@
     .qs-topic-outer { padding:16px 14px 12px; max-height:50vh; }
     .qs-topic-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
     .qs-topic-card { padding:14px 10px 12px; }
-    .qs-topic-icon-wrap { width:50px; height:50px; font-size:22px; }
     .qs-s2-footer { padding:10px 14px; }
+    #qsToast { min-width: 260px; bottom: 16px; }
 }
 @media (max-width:380px) {
     .qs-subj-grid { grid-template-columns:repeat(2,1fr); }
@@ -404,6 +379,16 @@
     .qs-topic-grid { grid-template-columns:repeat(2,1fr); gap:7px; }
 }
 </style>
+
+<!-- Toast -->
+<div id="qsToast">
+    <div class="toast-icon"><i class="ti ti-lock"></i></div>
+    <div class="toast-body">
+        <div class="toast-title">Not in your plan</div>
+        <div class="toast-sub">Upgrade to unlock this topic</div>
+    </div>
+    <a href="{% url 'student_portal:plan_list' %}" class="toast-upgrade">Upgrade →</a>
+</div>
 
 <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
 
@@ -495,13 +480,13 @@
                         <div class="qs-s2-icon" id="qsS2Icon"></div>
                         <div>
                             <div class="qs-s2-title" id="qsS2Title">Subject</div>
-                            <div class="qs-s2-hint" id="qsS2Hint">Tap cards to select topics</div>
+                            <div class="qs-s2-hint" id="qsS2Hint">Tap cards to select topics · locked topics need an upgrade</div>
                         </div>
                     </div>
 
                     <div class="qs-sel-bar">
                         <i class="ti ti-checks" style="color:var(--qs-primary);font-size:17px;flex-shrink:0;"></i>
-                        <span class="qs-sel-bar-text" id="qsSelBarText">All topics selected</span>
+                        <span class="qs-sel-bar-text" id="qsSelBarText">All plan topics selected</span>
                         <span class="qs-sel-bar-count" id="qsSelBarCount">All</span>
                         <button type="button" class="qs-sel-bar-clear" id="qsSelClearBtn" onclick="qsSelAll()" style="display:none;">
                             <i class="ti ti-x" style="font-size:11px;vertical-align:-1px;"></i> Clear
@@ -509,10 +494,9 @@
                     </div>
 
                     <div class="qs-all-chip selected" id="qsAllChip" onclick="qsSelAll()">
-                        <i class="ti ti-grid-dots"></i> All topics
+                        <i class="ti ti-grid-dots"></i> All plan topics
                     </div>
 
-                    <!-- TOPIC GRID instead of bubble path -->
                     <div class="qs-topic-outer" id="qsTopicOuter">
                         <div class="qs-topic-grid" id="qsTopicGrid"></div>
                     </div>
@@ -555,7 +539,7 @@
                             </div>
                             <div class="qs-sum-item">
                                 <div class="qs-sum-label">Topics</div>
-                                <div id="qsSumMWrap"><span style="font-size:0.86rem;font-weight:700;color:var(--qs-heading);">All topics</span></div>
+                                <div id="qsSumMWrap"><span style="font-size:0.86rem;font-weight:700;color:var(--qs-heading);">All plan topics</span></div>
                             </div>
                             <div class="qs-sum-item">
                                 <div class="qs-sum-label">Questions</div>
@@ -587,11 +571,13 @@
 </div>
 
 <script>
+/* ── DATA FROM DJANGO ── */
 const QS_SM_MAP = {{ subject_submodules_json|safe }};
 
-let qsSId=null, qsSName='', qsSelectedRingEl=null,
-    qsSelectedSmIds=new Set(),
-    qsCount=10, qsCurStep=1;
+/* ── STATE ── */
+let qsSId = null, qsSName = '', qsSelectedRingEl = null,
+    qsSelectedSmIds = new Set(),   // only plan-unlocked selected IDs
+    qsCount = 10, qsCurStep = 1;
 
 /* ── PALETTE ── */
 const QS_PAL = [
@@ -623,7 +609,7 @@ const QS_PAL_DARK = [
     {bg:'#082f49',bd:'#38bdf8',ic:'#7dd3fc',ck:'#38bdf8'},
 ];
 function isDark(){ return document.documentElement.getAttribute('data-theme')==='dark'; }
-function getPal(i){ return isDark() ? QS_PAL_DARK[i%QS_PAL_DARK.length] : QS_PAL[i%QS_PAL.length]; }
+function getPal(i){ return isDark() ? QS_PAL_DARK[i % QS_PAL_DARK.length] : QS_PAL[i % QS_PAL.length]; }
 
 /* ── ICON MAP ── */
 const QS_ICONS = [
@@ -644,51 +630,60 @@ const QS_ICONS = [
     {k:['chapter','unit','module','topic','part','section'],i:'ti-book'},
 ];
 function qsIcon(name){
-    const n=(name||'').toLowerCase();
-    for(const r of QS_ICONS){ if(r.k.some(k=>n.includes(k))) return r.i; }
+    const n = (name || '').toLowerCase();
+    for(const r of QS_ICONS){ if(r.k.some(k => n.includes(k))) return r.i; }
     return 'ti-bulb';
 }
 
 /* ── APPLY ICONS TO STEP 1 RINGS ── */
 function qsApplyRings(){
-    document.querySelectorAll('.qs-auto-ring').forEach(ring=>{
-        const ic = ring.querySelector('.qs-auto-icon');
+    document.querySelectorAll('.qs-auto-ring').forEach(ring => {
+        const ic  = ring.querySelector('.qs-auto-icon');
         if(!ic) return;
-        const idx  = +(ring.dataset.idx||0);
-        const pal  = getPal(idx);
-        ic.className = 'ti ' + qsIcon(ring.dataset.name||'') + ' qs-auto-icon';
-        ic.style.fontSize  = '28px';
-        ic.style.color     = pal.ic;
+        const idx = +(ring.dataset.idx || 0);
+        const pal = getPal(idx);
+        ic.className = 'ti ' + qsIcon(ring.dataset.name || '') + ' qs-auto-icon';
+        ic.style.fontSize = '28px';
+        ic.style.color    = pal.ic;
         if(!ring.dataset.customColor){
             ring.style.background  = pal.bg;
             ring.style.borderColor = pal.bd;
         }
     });
 }
-const themeObs = new MutationObserver(()=>{
-    qsApplyRings();
-    if(qsSId) qsBuildTopicGrid();
-});
-themeObs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+const themeObs = new MutationObserver(() => { qsApplyRings(); if(qsSId) qsBuildTopicGrid(); });
+themeObs.observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
 document.addEventListener('DOMContentLoaded', qsApplyRings);
 qsApplyRings();
 
 /* ── STEP 3 PRESETS ── */
 (function(){
     const pp = document.getElementById('qsPresets'); if(!pp) return;
-    [5,10,15,20,30,50].forEach(v=>{
+    [5,10,15,20,30,50].forEach(v => {
         const b = document.createElement('button');
-        b.type='button'; b.className='qs-preset'+(v===10?' selected':'');
-        b.textContent=v; b.onclick=()=>qsSetQ(v,true); pp.appendChild(b);
+        b.type = 'button'; b.className = 'qs-preset' + (v === 10 ? ' selected' : '');
+        b.textContent = v; b.onclick = () => qsSetQ(v, true); pp.appendChild(b);
     });
 })();
+
+/* ── TOAST ── */
+let _toastTimer = null;
+function qsShowToast(title, sub){
+    const t = document.getElementById('qsToast');
+    t.querySelector('.toast-title').textContent = title;
+    t.querySelector('.toast-sub').textContent   = sub;
+    t.classList.add('show');
+    if(_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    if(navigator.vibrate) navigator.vibrate([10, 40, 10]);
+}
 
 /* ── STEP 1: PICK SUBJECT ── */
 function qsPickS(id, name, el){
     qsSId    = id;
     qsSName  = name;
     qsSelectedRingEl = el.querySelector('.qs-ring');
-    document.querySelectorAll('.qs-subj-card').forEach(c=>c.classList.remove('selected'));
+    document.querySelectorAll('.qs-subj-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
     document.getElementById('qsBtn1').disabled = false;
     document.getElementById('qsHSubj').value   = id;
@@ -697,38 +692,42 @@ function qsPickS(id, name, el){
 
 /* ── STEP 2: UPDATE SELECTION BAR ── */
 function qsUpdateBar(){
-    const n   = qsSelectedSmIds.size;
+    const n    = qsSelectedSmIds.size;
     const barT = document.getElementById('qsSelBarText');
     const barC = document.getElementById('qsSelBarCount');
     const clr  = document.getElementById('qsSelClearBtn');
     const chip = document.getElementById('qsAllChip');
-    if(n===0){
-        barT.textContent='All topics selected'; barC.textContent='All';
-        clr.style.display='none'; chip.classList.add('selected');
+    if(n === 0){
+        barT.textContent = 'All plan topics selected';
+        barC.textContent = 'All';
+        clr.style.display = 'none';
+        chip.classList.add('selected');
     } else {
-        barT.textContent = n===1 ? '1 topic selected' : `${n} topics selected`;
-        barC.textContent = n; clr.style.display=''; chip.classList.remove('selected');
+        barT.textContent = n === 1 ? '1 topic selected' : `${n} topics selected`;
+        barC.textContent = n;
+        clr.style.display = '';
+        chip.classList.remove('selected');
     }
+    /* write only plan-allowed selected IDs to hidden input */
     document.getElementById('qsHSm').value = [...qsSelectedSmIds].join(',');
 }
 
-/* ── STEP 2: BUILD TOPIC GRID (side-by-side) ── */
+/* ── STEP 2: BUILD TOPIC GRID ── */
 function qsBuildTopicGrid(){
     const grid = document.getElementById('qsTopicGrid');
     grid.innerHTML = '';
     qsSelectedSmIds.clear();
     qsUpdateBar();
 
-    /* Header icon — always icon only */
+    /* Header */
     document.getElementById('qsS2Title').textContent = qsSName;
-    document.getElementById('qsS2Hint').textContent  = 'Tap cards to select · tap again to deselect';
     const hIcon = document.getElementById('qsS2Icon');
     hIcon.innerHTML = '';
     if(qsSelectedRingEl){
         const srcIc = qsSelectedRingEl.querySelector('.qs-auto-icon');
         if(srcIc){
             const ci = document.createElement('i');
-            ci.className = srcIc.className;
+            ci.className      = srcIc.className;
             ci.style.fontSize = '20px';
             ci.style.color    = srcIc.style.color;
             hIcon.appendChild(ci);
@@ -738,53 +737,62 @@ function qsBuildTopicGrid(){
     }
 
     const sms = QS_SM_MAP[qsSId] || [];
+
     if(!sms.length){
         grid.innerHTML = `
             <div class="qs-topic-empty">
                 <i class="ti ti-mood-empty"></i>
-                <p>No topics yet — you can still quiz from all questions in this subject.</p>
+                <p>No topics found for this subject.</p>
             </div>`;
         return;
     }
 
-    sms.forEach((sm, i)=>{
-        const pal  = getPal(i);
-        const icon = qsIcon(sm.name);
+    sms.forEach((sm, i) => {
+        const pal    = getPal(i);
+        const icon   = qsIcon(sm.name);
+        const locked = !sm.in_plan;          // ← key flag from view
 
         const card = document.createElement('div');
-        card.className = 'qs-topic-card';
+        card.className = 'qs-topic-card' + (locked ? ' locked' : '');
         card.id = 'qsTC_' + sm.id;
+
         card.innerHTML = `
+            ${locked ? `<div class="qs-lock-badge"><i class="ti ti-lock"></i> Locked</div>` : ''}
             <div class="qs-topic-icon-wrap" id="qsTIW_${sm.id}"
                  style="background:${pal.bg};border-color:${pal.bd};">
-                <i class="ti ${icon}" style="font-size:26px;color:${pal.ic};"></i>
+                <i class="ti ${icon}" style="font-size:26px;color:${locked ? '#94a3b8' : pal.ic};"></i>
                 <span class="qs-topic-check" id="qsTCk_${sm.id}"
                       style="background:${pal.ck};">
                     <i class="ti ti-check" style="font-size:9px;"></i>
                 </span>
             </div>
-            <div class="qs-topic-name">${sm.name}</div>
-            <div class="qs-topic-qty">${sm.question_count!=null ? sm.question_count+' questions' : ''}</div>`;
+            <div class="qs-topic-name" style="${locked ? 'color:#94a3b8;' : ''}">${sm.name}</div>
+            <div class="qs-topic-qty">${sm.question_count != null ? sm.question_count + ' questions' : ''}</div>`;
 
-        card.addEventListener('click', ()=>{
-            const iw = document.getElementById('qsTIW_'+sm.id);
+        card.addEventListener('click', () => {
+            /* ── LOCKED: show toast, do nothing else ── */
+            if(locked){
+                qsShowToast(
+                    `"${sm.name}" is not in your plan`,
+                    'Upgrade your plan to unlock this topic'
+                );
+                return;
+            }
+
+            /* ── UNLOCKED: toggle selection ── */
+            const iw = document.getElementById('qsTIW_' + sm.id);
             if(qsSelectedSmIds.has(sm.id)){
                 qsSelectedSmIds.delete(sm.id);
                 card.classList.remove('selected');
-                iw.style.borderColor = pal.bd;
-                iw.style.background  = pal.bg;
+                card.style.background = '';
+                iw.style.borderColor  = pal.bd;
+                iw.style.background   = pal.bg;
             } else {
                 qsSelectedSmIds.add(sm.id);
                 card.classList.add('selected');
-                iw.style.borderColor = pal.ck;
-                iw.style.background  = pal.bg;
-                card.style.background = isDark()
-                    ? 'rgba(37,99,235,0.15)'
-                    : 'rgba(37,99,235,0.04)';
-            }
-            /* update card bg on deselect */
-            if(!qsSelectedSmIds.has(sm.id)){
-                card.style.background = '';
+                card.style.background = isDark() ? 'rgba(37,99,235,0.15)' : 'rgba(37,99,235,0.04)';
+                iw.style.borderColor  = pal.ck;
+                iw.style.background   = pal.bg;
             }
             qsUpdateBar();
             if(navigator.vibrate) navigator.vibrate(5);
@@ -792,35 +800,34 @@ function qsBuildTopicGrid(){
 
         grid.appendChild(card);
 
-        /* staggered entrance animation */
-        const col   = i % getComputedColumns();
-        const row   = Math.floor(i / getComputedColumns());
+        /* staggered entrance */
+        const cols  = getComputedColumns();
+        const col   = i % cols;
+        const row   = Math.floor(i / cols);
         const delay = col * 60 + row * 40 + 20;
-        setTimeout(()=> card.classList.add('appeared'), delay);
+        setTimeout(() => card.classList.add('appeared'), delay);
     });
 }
 
 function getComputedColumns(){
     const grid = document.getElementById('qsTopicGrid');
     if(!grid) return 3;
-    const style = window.getComputedStyle(grid);
-    const cols  = style.gridTemplateColumns.split(' ').filter(Boolean).length;
+    const cols = window.getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
     return cols || 3;
 }
 
-/* ── STEP 2: SELECT ALL / CLEAR ── */
+/* ── STEP 2: SELECT ALL PLAN TOPICS / CLEAR ── */
 function qsSelAll(){
     qsSelectedSmIds.clear();
     const sms = QS_SM_MAP[qsSId] || [];
-    sms.forEach((sm, i)=>{
-        const card = document.getElementById('qsTC_'+sm.id);
-        const iw   = document.getElementById('qsTIW_'+sm.id);
-        const pal  = getPal(i);
-        if(card){
-            card.classList.remove('selected');
-            card.style.background = '';
+    sms.forEach((sm, i) => {
+        if(sm.in_plan){
+            const card = document.getElementById('qsTC_' + sm.id);
+            const iw   = document.getElementById('qsTIW_' + sm.id);
+            const pal  = getPal(i);
+            if(card){ card.classList.remove('selected'); card.style.background = ''; }
+            if(iw)  { iw.style.borderColor = pal.bd; iw.style.background = pal.bg; }
         }
-        if(iw){ iw.style.borderColor = pal.bd; iw.style.background = pal.bg; }
     });
     qsUpdateBar();
     if(navigator.vibrate) navigator.vibrate(3);
@@ -834,29 +841,28 @@ function qsSetQ(v, fromBtn){
     el.textContent = v;
     el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
     document.getElementById('qsSumQ').textContent = v;
-    document.querySelectorAll('.qs-preset').forEach(b=>b.classList.toggle('selected',+b.textContent===v));
+    document.querySelectorAll('.qs-preset').forEach(b => b.classList.toggle('selected', +b.textContent === v));
     if(fromBtn) document.getElementById('qsSlider').value = v;
 }
 
 /* ── NAVIGATION ── */
 function qsGo(n, back){
-    if(n===2) qsBuildTopicGrid();
-    if(n===3){
+    if(n === 2) qsBuildTopicGrid();
+    if(n === 3){
         document.getElementById('qsSumS').textContent = qsSName || '—';
         document.getElementById('qsSumQ').textContent = qsCount;
 
-        /* topics summary */
         const wrap = document.getElementById('qsSumMWrap');
         wrap.innerHTML = '';
-        if(qsSelectedSmIds.size===0){
-            wrap.innerHTML = `<span style="font-size:0.86rem;font-weight:700;color:var(--qs-heading);">All topics</span>`;
+        if(qsSelectedSmIds.size === 0){
+            wrap.innerHTML = `<span style="font-size:0.86rem;font-weight:700;color:var(--qs-heading);">All plan topics</span>`;
         } else {
             const sms = QS_SM_MAP[qsSId] || [];
-            const pw  = document.createElement('div'); pw.className='qs-pills-wrap';
-            sms.forEach((sm,i)=>{
+            const pw  = document.createElement('div'); pw.className = 'qs-pills-wrap';
+            sms.forEach((sm, i) => {
                 if(!qsSelectedSmIds.has(sm.id)) return;
                 const pal = getPal(i);
-                const p   = document.createElement('span'); p.className='qs-pill';
+                const p   = document.createElement('span'); p.className = 'qs-pill';
                 p.style.cssText = `background:${pal.bg};color:${pal.ck};border:1.5px solid ${pal.bd};`;
                 p.innerHTML = `<i class="ti ti-check" style="font-size:9px;color:${pal.ck};"></i>${sm.name}`;
                 pw.appendChild(p);
@@ -864,14 +870,13 @@ function qsGo(n, back){
             wrap.appendChild(pw);
         }
 
-        /* subject icon in summary — always icon */
         const chip = document.getElementById('qsSumIcon');
         chip.innerHTML = '';
         if(qsSelectedRingEl){
             const srcIc = qsSelectedRingEl.querySelector('.qs-auto-icon');
             if(srcIc){
                 const ci = document.createElement('i');
-                ci.className = srcIc.className;
+                ci.className      = srcIc.className;
                 ci.style.fontSize = '15px';
                 ci.style.color    = srcIc.style.color;
                 chip.appendChild(ci);
@@ -881,30 +886,30 @@ function qsGo(n, back){
         }
     }
 
-    const cur = document.getElementById('qsS'+qsCurStep);
-    const nxt = document.getElementById('qsS'+n);
-    cur.style.cssText = 'opacity:0;transform:'+(back?'translateX(-18px)':'translateX(18px)')+';transition:opacity .22s,transform .28s cubic-bezier(.22,.68,0,1.2);';
-    setTimeout(()=>{
-        cur.classList.remove('active','slide-in','slide-back');
+    const cur = document.getElementById('qsS' + qsCurStep);
+    const nxt = document.getElementById('qsS' + n);
+    cur.style.cssText = 'opacity:0;transform:' + (back ? 'translateX(-18px)' : 'translateX(18px)') + ';transition:opacity .22s,transform .28s cubic-bezier(.22,.68,0,1.2);';
+    setTimeout(() => {
+        cur.classList.remove('active', 'slide-in', 'slide-back');
         cur.style.display = 'none'; cur.style.cssText = '';
         nxt.style.display = 'block';
         nxt.classList.add('active', back ? 'slide-back' : 'slide-in');
         qsCurStep = n; qsUpdateStepper();
-        document.getElementById('qsPanel').scrollIntoView({behavior:'smooth',block:'start'});
+        document.getElementById('qsPanel').scrollIntoView({behavior:'smooth', block:'start'});
     }, 240);
 }
 
 function qsUpdateStepper(){
-    [1,2,3].forEach(i=>{
+    [1,2,3].forEach(i => {
         const st = document.querySelector(`.qs-step[data-step="${i}"]`);
-        const sc = document.getElementById('qsSc'+i);
-        if(!st||!sc) return;
-        st.classList.toggle('active', i===qsCurStep);
-        st.classList.toggle('done',   i<qsCurStep);
-        sc.innerHTML = (i<qsCurStep) ? '<i class="ti ti-check" style="font-size:13px;"></i>' : i;
+        const sc = document.getElementById('qsSc' + i);
+        if(!st || !sc) return;
+        st.classList.toggle('active', i === qsCurStep);
+        st.classList.toggle('done',   i < qsCurStep);
+        sc.innerHTML = (i < qsCurStep) ? '<i class="ti ti-check" style="font-size:13px;"></i>' : i;
     });
-    document.getElementById('qsSl1').classList.toggle('done', qsCurStep>1);
-    document.getElementById('qsSl2').classList.toggle('done', qsCurStep>2);
+    document.getElementById('qsSl1').classList.toggle('done', qsCurStep > 1);
+    document.getElementById('qsSl2').classList.toggle('done', qsCurStep > 2);
 }
 
 /* ── LAUNCH ── */
@@ -912,16 +917,16 @@ function qsLaunch(){
     if(!qsSId) return;
     document.getElementById('qsS3').style.display = 'none';
     const la = document.getElementById('qsLaunch'); la.classList.add('visible');
-    const msgs = ['Selecting questions…','Shuffling order…','Almost ready…'];
+    const msgs = ['Selecting questions…', 'Shuffling order…', 'Almost ready…'];
     let mi = 0;
-    const t = setInterval(()=>{ mi++; if(mi<msgs.length) document.getElementById('qsLsub').textContent=msgs[mi]; else clearInterval(t); }, 680);
-    setTimeout(()=> document.getElementById('qsForm').submit(), 2000);
+    const t = setInterval(() => { mi++; if(mi < msgs.length) document.getElementById('qsLsub').textContent = msgs[mi]; else clearInterval(t); }, 680);
+    setTimeout(() => document.getElementById('qsForm').submit(), 2000);
 }
 
 /* ── KEYBOARD ── */
-document.addEventListener('keydown', e=>{
-    if(e.key==='Enter'){  const b=document.querySelector('.qs-section.active .qs-btn-next:not(:disabled)'); if(b) b.click(); }
-    if(e.key==='Escape'){ const b=document.querySelector('.qs-section.active .qs-btn-back');                if(b) b.click(); }
+document.addEventListener('keydown', e => {
+    if(e.key === 'Enter'){  const b = document.querySelector('.qs-section.active .qs-btn-next:not(:disabled)'); if(b) b.click(); }
+    if(e.key === 'Escape'){ const b = document.querySelector('.qs-section.active .qs-btn-back');                if(b) b.click(); }
 });
 
 /* ══ ANIMATED BACKGROUND ENGINE ══ */
@@ -929,98 +934,100 @@ document.addEventListener('keydown', e=>{
     var canvas = document.getElementById('imat-bg-canvas');
     if(!canvas) return;
     var ctx = canvas.getContext('2d');
-    var TAU = Math.PI*2;
+    var TAU = Math.PI * 2;
     var W, H;
-    var DARK = function(){ return document.documentElement.getAttribute('data-theme')==='dark'; };
+    var DARK = function(){ return document.documentElement.getAttribute('data-theme') === 'dark'; };
     var PAL = {
-        bio:   function(){ return DARK()?'rgba(16,185,129,':'rgba(5,150,105,'; },
-        chem:  function(){ return DARK()?'rgba(139,92,246,':'rgba(124,58,237,'; },
-        phys:  function(){ return DARK()?'rgba(59,130,246,':'rgba(26,86,219,'; },
-        math:  function(){ return DARK()?'rgba(245,158,11,':'rgba(217,119,6,'; },
-        logic: function(){ return DARK()?'rgba(236,72,153,':'rgba(219,39,119,'; },
-        grid:  function(){ return DARK()?'rgba(91,141,238,':'rgba(26,86,219,'; },
+        bio:   function(){ return DARK() ? 'rgba(16,185,129,' : 'rgba(5,150,105,'; },
+        chem:  function(){ return DARK() ? 'rgba(139,92,246,' : 'rgba(124,58,237,'; },
+        phys:  function(){ return DARK() ? 'rgba(59,130,246,' : 'rgba(26,86,219,'; },
+        math:  function(){ return DARK() ? 'rgba(245,158,11,' : 'rgba(217,119,6,'; },
+        logic: function(){ return DARK() ? 'rgba(236,72,153,' : 'rgba(219,39,119,'; },
+        grid:  function(){ return DARK() ? 'rgba(91,141,238,' : 'rgba(26,86,219,'; },
     };
-    function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
-    resize(); window.addEventListener('resize',resize);
-    var rng=function(s){ var x=Math.sin(s*9301+49297)*233280; return x-Math.floor(x); };
+    function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    var rng = function(s){ var x = Math.sin(s * 9301 + 49297) * 233280; return x - Math.floor(x); };
 
     function drawGrid(t){
-        var gs=36, pulse=0.04+0.02*Math.sin(t*0.0005);
-        ctx.save(); ctx.globalAlpha=pulse; ctx.fillStyle=PAL.grid()+'1)';
-        for(var x=0;x<W;x+=gs) for(var y=0;y<H;y+=gs){
-            var r=1.3+0.4*Math.sin(t*0.001+x*0.05+y*0.04);
-            ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill();
+        var gs = 36, pulse = 0.04 + 0.02 * Math.sin(t * 0.0005);
+        ctx.save(); ctx.globalAlpha = pulse; ctx.fillStyle = PAL.grid() + '1)';
+        for(var x = 0; x < W; x += gs) for(var y = 0; y < H; y += gs){
+            var r = 1.3 + 0.4 * Math.sin(t * 0.001 + x * 0.05 + y * 0.04);
+            ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
         }
         ctx.restore();
     }
 
-    var helixData=[
-        {x:W*0.06,y0:0,y1:H,speed:0.006,cA:'#10b981',cB:'#3b82f6',t:0},
-        {x:W*0.94,y0:0,y1:H,speed:0.005,cA:'#8b5cf6',cB:'#ec4899',t:0}
+    var helixData = [
+        {x: W * 0.06, y0: 0, y1: H, speed: 0.006, cA: '#10b981', cB: '#3b82f6', t: 0},
+        {x: W * 0.94, y0: 0, y1: H, speed: 0.005, cA: '#8b5cf6', cB: '#ec4899', t: 0}
     ];
     function drawHelix(h){
-        h.t+=h.speed;
-        var amp=26,freq=0.042,steps=80,segH=(h.y1-h.y0)/steps;
+        h.t += h.speed;
+        var amp = 26, freq = 0.042, steps = 80, segH = (h.y1 - h.y0) / steps;
         ctx.save();
-        for(var i=0;i<=steps;i++){
-            var y=h.y0+i*segH, ph=h.t+i*freq*TAU;
-            var x1=h.x+Math.sin(ph)*amp, x2=h.x+Math.sin(ph+Math.PI)*amp;
-            if(i>0){
-                var py=h.y0+(i-1)*segH;
-                var px1=h.x+Math.sin(h.t+(i-1)*freq*TAU)*amp;
-                var px2=h.x+Math.sin(h.t+Math.PI+(i-1)*freq*TAU)*amp;
-                ctx.globalAlpha=DARK()?0.22:0.14;
-                ctx.beginPath();ctx.moveTo(px1,py);ctx.lineTo(x1,y);ctx.strokeStyle=h.cA;ctx.lineWidth=1.6;ctx.stroke();
-                ctx.beginPath();ctx.moveTo(px2,py);ctx.lineTo(x2,y);ctx.strokeStyle=h.cB;ctx.lineWidth=1.6;ctx.stroke();
+        for(var i = 0; i <= steps; i++){
+            var y = h.y0 + i * segH, ph = h.t + i * freq * TAU;
+            var x1 = h.x + Math.sin(ph) * amp, x2 = h.x + Math.sin(ph + Math.PI) * amp;
+            if(i > 0){
+                var py = h.y0 + (i - 1) * segH;
+                var px1 = h.x + Math.sin(h.t + (i - 1) * freq * TAU) * amp;
+                var px2 = h.x + Math.sin(h.t + Math.PI + (i - 1) * freq * TAU) * amp;
+                ctx.globalAlpha = DARK() ? 0.22 : 0.14;
+                ctx.beginPath(); ctx.moveTo(px1, py); ctx.lineTo(x1, y); ctx.strokeStyle = h.cA; ctx.lineWidth = 1.6; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(px2, py); ctx.lineTo(x2, y); ctx.strokeStyle = h.cB; ctx.lineWidth = 1.6; ctx.stroke();
             }
-            if(i%5===0){
-                ctx.globalAlpha=DARK()?0.3:0.18;
-                ctx.beginPath();ctx.arc(x1,y,2.5,0,TAU);ctx.fillStyle=h.cA;ctx.fill();
-                ctx.beginPath();ctx.arc(x2,y,2.5,0,TAU);ctx.fillStyle=h.cB;ctx.fill();
+            if(i % 5 === 0){
+                ctx.globalAlpha = DARK() ? 0.3 : 0.18;
+                ctx.beginPath(); ctx.arc(x1, y, 2.5, 0, TAU); ctx.fillStyle = h.cA; ctx.fill();
+                ctx.beginPath(); ctx.arc(x2, y, 2.5, 0, TAU); ctx.fillStyle = h.cB; ctx.fill();
             }
         }
         ctx.restore();
     }
 
-    var SYMS=['Σ','∫','π','λ','α','β','γ','H₂O','CO₂','ATP','DNA','E=mc²','F=ma','pH','A','B','C','D','?','✓'];
-    var SYM_COLS=[PAL.bio,PAL.chem,PAL.phys,PAL.math,PAL.logic];
-    var floatSyms=[];
-    for(var _i=0;_i<30;_i++){
+    var SYMS = ['Σ','∫','π','λ','α','β','γ','H₂O','CO₂','ATP','DNA','E=mc²','F=ma','pH','A','B','C','D','?','✓'];
+    var SYM_COLS = [PAL.bio, PAL.chem, PAL.phys, PAL.math, PAL.logic];
+    var floatSyms = [];
+    for(var _i = 0; _i < 30; _i++){
         floatSyms.push({
-            x:rng(_i*3)*(window.innerWidth||1200), y:rng(_i*7)*(window.innerHeight||900),
-            vy:-(0.12+rng(_i*5)*0.28), vx:(rng(_i*9)-0.5)*0.18,
-            life:Math.floor(rng(_i*11)*400), maxLife:280+rng(_i*17)*500,
-            text:SYMS[Math.floor(rng(_i*19)*SYMS.length)], size:11+rng(_i*23)*9,
-            palIdx:Math.floor(rng(_i*29)*5), maxA:0.08+rng(_i*13)*0.12
+            x: rng(_i * 3) * (window.innerWidth || 1200),
+            y: rng(_i * 7) * (window.innerHeight || 900),
+            vy: -(0.12 + rng(_i * 5) * 0.28), vx: (rng(_i * 9) - 0.5) * 0.18,
+            life: Math.floor(rng(_i * 11) * 400), maxLife: 280 + rng(_i * 17) * 500,
+            text: SYMS[Math.floor(rng(_i * 19) * SYMS.length)],
+            size: 11 + rng(_i * 23) * 9,
+            palIdx: Math.floor(rng(_i * 29) * 5), maxA: 0.08 + rng(_i * 13) * 0.12
         });
     }
     function drawSyms(){
         ctx.save();
-        floatSyms.forEach(function(s,i){
-            s.x+=s.vx; s.y+=s.vy; s.life++;
-            if(s.life>s.maxLife){ s.x=rng(s.life*3+i)*W; s.y=H+20; s.life=0; s.text=SYMS[Math.floor(rng(s.life+i*7)*SYMS.length)]; }
-            var tv=s.life/s.maxLife, a=tv<0.1?s.maxA*(tv/0.1):tv>0.82?s.maxA*(1-(tv-0.82)/0.18):s.maxA;
-            ctx.globalAlpha=a;
-            ctx.font=s.size+"px 'JetBrains Mono',monospace";
-            ctx.fillStyle=SYM_COLS[s.palIdx]()+'1)';
-            ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.fillText(s.text,s.x,s.y);
+        floatSyms.forEach(function(s, i){
+            s.x += s.vx; s.y += s.vy; s.life++;
+            if(s.life > s.maxLife){ s.x = rng(s.life * 3 + i) * W; s.y = H + 20; s.life = 0; s.text = SYMS[Math.floor(rng(s.life + i * 7) * SYMS.length)]; }
+            var tv = s.life / s.maxLife, a = tv < 0.1 ? s.maxA * (tv / 0.1) : tv > 0.82 ? s.maxA * (1 - (tv - 0.82) / 0.18) : s.maxA;
+            ctx.globalAlpha = a;
+            ctx.font = s.size + "px 'JetBrains Mono',monospace";
+            ctx.fillStyle = SYM_COLS[s.palIdx]() + '1)';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(s.text, s.x, s.y);
         });
         ctx.restore();
     }
 
-    var scanY=-40;
+    var scanY = -40;
     function drawScan(){
-        scanY+=0.6; if(scanY>H+40) scanY=-40;
-        ctx.save(); ctx.globalAlpha=DARK()?0.05:0.03;
-        ctx.beginPath(); ctx.moveTo(0,scanY); ctx.lineTo(W,scanY);
-        ctx.strokeStyle='#5b9cf6'; ctx.lineWidth=1.8; ctx.stroke(); ctx.restore();
+        scanY += 0.6; if(scanY > H + 40) scanY = -40;
+        ctx.save(); ctx.globalAlpha = DARK() ? 0.05 : 0.03;
+        ctx.beginPath(); ctx.moveTo(0, scanY); ctx.lineTo(W, scanY);
+        ctx.strokeStyle = '#5b9cf6'; ctx.lineWidth = 1.8; ctx.stroke(); ctx.restore();
     }
 
-    var frame=0;
+    var frame = 0;
     function tick(){
         frame++;
-        ctx.clearRect(0,0,W,H);
+        ctx.clearRect(0, 0, W, H);
         drawGrid(frame);
         helixData.forEach(drawHelix);
         drawSyms();
@@ -1031,3 +1038,4 @@ document.addEventListener('keydown', e=>{
 })();
 </script>
 {% endblock %}
+

@@ -54,12 +54,10 @@ def student_register(request):
     if request.user.is_authenticated:
         # Only redirect to dashboard if user actually has a Student profile
         if hasattr(request.user, 'student'):
-            return redirect('student_portal:plan_list')
+            return redirect('student_portal:dashboard')
         # Non-student authenticated user (e.g. admin) — log them out silently
         logout(request)
-    next_url = request.GET.get('next', '')
-    if next_url:
-        request.session['post_auth_redirect'] = next_url
+
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
@@ -101,8 +99,6 @@ def student_register(request):
         form = StudentRegistrationForm()
 
     return render(request, 'student_portal/register.html', {'form': form})
-
-
 # ─────────────────────────────────────────────
 # OTP VERIFICATION (Step 2)
 # ─────────────────────────────────────────────
@@ -306,10 +302,16 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.db.models import Avg, Sum, Count, F
 
-# Tunable thresholds for the Accuracy Rate stat card.
-ACCURACY_WINDOW = 10          
-MIN_ATTEMPTS_FOR_TREND = 4    
-TREND_RECENT_WINDOW = 5       
+ACCURACY_WINDOW = 10
+MIN_ATTEMPTS_FOR_TREND = 4
+TREND_RECENT_WINDOW = 5
+
+WEAK_SUBJECT_THRESHOLD = 65
+MAX_SUGGESTED_SUBJECTS = 4
+MAX_SUBMODULES_PER_SUGGESTION = 4
+SPARSE_EXAM_THRESHOLD = 3
+
+MOCK_TEST_TYPE_NAME = 'mock_test'
 
 
 @login_required(login_url='student_portal:login')
@@ -319,23 +321,23 @@ def student_dashboard(request):
         messages.error(request, "Please login with a student account.")
         return redirect('student_portal:login')
 
-    student  = request.user.student
-    now      = timezone.now()
+    student     = request.user.student
+    now         = timezone.now()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
+    from django.db.models import Avg, Sum, Case, When, IntegerField
     from student_management.models import Payment, Exam
     from .models import ExamAttempt, AttemptResponse, QuizAttempt
 
-    # ── Active payments & exam access ─────────────────────────────────────────
+    # ── Active payments & accessible exams ──────────────────────────────────
     active_payments = list(
         student.payments.filter(
             status=Payment.STATUS_SUCCESS,
             expires_at__gt=now,
         ).select_related('plan').prefetch_related('plan__exams')
-        .order_by('expires_at')   # soonest-expiring first
+        .order_by('expires_at')
     )
 
-    # Annotate each payment with days_until_expiry (integer, None if no expires_at)
     for payment in active_payments:
         if payment.expires_at:
             delta = payment.expires_at - now
@@ -357,7 +359,31 @@ def student_dashboard(request):
         label = exam.exam_type.get_name_display()
         exams_by_type.setdefault(label, []).append(exam)
 
-    
+    total_available_exams = sum(len(v) for v in exams_by_type.values())
+
+    # ── Annotate exams with attempt info ────────────────────────────────────
+    from .models import ExamAttempt as EA
+    for label, exam_list in exams_by_type.items():
+        for exam in exam_list:
+            exam.attempt_count = EA.objects.filter(exam=exam).count()
+            exam.question_count = exam.questions.count() if hasattr(exam, 'questions') else 0
+            exam.total_marks_val = getattr(exam, 'total_marks', exam.question_count)
+            exam.last_attempt = (
+                EA.objects.filter(
+                    student=student,
+                    exam=exam,
+                    status=EA.STATUS_SUBMITTED,
+                ).order_by('-submitted_at').first()
+            )
+            exam.in_progress_attempt = (
+                EA.objects.filter(
+                    student=student,
+                    exam=exam,
+                    status=EA.STATUS_IN_PROGRESS,
+                ).order_by('-started_at').first()
+            )
+
+    # ── Completed exam attempts ──────────────────────────────────────────────
     completed_attempts = ExamAttempt.objects.filter(
         student=student,
         status=ExamAttempt.STATUS_SUBMITTED,
@@ -366,25 +392,73 @@ def student_dashboard(request):
     total_exam_attempts = completed_attempts.count()
     exams_this_month    = completed_attempts.filter(submitted_at__gte=month_start).count()
 
-    agg = completed_attempts.aggregate(
-        avg_score   = Avg('percentage'),
-        tot_correct = Sum('correct_count'),
-        tot_wrong   = Sum('wrong_count'),
-        tot_skipped = Sum('skipped_count'),
+    overall_agg   = completed_attempts.aggregate(avg_score=Avg('percentage'))
+    avg_net_score = round(overall_agg['avg_score'] or 0, 1)
+
+    # ── Answer Breakdown: per-exam filter (JS-driven, no page reload) ────────
+    selected_exam_id = request.GET.get('breakdown_exam', '').strip()
+
+    # All-exam totals (always computed for "Overall" pill)
+    all_agg = completed_attempts.aggregate(
+        tot_correct=Sum('correct_count'),
+        tot_wrong=Sum('wrong_count'),
+        tot_skipped=Sum('skipped_count'),
     )
-   
-    avg_net_score = round(agg['avg_score']   or 0, 1)
-    total_correct = agg['tot_correct'] or 0
-    total_wrong   = agg['tot_wrong']   or 0
-    total_skipped = agg['tot_skipped'] or 0
+    total_correct_all  = all_agg['tot_correct']  or 0
+    total_wrong_all    = all_agg['tot_wrong']    or 0
+    total_skipped_all  = all_agg['tot_skipped']  or 0
+
+    # Initial display totals (overall unless exam pre-selected via GET)
+    if selected_exam_id:
+        sel_agg = completed_attempts.filter(exam_id=selected_exam_id).aggregate(
+            tot_correct=Sum('correct_count'),
+            tot_wrong=Sum('wrong_count'),
+            tot_skipped=Sum('skipped_count'),
+        )
+        total_correct  = sel_agg['tot_correct']  or 0
+        total_wrong    = sel_agg['tot_wrong']    or 0
+        total_skipped  = sel_agg['tot_skipped']  or 0
+    else:
+        total_correct  = total_correct_all
+        total_wrong    = total_wrong_all
+        total_skipped  = total_skipped_all
+
     total_answered = total_correct + total_wrong + total_skipped or 1
+    correct_pct  = round(total_correct  / total_answered * 100, 1)
+    wrong_pct    = round(total_wrong    / total_answered * 100, 1)
+    skipped_pct  = round(total_skipped  / total_answered * 100, 1)
 
-    
-    correct_pct = round(total_correct  / total_answered * 100, 1)
-    wrong_pct   = round(total_wrong    / total_answered * 100, 1)
-    skipped_pct = round(total_skipped  / total_answered * 100, 1)
+    # Exam options for the filter dropdown (only exams the student has attempted)
+    breakdown_exam_rows = list(
+        completed_attempts
+        .select_related('exam')
+        .values('exam__id', 'exam__title')
+        .distinct()
+        .order_by('exam__title')
+    )
 
-   
+    breakdown_exam_options = [
+        {'id': row['exam__id'], 'title': row['exam__title']}
+        for row in breakdown_exam_rows
+    ]
+
+    # Build per-exam breakdown dict for JS (one DB query per exam — kept small)
+    exam_breakdown_data = {}
+    for row in breakdown_exam_rows:
+        eid = row['exam__id']
+        agg = completed_attempts.filter(exam_id=eid).aggregate(
+            c=Sum('correct_count'),
+            w=Sum('wrong_count'),
+            s=Sum('skipped_count'),
+        )
+        exam_breakdown_data[str(eid)] = {
+            'correct':  agg['c'] or 0,
+            'wrong':    agg['w'] or 0,
+            'skipped':  agg['s'] or 0,
+        }
+    exam_breakdown_json = json.dumps(exam_breakdown_data)
+
+    # ── Accuracy & trend ────────────────────────────────────────────────────
     attempts_chrono = list(
         completed_attempts
         .filter(submitted_at__isnull=False)
@@ -396,11 +470,10 @@ def student_dashboard(request):
         total = a.total_questions or (a.correct_count + a.wrong_count + a.skipped_count) or 1
         return (a.correct_count / total) * 100
 
-    
     recent_for_accuracy = attempts_chrono[-ACCURACY_WINDOW:] if attempts_chrono else []
     if recent_for_accuracy:
         window_correct = sum(a.correct_count for a in recent_for_accuracy)
-        window_total = sum(
+        window_total   = sum(
             a.total_questions or (a.correct_count + a.wrong_count + a.skipped_count)
             for a in recent_for_accuracy
         ) or 1
@@ -408,7 +481,6 @@ def student_dashboard(request):
     else:
         accuracy_rate = 0
 
-    # Score trend: last 10 completed exam attempts (for the line chart)
     trend_qs = list(
         completed_attempts
         .filter(submitted_at__isnull=False)
@@ -419,21 +491,20 @@ def student_dashboard(request):
     exam_trend_labels = [a['submitted_at'].strftime('%d %b') for a in trend_qs]
     exam_trend_scores = [float(a['percentage'] or 0) for a in trend_qs]
 
-    
     has_trend_data = attempt_count >= MIN_ATTEMPTS_FOR_TREND
 
     if has_trend_data:
-        recent_n = min(TREND_RECENT_WINDOW, attempt_count // 2)
-        recent_block = attempts_chrono[-recent_n:]
-        older_block = attempts_chrono[:-recent_n]
-        recent_avg = sum(_accuracy(a) for a in recent_block) / len(recent_block)
-        older_avg = sum(_accuracy(a) for a in older_block) / len(older_block)
+        recent_n      = min(TREND_RECENT_WINDOW, attempt_count // 2)
+        recent_block  = attempts_chrono[-recent_n:]
+        older_block   = attempts_chrono[:-recent_n]
+        recent_avg    = sum(_accuracy(a) for a in recent_block) / len(recent_block)
+        older_avg     = sum(_accuracy(a) for a in older_block)  / len(older_block)
         accuracy_trend = round(recent_avg - older_avg, 1)
     else:
         accuracy_trend = 0
 
-    # ── Quiz aggregates ───────────────────────────────────────────────────────
-    completed_quizzes = QuizAttempt.objects.filter(
+    # ── Quiz attempts ────────────────────────────────────────────────────────
+    completed_quizzes   = QuizAttempt.objects.filter(
         student=student, status=QuizAttempt.STATUS_SUBMITTED
     )
     total_quiz_attempts = completed_quizzes.count()
@@ -449,9 +520,7 @@ def student_dashboard(request):
     quiz_trend_labels = [a['submitted_at'].strftime('%d %b') for a in quiz_trend_qs]
     quiz_trend_scores  = [float(a['percentage'] or 0) for a in quiz_trend_qs]
 
-    # ── Subject-level performance ─────────────────────────────────────────────
-    from django.db.models import Case, When, IntegerField
-
+    # ── Subject performance ──────────────────────────────────────────────────
     subj_qs = (
         AttemptResponse.objects
         .filter(attempt__student=student, attempt__status=ExamAttempt.STATUS_SUBMITTED)
@@ -467,8 +536,8 @@ def student_dashboard(request):
         {'name': s['question__subject__name'], 'avg_score': round(s['avg_correct'] or 0, 1)}
         for s in subj_qs if s['question__subject__name']
     ]
+    subject_score_map = {s['name']: s['avg_score'] for s in subject_performance}
 
-    # ── Peer comparison ───────────────────────────────────────────────────────
     platform_subj_avg = {}
     platform_qs = (
         AttemptResponse.objects
@@ -493,20 +562,19 @@ def student_dashboard(request):
         for s in subject_performance
     ]
 
-    # ── Platform rank ─────────────────────────────────────────────────────────
+    # ── Platform rank ────────────────────────────────────────────────────────
     student_avg_qs = (
         ExamAttempt.objects
         .filter(status=ExamAttempt.STATUS_SUBMITTED)
         .values('student')
         .annotate(avg_pct=Avg('percentage'))
     )
-    
-    students_above = sum(1 for s in student_avg_qs if float(s['avg_pct'] or 0) > float(avg_net_score))
-    total_students = student_avg_qs.count() or 1
-    rank = students_above + 1
+    students_above  = sum(1 for s in student_avg_qs if float(s['avg_pct'] or 0) > float(avg_net_score))
+    total_students  = student_avg_qs.count() or 1
+    rank            = students_above + 1
     rank_percentile = round((1 - students_above / total_students) * 100)
 
-    # ── Recent attempts for tables ────────────────────────────────────────────
+    # ── Recent activity ──────────────────────────────────────────────────────
     recent_exam_attempts = (
         completed_attempts
         .select_related('exam__exam_type')
@@ -518,47 +586,154 @@ def student_dashboard(request):
         .order_by('-submitted_at')[:8]
     )
 
+    # ── Suggested quizzes ────────────────────────────────────────────────────
+    show_suggested_quizzes = total_available_exams <= SPARSE_EXAM_THRESHOLD
+    suggested_quizzes = []
+
+    if show_suggested_quizzes:
+        from student_management.models import Subject, SubModule
+
+        accessible_subject_ids = _get_accessible_subject_ids(student)
+
+        if accessible_subject_ids:
+            accessible_subjects = (
+                Subject.objects.filter(id__in=accessible_subject_ids, is_active=True)
+                .order_by('name')
+            )
+
+            attempted_submodule_ids = set(
+                QuizAttempt.objects.filter(
+                    student=student,
+                    submodule__isnull=False,
+                ).values_list('submodule_id', flat=True)
+            )
+
+            scored_candidates = []
+            for subj in accessible_subjects:
+                avg_score = subject_score_map.get(subj.name)
+                has_score = avg_score is not None
+
+                accessible_sm_ids = _get_accessible_submodule_ids(student, subj.id)
+                unattempted_submodules = []
+                if accessible_sm_ids:
+                    sm_qs = (
+                        SubModule.objects.filter(
+                            id__in=accessible_sm_ids,
+                            is_active=True,
+                        )
+                        .exclude(id__in=attempted_submodule_ids)
+                        .order_by('order', 'name')[:MAX_SUBMODULES_PER_SUGGESTION]
+                    )
+                    for sm in sm_qs:
+                        unattempted_submodules.append({
+                            'name':           sm.name,
+                            'icon':           _icon_for_name(sm.name),
+                            'question_count': sm.questions.count() if hasattr(sm, 'questions') else None,
+                        })
+
+                is_weak = (not has_score) or (avg_score < WEAK_SUBJECT_THRESHOLD)
+                if not is_weak and not unattempted_submodules:
+                    continue
+
+                sort_key = avg_score if has_score else -1
+
+                scored_candidates.append({
+                    'subject_name':  subj.name,
+                    'subject_id':    subj.id,
+                    'subject_image_url': subj.image.url if subj.image else None,
+                    'has_score':     has_score,
+                    'avg_score':     avg_score or 0,
+                    'attempt_count': completed_quizzes.filter(subject=subj).count(),
+                    'question_count': subj.questions.count() if hasattr(subj, 'questions') else None,
+                    'submodules':    unattempted_submodules,
+                    '_sort_key':     sort_key,
+                })
+
+            scored_candidates.sort(key=lambda c: c['_sort_key'])
+            suggested_quizzes = scored_candidates[:MAX_SUGGESTED_SUBJECTS]
+            for c in suggested_quizzes:
+                c.pop('_sort_key', None)
+
+    # ── Context ──────────────────────────────────────────────────────────────
     context = {
-        # Student & plan
-        'student':                 student,
-        'active_payments':         active_payments,   # now a list with .days_until_expiry
-        'has_active_subscription': bool(active_payments),
-        'exams_by_type':           exams_by_type,
+        'student':                  student,
+        'active_payments':          active_payments,
+        'has_active_subscription':  bool(active_payments),
+        'exams_by_type':            exams_by_type,
 
-        # Stats
-        'accuracy_rate':           accuracy_rate,
-        'accuracy_trend':          accuracy_trend,
-        'has_trend_data':          has_trend_data,
-        'total_exam_attempts':     total_exam_attempts,
-        'exams_this_month':        exams_this_month,
-        'total_quiz_attempts':     total_quiz_attempts,
-        'quizzes_this_month':      quizzes_this_month,
-        'rank':                    rank,
-        'rank_percentile':         rank_percentile,
+        'accuracy_rate':            accuracy_rate,
+        'accuracy_trend':           accuracy_trend,
+        'has_trend_data':           has_trend_data,
+        'total_exam_attempts':      total_exam_attempts,
+        'exams_this_month':         exams_this_month,
+        'total_quiz_attempts':      total_quiz_attempts,
+        'quizzes_this_month':       quizzes_this_month,
+        'rank':                     rank,
+        'rank_percentile':          rank_percentile,
 
-        # Answer breakdown (lifetime totals)
-        'total_correct':           total_correct,
-        'total_wrong':             total_wrong,
-        'total_skipped':           total_skipped,
-        'correct_pct':             correct_pct,
-        'wrong_pct':               wrong_pct,
-        'skipped_pct':             skipped_pct,
+        # Breakdown — initial values
+        'total_correct':            total_correct,
+        'total_wrong':              total_wrong,
+        'total_skipped':            total_skipped,
+        'correct_pct':              correct_pct,
+        'wrong_pct':                wrong_pct,
+        'skipped_pct':              skipped_pct,
 
-        # Charts (JSON for JS)
-        'exam_trend_labels_json':  json.dumps(exam_trend_labels),
-        'exam_trend_scores_json':  json.dumps(exam_trend_scores),
-        'quiz_trend_labels_json':  json.dumps(quiz_trend_labels),
-        'quiz_trend_scores_json':  json.dumps(quiz_trend_scores),
+        # Breakdown — all-exam totals for "Overall" reset
+        'total_correct_all':        total_correct_all,
+        'total_wrong_all':          total_wrong_all,
+        'total_skipped_all':        total_skipped_all,
 
-        # Subject breakdown
-        'subject_performance':     subject_performance,
-        'subject_comparison':      subject_comparison,
+        # Breakdown — per-exam filter data
+        'breakdown_exam_options':   breakdown_exam_options,
+        'selected_exam_id':         selected_exam_id,
+        'exam_breakdown_json':      exam_breakdown_json,
 
-        # Tables
-        'recent_exam_attempts':    recent_exam_attempts,
-        'recent_quiz_attempts':    recent_quiz_attempts,
+        'exam_trend_labels_json':   json.dumps(exam_trend_labels),
+        'exam_trend_scores_json':   json.dumps(exam_trend_scores),
+        'quiz_trend_labels_json':   json.dumps(quiz_trend_labels),
+        'quiz_trend_scores_json':   json.dumps(quiz_trend_scores),
+
+        'subject_performance':      subject_performance,
+        'subject_comparison':       subject_comparison,
+
+        'recent_exam_attempts':     recent_exam_attempts,
+        'recent_quiz_attempts':     recent_quiz_attempts,
+
+        'show_suggested_quizzes':   show_suggested_quizzes,
+        'suggested_quizzes':        suggested_quizzes,
     }
     return render(request, 'student_portal/dashboard.html', context)
+
+_ICON_RULES = [
+    (['math', 'algebra', 'geometry', 'arithmetic', 'calculus', 'trigon'], 'ti-calculator'),
+    (['physic'], 'ti-atom-2'),
+    (['chem'], 'ti-flask'),
+    (['bio', 'botany', 'zoolog'], 'ti-microscope'),
+    (['english', 'language', 'literat', 'grammar', 'writing'], 'ti-abc'),
+    (['histor'], 'ti-landmark'),
+    (['geog'], 'ti-world'),
+    (['comput', 'program', 'ict', 'code', 'informat', 'software'], 'ti-code'),
+    (['econom', 'business', 'commerce', 'account', 'finan'], 'ti-chart-line'),
+    (['art', 'draw', 'design', 'craft'], 'ti-palette'),
+    (['music'], 'ti-music'),
+    (['physical education', 'sport', ' pe', 'games', 'gym'], 'ti-run'),
+    (['civic', 'social stud', 'polity', 'politic'], 'ti-scale'),
+    (['psycholog'], 'ti-brain'),
+    (['environ', 'ecology', 'climate'], 'ti-leaf'),
+    (['statistic', 'data'], 'ti-chart-bar'),
+    (['astro', 'space'], 'ti-rocket'),
+    (['moral', 'ethic', 'value'], 'ti-heart'),
+    (['chapter', 'unit', 'module', 'topic', 'part', 'section'], 'ti-book'),
+]
+
+
+def _icon_for_name(name):
+    n = (name or '').lower()
+    for keywords, icon in _ICON_RULES:
+        if any(k in n for k in keywords):
+            return icon
+    return 'ti-bulb'
 # ─────────────────────────────────────────────
 # LOGOUT
 # ─────────────────────────────────────────────
@@ -1706,3 +1881,6 @@ def get_notifications(request):
         'notifications': notifications,
         'unread_count':  unread_count,
     })
+
+def landing_page(request):
+    return render(request, 'student_portal/index.html')

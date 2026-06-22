@@ -42,6 +42,7 @@ path('plans/<uuid:plan_uuid>/checkout/', views.plan_checkout, name='plan_checkou
         views.get_notifications,
         name='get_notifications'
     ),
+     path('home/', views.landing_page, name='home'),
     
     # Password Reset URLs
     path('password-reset/', 

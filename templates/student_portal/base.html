@@ -3,18 +3,14 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
-<meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>{% block title %}Student Dashboard | EdusetIn - Education Platform{% endblock %}</title>
+  <meta name="description" content="EdusetIn Student Dashboard - Manage courses, quizzes, exams, subscriptions and learning progress.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>{% block title %}Student Dashboard | EdusetIn - Education Platform{% endblock %}</title>
+  <link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
+  <link rel="icon" type="image/x-icon" href="{% static 'student_portal/assets/img/edu.png' %}">
 
-<meta name="description" content="EdusetIn Student Dashboard - Manage courses, quizzes, exams, subscriptions and learning progress.">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Favicon -->
-<link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
-
-<!-- Student Portal Favicon -->
-<link rel="icon" type="image/x-icon" href="{% static 'admin-static/assets/img/favicon.ico' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{% static 'student_portal/assets/css/vendor/bootstrap.min.css' %}">
@@ -22,11 +18,42 @@
   <link rel="stylesheet" href="{% static 'student_portal/assets/css/admio-icons.css' %}">
 
   <style>
+    /* ─── FIX: Absolute font path so icons work on all URL depths ─── */
+    @font-face {
+      font-family: "lucide";
+      src: url("{% static 'student_portal/assets/css/fonts/lucide.woff2' %}") format('woff2'),
+           url("{% static 'student_portal/assets/css/fonts/lucide.woff' %}") format('woff'),
+           url("{% static 'student_portal/assets/css/fonts/lucide.ttf' %}") format('truetype');
+      font-display: swap;
+    }
+
+    /* ─── PRELOADER ─── */
+    #preloader {
+      position: fixed; width: 100%; height: 100%;
+      left: 0; top: 0; background-color: #fff;
+      z-index: 99999; display: flex;
+      justify-content: center; align-items: center;
+      transition: opacity 0.4s ease;
+    }
+    .loader { display: flex; align-items: center; justify-content: center; }
+    .loader > div {
+      display: inline-flex; width: 25px; height: 25px; margin: 0 5px;
+      border-radius: 50%; background: #1565C0;
+      animation: bounce 1.48s ease-in-out infinite both;
+    }
+    .loader > div:nth-child(1) { animation-delay: -0.32s; }
+    .loader > div:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40%           { transform: scale(1); }
+    }
+    [data-theme="dark"] #preloader { background-color: #080f20; }
+
     /* ─── RESET SIDEBAR ─── */
     .admio-sidebar { display: none !important; }
     .admio-main { margin-left: 0 !important; padding-top: 0 !important; width: 100% !important; }
 
-    /* ─── GLOBAL SIZE BOOST ─── */
+    /* ─── GLOBAL SIZE ─── */
     body { font-size: 18px; }
     .admio-content { padding: 40px 48px; }
     .page-title { font-size: 2.4rem !important; font-weight: 800 !important; }
@@ -78,16 +105,19 @@
     }
 
     /* ═══════════════════════════════════════════════
-       TOP STRIP — dark navy background
+       TOP STRIP
     ═══════════════════════════════════════════════ */
     .h-navbar-top {
       display: flex; align-items: center; gap: 18px;
       padding: 0 32px; height: 70px;
-      background: #1a2a5e;
-      border-bottom: 1px solid #243570;
+      background: #ffffff;
+      border-bottom: 1px solid #dde3f0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 19px, rgba(21,101,192,.07) 20px
+      );
     }
 
-    /* Brand logo + text */
+    /* Brand */
     .h-navbar-brand {
       display: flex; align-items: center; gap: 9px;
       text-decoration: none; flex-shrink: 0;
@@ -95,126 +125,167 @@
     .h-navbar-brand img { width: 36px; }
     .h-navbar-brand-text {
       font-size: 1.5rem; font-weight: 800;
-      color: #fff; letter-spacing: -0.3px;
+      color: #1a2a5e; letter-spacing: -0.3px;
     }
-    .h-navbar-brand-text span { color: #90CAF9; }
+    .h-navbar-brand-text span { color: #1565C0; }
 
-    /* AI active pill */
+    /* ─── FIX: Logo white in dark mode ─── */
+    [data-theme="dark"] .brand-logo img {
+      filter: brightness(0) invert(1);
+      transition: filter 0.3s ease;
+    }
+
+    /* AI pill */
     .h-ai-pill {
       display: flex; align-items: center; gap: 7px;
       padding: 5px 14px; border-radius: 20px;
-      background: rgba(255,255,255,.12);
-      font-size: 13px; font-weight: 600;
-      color: #BBDEFB; flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,.18);
+      background: #e3f0fb; font-size: 13px; font-weight: 600;
+      color: #1565C0; flex-shrink: 0; border: 1px solid #b0cef0;
     }
     .h-ai-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: #4CAF50;
-      animation: pulse-g 1.5s infinite;
+      background: #4CAF50; animation: pulse-g 1.5s infinite;
     }
     @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-    /* Search bar in top strip */
-    .h-topbar-search { flex: 1; max-width: 420px; position: relative; }
+    /* ═══════════════════════════════════════════════
+       SEARCH BAR
+    ═══════════════════════════════════════════════ */
+    .h-topbar-search {
+      flex: 1; max-width: 420px; position: relative;
+    }
     .h-topbar-search .search-icon {
       position: absolute; left: 12px; top: 50%;
       transform: translateY(-50%);
-      color: rgba(255,255,255,.55); font-size: 15px;
+      color: #9ca3af; font-size: 15px; pointer-events: none;
     }
     .h-topbar-search .search-input {
-      width: 100%; padding: 8px 16px 8px 38px;
-      border: 1px solid rgba(255,255,255,.22);
-      border-radius: 9px; font-size: 14px;
-      background: rgba(255,255,255,.10);
-      color: #fff; outline: none;
+      width: 100%; padding: 8px 72px 8px 38px;
+      border: 1px solid #dde3f0; border-radius: 9px;
+      font-size: 14px; background: #f5f8ff;
+      color: #1a2a5e; outline: none;
       transition: border-color .2s, box-shadow .2s;
     }
-    .h-topbar-search .search-input::placeholder { color: rgba(255,255,255,.5); }
+    .h-topbar-search .search-input::placeholder { color: #9ca3af; }
     .h-topbar-search .search-input:focus {
-      border-color: rgba(255,255,255,.5);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.10);
+      border-color: #1565C0;
+      box-shadow: 0 0 0 3px rgba(21,101,192,.10);
+    }
+    /* result count badge inside input */
+    #searchCount {
+      position: absolute; right: 34px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px; color: #6b7280;
+      background: #e5e7eb; border-radius: 10px;
+      padding: 2px 8px; pointer-events: none;
+      display: none; white-space: nowrap;
+    }
+    /* clear button */
+    .search-clear {
+      position: absolute; right: 8px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: #9ca3af; font-size: 15px; padding: 2px 4px;
+      display: none; align-items: center; justify-content: center;
+      border-radius: 4px; transition: color .15s;
+    }
+    .search-clear:hover { color: #1565C0; }
+
+    /* highlight matched text */
+    .search-highlight {
+      background: #fff176; color: #1a2a5e !important;
+      border-radius: 2px; padding: 0 1px;
+    }
+    [data-theme="dark"] .search-highlight {
+      background: #f59e0b; color: #000 !important;
+    }
+    /* dim non-matching rows / cards */
+    .search-no-match {
+      opacity: 0.12;
+      transition: opacity 0.2s;
+    }
+    /* search info banner */
+    #searchBanner {
+      display: none;
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1565C0; color: #fff;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 20px rgba(21,101,192,.35);
+      z-index: 99998; white-space: nowrap;
+      animation: fadeUp .2s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity:1; transform: translateX(-50%) translateY(0); }
     }
 
-    /* Right-side action icons */
+    /* dark search */
+    [data-theme="dark"] .h-topbar-search .search-input {
+      background: #0d1a3a; border-color: #1a2a5e; color: #90CAF9;
+    }
+    [data-theme="dark"] #searchCount {
+      background: #1a2a5e; color: #90CAF9;
+    }
+
+    /* Right actions */
     .h-topbar-actions {
       display: flex; align-items: center; gap: 6px;
       margin-left: auto; flex-shrink: 0;
     }
-    .h-topbar-divider {
-      width: 1px; height: 24px;
-      background: rgba(255,255,255,.20); flex-shrink: 0;
-    }
+    .h-topbar-divider { width: 1px; height: 24px; background: #dde3f0; flex-shrink: 0; }
     .topbar-btn {
       background: transparent; border: none; cursor: pointer;
-      color: rgba(255,255,255,.80);
-      width: 36px; height: 36px;
+      color: #374151; width: 36px; height: 36px;
       display: flex; align-items: center; justify-content: center;
       border-radius: 8px; font-size: 16px;
       transition: background .15s, color .15s;
     }
-    .topbar-btn:hover {
-      background: rgba(255,255,255,.12); color: #fff;
-    }
+    .topbar-btn:hover { background: #e3f0fb; color: #1565C0; }
 
-    /* Language switcher on dark top bar */
-    .lang-btn {
-      border-color: rgba(255,255,255,.22) !important;
-      background: rgba(255,255,255,.08) !important;
+    /* Hamburger */
+    .h-menu-toggle {
+      display: none; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border: none;
+      background: #e3f0fb; border-radius: 8px;
+      cursor: pointer; color: #1565C0; font-size: 20px;
+      flex-shrink: 0; transition: background .15s;
     }
-    .lang-btn:hover {
-      border-color: rgba(255,255,255,.45) !important;
-      background: rgba(255,255,255,.16) !important;
-      box-shadow: none !important;
-    }
-    .lang-label { color: rgba(255,255,255,.85) !important; }
-    .lang-arrow { color: rgba(255,255,255,.55) !important; }
-
-    /* Avatar in top bar */
+    .h-menu-toggle:hover { background: #b0cef0; }
     .topbar-user-avatar { cursor: pointer; }
 
     /* ═══════════════════════════════════════════════
-       DESKTOP NAV STRIP — white bar below top strip
+       DESKTOP NAV STRIP
     ═══════════════════════════════════════════════ */
     .h-navbar-menu {
       display: flex; align-items: center;
       padding: 0 28px; gap: 2px;
       overflow: visible !important; height: 52px;
-      background: #fff;
-      border-bottom: 2px solid #E3F0FB;
+      background: #fff; border-bottom: 2px solid #E3F0FB;
     }
     .h-navbar-menu::-webkit-scrollbar { display: none; }
 
-    /* Nav links */
     .h-nav-item { position: relative; }
     .h-nav-link {
       display: flex; align-items: center; gap: 7px;
       padding: 8px 15px; border-radius: 8px;
-      font-size: 15px; font-weight: 600;
-      color: #1a2a5e;
+      font-size: 15px; font-weight: 600; color: #1a2a5e;
       text-decoration: none; white-space: nowrap;
       cursor: pointer; border: none; background: transparent;
-      transition: background .15s, color .15s;
-      user-select: none;
+      transition: background .15s, color .15s; user-select: none;
     }
-    .h-nav-link:hover {
-      background: #E3F0FB; color: #1565C0;
-    }
-    .h-nav-link.active {
-      background: #E3F0FB; color: #1565C0;
-    }
+    .h-nav-link:hover { background: #E3F0FB; color: #1565C0; }
+    .h-nav-link.active { background: #E3F0FB; color: #1565C0; }
     .h-nav-link i { font-size: 17px; }
     .h-nav-arrow { font-size: 11px; margin-left: 1px; transition: transform .2s; }
     .h-nav-item.open > .h-nav-link .h-nav-arrow { transform: rotate(180deg); }
 
-    /* Dropdown menus */
+    /* Dropdowns */
     .h-nav-dropdown-menu {
       display: none;
       position: absolute; top: calc(100% + 6px); left: 0;
-      min-width: 220px;
-      background: #fff;
-      border: 1px solid #dde3f0;
-      border-radius: 12px;
+      min-width: 220px; background: #fff;
+      border: 1px solid #dde3f0; border-radius: 12px;
       box-shadow: 0 10px 32px rgba(21,101,192,.14);
       padding: 6px; z-index: 99999;
     }
@@ -226,105 +297,69 @@
       text-decoration: none; transition: background .12s, color .12s;
     }
     .h-nav-dropdown-menu a:hover,
-    .h-nav-dropdown-menu a.active {
-      background: #E3F0FB; color: #1565C0;
-    }
+    .h-nav-dropdown-menu a.active { background: #E3F0FB; color: #1565C0; }
     .h-nav-dropdown-menu a i { font-size: 16px; width: 18px; color: #1565C0; }
+
+    /* Notification badge */
     .notif-badge {
-    position: absolute;
-    top: 4px; right: 4px;
-    min-width: 16px; height: 16px;
-    border-radius: 8px;
-    background: #ef4444;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    border: 2px solid #fff;
-    line-height: 1;
-  }
-
-  /* Icon color overrides matching blue system */
-  .notif-icon.bg-primary  { background: #e6f1fb; color: #185fa5; }
-  .notif-icon.bg-success  { background: #dcfce7; color: #166534; }
-  .notif-icon.bg-info     { background: #e6f1fb; color: #0c447c; }
-  .notif-icon.bg-warning  { background: #fef9c3; color: #854d0e; }
-  .notif-icon.bg-danger   { background: #fee2e2; color: #991b1b; }
-
-  /* Skeleton loading */
-  .notif-skeleton {
-    height: 56px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
-    border-radius: 10px;
-    margin: 10px 16px;
-  }
-  @keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  /* Empty state */
-  .notif-empty {
-    text-align: center;
-    padding: 32px 16px;
-    color: #9ca3af;
-  }
-  .notif-empty i { font-size: 2rem; display: block; margin-bottom: 8px; }
-  .notif-empty p { font-size: 0.85rem; margin: 0; }
-
-  /* Unread dot */
-  .notif-item.unread { background: rgba(55,138,221,.04); }
-  .notif-item.unread .notif-title { color: #0c447c; }
-    /* ═══════════════════════════════════════════════
-       HAMBURGER (mobile)
-    ═══════════════════════════════════════════════ */
-    .h-menu-toggle {
-      display: none; align-items: center; justify-content: center;
-      width: 40px; height: 40px; border: none;
-      background: rgba(255,255,255,.12); border-radius: 8px;
-      cursor: pointer; color: #fff; font-size: 20px;
-      flex-shrink: 0; transition: background .15s;
+      position: absolute; top: 4px; right: 4px;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      background: #ef4444; color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px; border: 2px solid #fff; line-height: 1;
     }
-    .h-menu-toggle:hover { background: rgba(255,255,255,.22); }
+    .notif-icon.bg-primary  { background: #e6f1fb; color: #185fa5; }
+    .notif-icon.bg-success  { background: #dcfce7; color: #166534; }
+    .notif-icon.bg-info     { background: #e6f1fb; color: #0c447c; }
+    .notif-icon.bg-warning  { background: #fef9c3; color: #854d0e; }
+    .notif-icon.bg-danger   { background: #fee2e2; color: #991b1b; }
+
+    /* Skeleton */
+    .notif-skeleton {
+      height: 56px;
+      background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 10px; margin: 10px 16px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .notif-empty { text-align: center; padding: 32px 16px; color: #9ca3af; }
+    .notif-empty i { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .notif-empty p { font-size: 0.85rem; margin: 0; }
+    .notif-item.unread { background: rgba(55,138,221,.04); }
+    .notif-item.unread .notif-title { color: #0c447c; }
 
     /* ═══════════════════════════════════════════════
        MOBILE DRAWER
     ═══════════════════════════════════════════════ */
     .h-navbar-menu-mobile {
       display: none; flex-direction: column;
-      background: #fff;
-      border-top: 1px solid #dde3f0;
+      background: #fff; border-top: 1px solid #dde3f0;
       padding: 10px 14px 20px;
       max-height: 75vh; overflow-y: auto;
     }
     .h-navbar-menu-mobile.open { display: flex; }
 
-    /* Mobile direct links */
     .h-mobile-direct {
       display: flex; align-items: center; gap: 10px;
       padding: 11px 12px; border-radius: 9px;
-      font-size: 15px; font-weight: 600;
-      color: #1a2a5e;
-      text-decoration: none; transition: background .15s;
-      margin-bottom: 2px;
+      font-size: 15px; font-weight: 600; color: #1a2a5e;
+      text-decoration: none; transition: background .15s; margin-bottom: 2px;
     }
     .h-mobile-direct:hover { background: #E3F0FB; color: #1565C0; }
     .h-mobile-direct.active { background: #E3F0FB; color: #1565C0; }
     .h-mobile-direct i { font-size: 16px; color: #1565C0; }
 
-    /* Mobile section toggles */
     .h-mobile-section { margin-bottom: 2px; }
     .h-mobile-section-toggle {
       display: flex; align-items: center; justify-content: space-between;
       width: 100%; padding: 11px 12px; border: none;
       background: transparent; border-radius: 9px;
-      font-size: 15px; font-weight: 600;
-      color: #1a2a5e;
+      font-size: 15px; font-weight: 600; color: #1a2a5e;
       cursor: pointer; text-align: left; transition: background .15s;
     }
     .h-mobile-section-toggle:hover { background: #E3F0FB; color: #1565C0; }
@@ -333,7 +368,6 @@
     .h-mobile-arrow { font-size: 12px; transition: transform .22s; color: #1565C0; }
     .h-mobile-section.open .h-mobile-arrow { transform: rotate(180deg); }
 
-    /* Mobile sub-links */
     .h-mobile-sub {
       display: none; flex-direction: column;
       padding: 3px 0 4px 36px; gap: 2px;
@@ -349,13 +383,12 @@
     .h-mobile-sub a.active { background: #E3F0FB; color: #1565C0; }
     .h-mobile-sub a i { font-size: 15px; width: 18px; color: #1565C0; }
 
-    /* User + notif dropdowns */
     .topbar-user { position: relative; cursor: pointer; }
     .topbar-user .user-dropdown-menu { right: 0; left: auto; }
     .topbar-btn-notification { position: relative; }
 
     /* ═══════════════════════════════════════════════
-       DARK THEME OVERRIDES
+       DARK THEME
     ═══════════════════════════════════════════════ */
     [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
     [data-theme="dark"] .h-navbar-top { background: #080f20; border-color: #1a2a5e; }
@@ -380,37 +413,25 @@
       .h-navbar-top { padding: 0 20px; }
       .h-navbar-menu { padding: 0 20px; }
     }
-
     @media (max-width: 991px) {
       .admio-content { padding: 24px 20px; }
       .chart-h-lg { min-height: 320px !important; }
       .h-navbar-top { padding: 0 16px; height: 64px; }
       .h-navbar-menu { padding: 0 16px; }
     }
-
     @media (max-width: 767px) {
-      /* Show hamburger, hide desktop nav */
       .h-menu-toggle { display: flex; }
       .h-navbar-menu { display: none !important; }
-
-      /* Shrink search on mobile */
       .h-topbar-search { max-width: 160px; }
       .h-navbar-top { padding: 0 12px; height: 58px; gap: 10px; }
-
-      /* Smaller dividers on mobile */
       .h-topbar-divider { height: 20px; }
-
-      /* Hide some top bar items on mobile */
       .h-topbar-actions .h-topbar-divider:first-of-type { display: none; }
-
-      /* Content */
       .admio-content { padding: 18px 16px; }
       .page-title { font-size: 1.6rem !important; }
       .stat-value { font-size: 1.9rem !important; }
       .chart-h-lg { min-height: 280px !important; }
       .chart-h-sm { min-height: 200px !important; }
     }
-
     @media (max-width: 575px) {
       .h-navbar-top { height: 54px; padding: 0 10px; gap: 8px; }
       .h-topbar-search { max-width: 130px; }
@@ -419,15 +440,12 @@
       .admio-content { padding: 14px 12px; }
       .stat-value { font-size: 1.65rem !important; }
     }
-
     @media (max-width: 479px) {
-      /* Hide AI pill and search on very small screens */
       .h-ai-pill { display: none !important; }
       .h-topbar-search { display: none !important; }
       .h-navbar-brand-text { font-size: 1.15rem; }
       .admio-content { padding: 12px 10px; }
       .stat-value { font-size: 1.5rem !important; }
-      /* Keep essential icons only */
       .h-topbar-actions .h-topbar-divider { display: none; }
       .h-topbar-actions { gap: 4px; }
     }
@@ -437,49 +455,56 @@
 </head>
 <body>
 
+<!-- ══════════ PRELOADER ══════════ -->
+<div id="preloader">
+  <div class="vynzora-loader-inner">
+    <div class="loader">
+      <div></div><div></div><div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SEARCH BANNER ══════════ -->
+<div id="searchBanner"></div>
+
 <!-- ══════════ HORIZONTAL NAVBAR ══════════ -->
 <nav class="h-navbar" id="hNavbar">
 
-  <!-- TOP STRIP (dark navy) -->
+  <!-- TOP STRIP -->
   <div class="h-navbar-top">
 
-    <!-- Hamburger — visible on mobile only -->
+    <!-- Hamburger — mobile only -->
     <button class="h-menu-toggle" id="hMenuToggle" aria-label="Toggle menu">
       <i class="icon-menu" id="hMenuIcon"></i>
     </button>
 
     <!-- Brand -->
     <div class="brand-logo">
-    <a href="{% url 'student_portal:dashboard' %}" 
-       style="display:flex; align-items:center; gap:2px; text-decoration:none; line-height:1;">
-        
-        <img src="{% static 'admin-static/assets/img/favicon.ico' %}"
+      <a href="{% url 'student_portal:dashboard' %}"
+         style="display:flex;align-items:center;text-decoration:none;line-height:1;margin-right:auto;">
+        <img src="{% static 'student_portal/assets/img/edu.png' %}"
              alt="EdusetIn"
-             style="height:32px; 
-                    width:32px; 
-                    border-radius:6px; 
-                    object-fit:contain;
-                    filter: brightness(0) invert(1);">
-        
-        <span class="logo-text" 
-              style="color:#ffffff; 
-                     font-weight:700; 
-                     font-size:1.6rem; 
-                     letter-spacing:-0.01em;
-                     font-family:'Segoe UI', sans-serif;
-                     line-height:1;">
-            edusetin
-        </span>
-    </a>
-</div>
-    
+             style="height:220px;width:auto;object-fit:contain;">
+      </a>
+    </div>
+
+    <!-- ── SEARCH BAR ── -->
+    <div class="h-topbar-search">
+      <i class="icon-search search-icon"></i>
+      <input type="text"
+             class="search-input"
+             id="globalSearch"
+             placeholder="Search on this page…"
+             autocomplete="off"
+             spellcheck="false">
+      <span id="searchCount"></span>
+      <button class="search-clear" id="searchClear" title="Clear search" type="button">
+        <i class="icon-x"></i>
+      </button>
+    </div>
 
     <!-- Right actions -->
     <div class="h-topbar-actions">
-
-      <!-- Language switcher (large screens only) -->
-      
-      
 
       <!-- Theme toggle -->
       <button class="topbar-btn header-icon" id="themeToggle" title="Toggle theme">
@@ -490,89 +515,85 @@
 
       <!-- Notifications -->
       <div class="topbar-btn-notification">
-  <button class="topbar-btn header-icon" id="notifBtn" aria-label="Notifications">
-    <i class="icon-bell"></i>
-    <span class="notif-badge" id="notifBadge" style="display:none;"></span>
-  </button>
-
-  <div class="notif-panel" id="notifPanel">
-    <div class="notif-header">
-      <h2>Notifications</h2>
-      <button class="btn-text" id="markAllRead">Mark all read</button>
-    </div>
-
-    <!-- Loading state -->
-    <div class="notif-loading" id="notifLoading">
-      <div class="notif-skeleton"></div>
-      <div class="notif-skeleton"></div>
-      <div class="notif-skeleton"></div>
-    </div>
-
-    <!-- Populated list -->
-    <div class="notif-list" id="notifList" style="display:none;"></div>
-
-    <!-- Empty state -->
-    <div class="notif-empty" id="notifEmpty" style="display:none;">
-      <i class="icon-bell-off"></i>
-      <p>You're all caught up!</p>
-    </div>
-
-    <div class="notif-footer">
-  <button class="btn-text" id="viewAllBtn">View all activity</button>
-    </div>
-  </div>
-</div>
-
-
+        <button class="topbar-btn header-icon" id="notifBtn" aria-label="Notifications">
+          <i class="icon-bell"></i>
+          <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-header">
+            <h2>Notifications</h2>
+            <button class="btn-text" id="markAllRead">Mark all read</button>
+          </div>
+          <div class="notif-loading" id="notifLoading">
+            <div class="notif-skeleton"></div>
+            <div class="notif-skeleton"></div>
+            <div class="notif-skeleton"></div>
+          </div>
+          <div class="notif-list" id="notifList" style="display:none;"></div>
+          <div class="notif-empty" id="notifEmpty" style="display:none;">
+            <i class="icon-bell-off"></i>
+            <p>You're all caught up!</p>
+          </div>
+          <div class="notif-footer">
+            <button class="btn-text" id="viewAllBtn">View all activity</button>
+          </div>
+        </div>
+      </div>
 
       <div class="h-topbar-divider"></div>
 
       <!-- User avatar + dropdown -->
       <div class="topbar-user position-relative">
-        <span class="avatar-gen topbar-user-avatar" 
-      data-name="{{ request.user.get_full_name|default:request.user.username }}" 
-      data-bg="#1565C0" 
-      data-size="34">
-    {{ request.user.get_full_name|default:request.user.username|slice:":2"|upper }}
-</span>
+        <span class="avatar-gen topbar-user-avatar"
+              data-name="{{ request.user.get_full_name|default:request.user.username }}"
+              data-bg="#1565C0"
+              data-size="34">
+          {{ request.user.get_full_name|default:request.user.username|slice:":2"|upper }}
+        </span>
         <div class="user-dropdown-menu">
           <div class="user-dropdown-header">
-    <span class="avatar-gen udm-avatar" 
-          data-name="{{ request.user.get_full_name|default:request.user.username }}" 
-          data-bg="#1565C0" 
-          data-size="42">
-        {{ request.user.get_full_name|default:request.user.username|slice:":2"|upper }}
-    </span>
-    <div class="udm-info">
-        <p class="user-dropdown-name">
-            {{ request.user.get_full_name|default:request.user.username }}
-        </p>
-        <p class="user-dropdown-email">
-            {{ request.user.email }}
-        </p>
-    </div>
-</div>
-          <div class="udm-body">
-            
-            <hr class="user-dropdown-divider">
-           <a href="{% url 'student_portal:logout' %}" class="user-dropdown-item danger"><i class="icon-log-out"></i><span>Sign Out</span></a>
+            <span class="avatar-gen udm-avatar"
+                  data-name="{{ request.user.get_full_name|default:request.user.username }}"
+                  data-bg="#1565C0"
+                  data-size="42">
+              {{ request.user.get_full_name|default:request.user.username|slice:":2"|upper }}
+            </span>
+            <div class="udm-info">
+              <p class="user-dropdown-name">{{ request.user.get_full_name|default:request.user.username }}</p>
+              <p class="user-dropdown-email">{{ request.user.email }}</p>
+            </div>
           </div>
+          <div class="udm-body">
+    <hr class="user-dropdown-divider">
+
+    <a href="{% url 'student_portal:student_update' %}"
+       class="user-dropdown-item {% if request.path == url_student_update %}active{% endif %}">
+        <i class="icon-user-pen"></i>
+        <span>Edit User</span>
+    </a>
+
+    <a href="{% url 'student_portal:logout' %}"
+       class="user-dropdown-item danger">
+        <i class="icon-log-out"></i>
+        <span>Sign Out</span>
+    </a>
+</div>
         </div>
       </div>
 
     </div><!-- /h-topbar-actions -->
   </div><!-- /h-navbar-top -->
 
-  <!-- DESKTOP NAV STRIP (white bar) -->
+  <!-- DESKTOP NAV STRIP -->
   <div class="h-navbar-menu" id="hDesktopMenu">
 
-    {% url 'student_portal:dashboard' as url_dashboard %}
-    {% url 'student_portal:exam_list' as url_exam_list %}
-    {% url 'student_portal:exam_history' as url_exam_history %}
-    {% url 'student_portal:quiz_setup' as url_quiz_setup %}
-    {% url 'student_portal:quiz_history' as url_quiz_history %}
+    {% url 'student_portal:dashboard'     as url_dashboard %}
+    {% url 'student_portal:exam_list'     as url_exam_list %}
+    {% url 'student_portal:exam_history'  as url_exam_history %}
+    {% url 'student_portal:quiz_setup'    as url_quiz_setup %}
+    {% url 'student_portal:quiz_history'  as url_quiz_history %}
     {% url 'student_portal:student_detail' as url_student_detail %}
-    {% url 'student_portal:student_update' as url_student_update %}
+    
 
     <!-- Dashboard -->
     <div class="h-nav-item">
@@ -620,11 +641,6 @@
       </div>
     </div>
 
-    <!-- AI Tools -->
-    
-
-    <!-- Apps -->
-    
     <!-- Users -->
     <div class="h-nav-item h-nav-dropdown" id="dd-users">
       <span class="h-nav-link
@@ -638,18 +654,9 @@
            class="{% if request.path == url_student_detail %}active{% endif %}">
           <i class="icon-circle-user"></i> User Detail
         </a>
-        <a href="{{ url_student_update }}"
-           class="{% if request.path == url_student_update %}active{% endif %}">
-          <i class="icon-user-pen"></i> Edit User
-        </a>
+        
       </div>
     </div>
-
-    <!-- Finance -->
-    
-
-    <!-- UI -->
-    
 
   </div><!-- /h-navbar-menu -->
 
@@ -703,12 +710,6 @@
       </div>
     </div>
 
-    <!-- AI Tools mobile -->
-   
-
-    <!-- Apps mobile -->
-   
-
     <!-- Users mobile -->
     <div class="h-mobile-section
       {% if request.path == url_student_detail or request.path == url_student_update %}open{% endif %}">
@@ -723,15 +724,10 @@
            class="{% if request.path == url_student_detail %}active{% endif %}">
           <i class="icon-circle-user"></i> User Detail
         </a>
-        <a href="{{ url_student_update }}"
-           class="{% if request.path == url_student_update %}active{% endif %}">
-          <i class="icon-user-pen"></i> Edit User
-        </a>
+        
       </div>
     </div>
 
-    <!-- Finance mobile -->
-    
   </div><!-- /h-navbar-menu-mobile -->
 </nav>
 <!-- ══════════ END NAVBAR ══════════ -->
@@ -763,14 +759,29 @@
 <script src="{% static 'student_portal/assets/js/charts.js' %}"></script>
 
 <script>
+/* ══════════════════════════════════════════════
+   PRELOADER
+══════════════════════════════════════════════ */
+window.addEventListener('load', function () {
+  var preloader = document.getElementById('preloader');
+  if (preloader) {
+    setTimeout(function () {
+      preloader.style.opacity = '0';
+      setTimeout(function () { preloader.style.display = 'none'; }, 600);
+    }, 1500);
+  }
+});
+
+/* ══════════════════════════════════════════════
+   NAV: DROPDOWNS + HAMBURGER + ACCORDION
+══════════════════════════════════════════════ */
 (function () {
-  /* ── DESKTOP DROPDOWNS (click-based) ── */
-  const ddItems = document.querySelectorAll('.h-nav-dropdown');
+  var ddItems = document.querySelectorAll('.h-nav-dropdown');
   ddItems.forEach(function (item) {
-    const trigger = item.querySelector('.h-nav-link');
+    var trigger = item.querySelector('.h-nav-link');
     trigger.addEventListener('click', function (e) {
       e.stopPropagation();
-      const isOpen = item.classList.contains('open');
+      var isOpen = item.classList.contains('open');
       ddItems.forEach(function (d) { d.classList.remove('open'); });
       if (!isOpen) item.classList.add('open');
     });
@@ -779,14 +790,13 @@
     ddItems.forEach(function (d) { d.classList.remove('open'); });
   });
 
-  /* ── MOBILE HAMBURGER ── */
-  const hMenuToggle = document.getElementById('hMenuToggle');
-  const hMobileMenu = document.getElementById('hMobileMenu');
-  const hMenuIcon   = document.getElementById('hMenuIcon');
+  var hMenuToggle = document.getElementById('hMenuToggle');
+  var hMobileMenu = document.getElementById('hMobileMenu');
+  var hMenuIcon   = document.getElementById('hMenuIcon');
 
   hMenuToggle.addEventListener('click', function (e) {
     e.stopPropagation();
-    const isOpen = hMobileMenu.classList.toggle('open');
+    var isOpen = hMobileMenu.classList.toggle('open');
     hMenuIcon.className = isOpen ? 'icon-x' : 'icon-menu';
   });
   document.addEventListener('click', function (e) {
@@ -798,7 +808,6 @@
     }
   });
 
-  /* ── MOBILE ACCORDION ── */
   document.querySelectorAll('.h-mobile-section-toggle').forEach(function (btn) {
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -806,46 +815,48 @@
     });
   });
 })();
+
+/* ══════════════════════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════════════════════ */
 (function () {
-  const btn      = document.getElementById('notifBtn');
-  const panel    = document.getElementById('notifPanel');
-  const badge    = document.getElementById('notifBadge');
-  const list     = document.getElementById('notifList');
-  const loading  = document.getElementById('notifLoading');
-  const empty    = document.getElementById('notifEmpty');
-  const markAll  = document.getElementById('markAllRead');
-  const viewAll  = document.getElementById('viewAllBtn');
+  var btn     = document.getElementById('notifBtn');
+  var panel   = document.getElementById('notifPanel');
+  var badge   = document.getElementById('notifBadge');
+  var list    = document.getElementById('notifList');
+  var loading = document.getElementById('notifLoading');
+  var empty   = document.getElementById('notifEmpty');
+  var markAll = document.getElementById('markAllRead');
+  var viewAll = document.getElementById('viewAllBtn');
 
-  const PREVIEW_COUNT = 5;
-  let loaded      = false;
-  let unreadCount = 0;
-  let allNotifs   = [];
-  let showAll     = false;
+  var PREVIEW_COUNT = 5;
+  var loaded = false, unreadCount = 0, allNotifs = [], showAll = false;
 
-  const colorMap = {
-    new_plan:       'bg-primary',
-    new_exam:       'bg-success',
-    new_subject:    'bg-info',
-    new_submodule:  'bg-warning',
-    expiry_warning: 'bg-danger',
+  var colorMap = {
+    new_plan: 'bg-primary', new_exam: 'bg-success',
+    new_subject: 'bg-info', new_submodule: 'bg-warning',
+    expiry_warning: 'bg-danger'
   };
+
+  function escapeHtml(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
 
   function buildItem(n) {
     return '<div class="notif-item' + (n.unread ? ' unread' : '') + '">' +
       '<div class="notif-icon ' + (colorMap[n.type] || 'bg-primary') + '">' +
-        '<i class="' + n.icon + '"></i>' +
-      '</div>' +
+        '<i class="' + n.icon + '"></i></div>' +
       '<div class="notif-content">' +
         '<p class="notif-title">' + escapeHtml(n.title) + '</p>' +
         '<p class="notif-desc">'  + escapeHtml(n.desc)  + '</p>' +
         '<span class="notif-time">' + escapeHtml(n.time) + '</span>' +
-      '</div>' +
-    '</div>';
+      '</div></div>';
   }
 
   function renderNotifications(notifications) {
     allNotifs = notifications;
-
     if (!notifications.length) {
       loading.style.display = 'none';
       list.style.display    = 'none';
@@ -853,35 +864,26 @@
       viewAll.style.display = 'none';
       return;
     }
-
-    const visible   = showAll ? notifications : notifications.slice(0, PREVIEW_COUNT);
-    const remaining = notifications.length - PREVIEW_COUNT;
-
+    var visible   = showAll ? notifications : notifications.slice(0, PREVIEW_COUNT);
+    var remaining = notifications.length - PREVIEW_COUNT;
     list.innerHTML = visible.map(buildItem).join('');
-
     loading.style.display = 'none';
     empty.style.display   = 'none';
     list.style.display    = 'block';
-
     if (notifications.length <= PREVIEW_COUNT) {
       viewAll.style.display = 'none';
     } else {
       viewAll.style.display = 'block';
-      viewAll.textContent   = showAll
-        ? 'Show less'
-        : 'View all (' + remaining + ' more)';
+      viewAll.textContent   = showAll ? 'Show less' : 'View all (' + remaining + ' more)';
     }
   }
 
   function fetchNotifications() {
     if (loaded) return;
     loaded = true;
-
-    // reset UI to loading state each fetch
     loading.style.display = 'block';
     list.style.display    = 'none';
     empty.style.display   = 'none';
-
     fetch('{% url "student_portal:get_notifications" %}', {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
@@ -898,56 +900,248 @@
     });
   }
 
-  // ── Toggle panel ──────────────────────────────────────────────────────
   btn.addEventListener('click', function (e) {
     e.stopPropagation();
-    const isOpen = panel.classList.toggle('active');
+    var isOpen = panel.classList.toggle('active');
     if (isOpen) fetchNotifications();
   });
-
   document.addEventListener('click', function (e) {
-    if (!panel.contains(e.target) && e.target !== btn) {
+    if (!panel.contains(e.target) && e.target !== btn)
       panel.classList.remove('active');
-    }
   });
-
-  // ── View all / Show less ──────────────────────────────────────────────
-  viewAll.addEventListener('click', function (e) {   // ← e was missing
+  viewAll.addEventListener('click', function (e) {
     e.stopPropagation();
     showAll = !showAll;
     renderNotifications(allNotifs);
   });
-
-  // ── Mark all read ─────────────────────────────────────────────────────
-markAll.addEventListener('click', function (e) {
-  e.stopPropagation();
-  allNotifs = allNotifs.map(function (n) {
-    return Object.assign({}, n, { unread: false });
+  markAll.addEventListener('click', function (e) {
+    e.stopPropagation();
+    allNotifs = allNotifs.map(function (n) {
+      return Object.assign({}, n, { unread: false });
+    });
+    renderNotifications(allNotifs);
+    badge.style.display = 'none';
+    unreadCount = 0;
   });
-  renderNotifications(allNotifs);
-  badge.style.display = 'none';
-  unreadCount = 0;
-});
 
-  // ── Escape helper ─────────────────────────────────────────────────────
-  function escapeHtml(str) {
-    const d = document.createElement('div');
-    d.appendChild(document.createTextNode(str || ''));
-    return d.innerHTML;
-  }
-
-  // ── Silent badge count on page load ───────────────────────────────────
+  /* initial badge fetch */
   fetch('{% url "student_portal:get_notifications" %}', {
     headers: { 'X-Requested-With': 'XMLHttpRequest' }
   })
   .then(function (r) { return r.json(); })
   .then(function (data) {
-    const count = data.unread_count || 0;
+    var count = data.unread_count || 0;
     badge.textContent   = count > 9 ? '9+' : count;
     badge.style.display = count > 0 ? 'flex' : 'none';
   })
   .catch(function () {});
+})();
 
+/* ══════════════════════════════════════════════
+   PAGE SEARCH  —  filters & highlights content
+   inside .admio-content on the current page
+══════════════════════════════════════════════ */
+(function () {
+  var input    = document.getElementById('globalSearch');
+  var clearBtn = document.getElementById('searchClear');
+  var countEl  = document.getElementById('searchCount');
+  var banner   = document.getElementById('searchBanner');
+  if (!input) return;
+
+  var bannerTimer = null;
+  var originalMap = new Map(); /* node → original innerHTML cache */
+
+  /* ── helpers ── */
+  function escRx(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function showBanner(msg) {
+    banner.textContent = msg;
+    banner.style.display = 'block';
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(function () { banner.style.display = 'none'; }, 2200);
+  }
+
+  /* Walk text nodes inside el, skipping scripts/styles/inputs */
+  function walkTextNodes(el, cb) {
+    var walker = document.createTreeWalker(
+      el,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function (node) {
+          var tag = node.parentElement && node.parentElement.tagName;
+          if (['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','INPUT','SELECT'].indexOf(tag) > -1)
+            return NodeFilter.FILTER_REJECT;
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_SKIP;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+    var n;
+    while ((n = walker.nextNode())) cb(n);
+  }
+
+  /* Restore all highlighted nodes to their cached originals */
+  function clearHighlights() {
+    originalMap.forEach(function (original, el) {
+      el.innerHTML = original;
+    });
+    originalMap.clear();
+    document.querySelectorAll('.search-no-match').forEach(function (el) {
+      el.classList.remove('search-no-match');
+    });
+  }
+
+  /* Main search logic */
+  function doSearch(query) {
+    clearHighlights();
+
+    var content = document.querySelector('.admio-content');
+    if (!content) return;
+
+    if (!query) {
+      countEl.style.display = 'none';
+      clearBtn.style.display = 'none';
+      banner.style.display = 'none';
+      return;
+    }
+
+    clearBtn.style.display = 'flex';
+
+    var rx = new RegExp('(' + escRx(query) + ')', 'gi');
+    var matchCount = 0;
+
+    /*
+      Strategy:
+      1. Find every "block" element — table rows, cards, list items, paragraphs.
+         These are the units we dim when they don't match.
+      2. Within each block, highlight matching text nodes.
+      3. If a block has no match, add search-no-match to dim it.
+    */
+    var BLOCK_SELECTORS = [
+      'tr',
+      '.admio-card',
+      '.stat-card',
+      '.country-row',
+      '.notif-item',
+      'li',
+      'p',
+      'h1','h2','h3','h4','h5','h6',
+      '.quiz-item',
+      '.exam-item',
+      'dl','dt','dd',
+    ].join(',');
+
+    var blocks = content.querySelectorAll(BLOCK_SELECTORS);
+
+    /* If no blocks found, treat whole content as one block */
+    if (!blocks.length) blocks = [content];
+
+    blocks.forEach(function (block) {
+      var blockMatches = 0;
+
+      /* Collect all text nodes in this block that aren't in a nested block */
+      var textNodes = [];
+      walkTextNodes(block, function (node) {
+        /* Skip if inside a deeper block */
+        var ancestor = node.parentElement;
+        while (ancestor && ancestor !== block) {
+          if (ancestor.matches && ancestor.matches(BLOCK_SELECTORS)) return;
+          ancestor = ancestor.parentElement;
+        }
+        textNodes.push(node);
+      });
+
+      textNodes.forEach(function (node) {
+        var val = node.nodeValue;
+        if (!rx.test(val)) return;
+        rx.lastIndex = 0;
+
+        /* Wrap parent element for innerHTML replacement */
+        var parent = node.parentElement;
+        if (!parent) return;
+
+        if (!originalMap.has(parent)) {
+          originalMap.set(parent, parent.innerHTML);
+        }
+
+        var highlighted = parent.innerHTML.replace(rx,
+          '<mark class="search-highlight">$1</mark>'
+        );
+        parent.innerHTML = highlighted;
+
+        var found = (val.match(rx) || []).length;
+        blockMatches += found;
+        matchCount   += found;
+        rx.lastIndex  = 0;
+      });
+
+      if (blockMatches === 0) {
+        block.classList.add('search-no-match');
+      }
+    });
+
+    /* Update count badge */
+    if (matchCount > 0) {
+      countEl.textContent  = matchCount + ' found';
+      countEl.style.display = 'inline-block';
+      showBanner(matchCount + ' result' + (matchCount > 1 ? 's' : '') + ' found for "' + query + '"');
+
+      /* Scroll first highlight into view */
+      var first = content.querySelector('.search-highlight');
+      if (first) {
+        first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else {
+      countEl.textContent  = 'No results';
+      countEl.style.display = 'inline-block';
+      showBanner('No results for "' + query + '"');
+    }
+  }
+
+  /* ── Debounce input ── */
+  var debounceTimer;
+  input.addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    var q = input.value.trim();
+    debounceTimer = setTimeout(function () { doSearch(q); }, 220);
+  });
+
+  /* ── Clear button ── */
+  clearBtn.addEventListener('click', function () {
+    input.value = '';
+    input.focus();
+    clearHighlights();
+    countEl.style.display = 'none';
+    clearBtn.style.display = 'none';
+    banner.style.display = 'none';
+  });
+
+  /* ── Escape key clears ── */
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      input.value = '';
+      clearHighlights();
+      countEl.style.display = 'none';
+      clearBtn.style.display = 'none';
+      banner.style.display = 'none';
+      input.blur();
+    }
+  });
+
+  /* ── Ctrl/Cmd + F shortcut focuses search ── */
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      /* only hijack if not inside a real input */
+      if (document.activeElement.tagName !== 'INPUT' &&
+          document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      }
+    }
+  });
 })();
 </script>
 

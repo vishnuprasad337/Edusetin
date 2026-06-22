@@ -15,6 +15,7 @@ from django.contrib import messages
 from student_portal.models import ExamAttempt,QuizAttempt
 from django.core.paginator import Paginator
 from django.db.models import Q
+from .decorators import admin_login_required
 
 
 
@@ -134,7 +135,7 @@ def _get_media_slot_status(question, media_map):
 from django.db.models import Sum, Count
 from django.utils import timezone
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def student_management_dashboard(request):
     now = timezone.now()
 
@@ -215,13 +216,13 @@ def student_management_dashboard(request):
 # STUDENTS
 # ─────────────────────────────────────────────
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def student_list(request):
     students = Student.objects.select_related('user').order_by('-created_at')
     return render(request, 'student_management/student_list.html', {'students': students})
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def student_detail(request, id):
     student = get_object_or_404(Student.objects.select_related('user'), id=id)
 
@@ -264,8 +265,7 @@ def student_detail(request, id):
         'average_score': average_score,
         'active_subscription': active_subscription,
     })
-
-@login_required(login_url='admin_login')
+@admin_login_required
 def student_activate(request, id):
     student = get_object_or_404(Student, id=id)
     if student.is_active:
@@ -279,7 +279,7 @@ def student_activate(request, id):
     return redirect('student_management:student_detail', id=student.id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def student_deactivate(request, id):
     student = get_object_or_404(Student, id=id)
     if not student.is_active:
@@ -293,7 +293,7 @@ def student_deactivate(request, id):
     return redirect('student_management:student_detail', id=student.id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def student_delete(request, id):
     student = get_object_or_404(Student, id=id)
     if request.method == 'POST':
@@ -309,18 +309,18 @@ def student_delete(request, id):
 # SUBJECTS
 # ─────────────────────────────────────────────
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def subject_list(request):
     subjects = Subject.objects.order_by('-created_at')
     return render(request, 'student_management/subject_list.html', {'subjects': subjects})
 
-
-@login_required(login_url='admin_login')
+@admin_login_required
 def subject_create(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         is_active = request.POST.get('is_active') == 'on'
+        image = request.FILES.get('image')
 
         if not name:
             messages.error(request, "Subject name is required.")
@@ -338,6 +338,7 @@ def subject_create(request):
             name=name,
             description=description or None,
             is_active=is_active,
+            image=image,
         )
         messages.success(request, f"Subject \"{subject.name}\" created successfully.")
         return redirect('student_management:subject_list')
@@ -345,7 +346,7 @@ def subject_create(request):
     return render(request, 'student_management/subject_create.html', {})
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def subject_edit(request, id):
     subject = get_object_or_404(Subject, id=id)
 
@@ -353,6 +354,7 @@ def subject_edit(request, id):
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         is_active = request.POST.get('is_active') == 'on'
+        image = request.FILES.get('image')
 
         if not name:
             messages.error(request, "Subject name is required.")
@@ -365,6 +367,8 @@ def subject_edit(request, id):
         subject.name = name
         subject.description = description or None
         subject.is_active = is_active
+        if image:
+            subject.image = image
         subject.save()
         messages.success(request, f"Subject \"{subject.name}\" updated successfully.")
         return redirect('student_management:subject_list')
@@ -372,7 +376,7 @@ def subject_edit(request, id):
     return render(request, 'student_management/subject_edit.html', {'subject': subject})
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def subject_activate(request, id):
     subject = get_object_or_404(Subject, id=id)
     if subject.is_active:
@@ -384,7 +388,7 @@ def subject_activate(request, id):
     return redirect('student_management:subject_list')
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def subject_deactivate(request, id):
     subject = get_object_or_404(Subject, id=id)
     if not subject.is_active:
@@ -396,7 +400,7 @@ def subject_deactivate(request, id):
     return redirect('student_management:subject_list')
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def subject_delete(request, id):
     subject = get_object_or_404(Subject, id=id)
     if request.method == 'POST':
@@ -410,7 +414,7 @@ def subject_delete(request, id):
 # QUESTIONS
 # ─────────────────────────────────────────────
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_list(request):
     questions = Question.objects.select_related('subject', 'submodule').order_by('-created_at')
     subjects = Subject.objects.filter(is_active=True).order_by('name')
@@ -446,7 +450,7 @@ def question_list(request):
     return render(request, 'student_management/question_list.html', context)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_create(request):
     subjects = Subject.objects.filter(is_active=True).order_by('name')
     submodules = SubModule.objects.none()
@@ -630,7 +634,7 @@ def question_create(request):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_detail(request, id):
     question = get_object_or_404(Question.objects.select_related('subject'), id=id)
     media_map = {m.media_type: m for m in question.media_files.all()}
@@ -651,7 +655,7 @@ def question_detail(request, id):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_edit(request, id):
     question = get_object_or_404(Question.objects.select_related('subject'), id=id)
     subjects = Subject.objects.filter(is_active=True).order_by('name')
@@ -845,7 +849,7 @@ def question_edit(request, id):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_activate(request, id):
     question = get_object_or_404(Question, id=id)
     if question.is_active:
@@ -857,7 +861,7 @@ def question_activate(request, id):
     return redirect('student_management:question_detail', id=question.id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_deactivate(request, id):
     question = get_object_or_404(Question, id=id)
     if not question.is_active:
@@ -869,7 +873,7 @@ def question_deactivate(request, id):
     return redirect('student_management:question_detail', id=question.id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_delete(request, id):
     question = get_object_or_404(Question, id=id)
     if request.method == 'POST':
@@ -879,7 +883,7 @@ def question_delete(request, id):
     return redirect('student_management:question_detail', id=question.id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def question_import(request):
     import_report = None
 
@@ -1276,7 +1280,7 @@ def question_import(request):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def download_question_template(request):
     """Generate and serve the Excel import template with all columns."""
     try:
@@ -1409,7 +1413,7 @@ def download_question_template(request):
 # MEDIA MANAGEMENT
 # ─────────────────────────────────────────────
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_pending(request):
     """List all questions that have media requirements but haven't been fully uploaded."""
     questions = Question.objects.select_related('subject').filter(
@@ -1441,7 +1445,7 @@ def media_pending(request):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_upload(request, id):
     """Upload / manage media for a single question."""
     question = get_object_or_404(Question.objects.select_related('subject'), id=id)
@@ -1571,7 +1575,7 @@ def media_upload(request, id):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_delete(request, id, media_type):
     """Delete a single QuestionMedia record."""
     question = get_object_or_404(Question, id=id)
@@ -1604,7 +1608,7 @@ def media_delete(request, id, media_type):
     return redirect('student_management:media_upload', id=id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_library(request):
     """
     Refactored Media Library page with two sections:
@@ -1672,7 +1676,7 @@ def media_library(request):
 # MEDIA ASSETS CRUD
 # ─────────────────────────────────────────────
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_assets_upload(request):
     """Upload a new MediaLibrary asset."""
     if request.method == 'POST':
@@ -1715,7 +1719,7 @@ def media_assets_upload(request):
     return render(request, 'student_management/media_assets_upload.html', {})
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_assets_edit(request, id):
     """Edit a MediaLibrary asset's name, description, active status."""
     asset = get_object_or_404(MediaLibrary, id=id)
@@ -1755,7 +1759,7 @@ def media_assets_edit(request, id):
     return render(request, 'student_management/media_assets_edit.html', {'asset': asset})
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_assets_delete(request, id):
     """Delete a MediaLibrary asset — blocked if currently in use."""
     asset = get_object_or_404(MediaLibrary, id=id)
@@ -1776,7 +1780,7 @@ def media_assets_delete(request, id):
     return redirect('student_management:media_library')
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_assets_toggle(request, id):
     """Toggle active/inactive status of a MediaLibrary asset."""
     asset = get_object_or_404(MediaLibrary, id=id)
@@ -1787,8 +1791,7 @@ def media_assets_toggle(request, id):
         messages.success(request, f"Media asset \"{asset.name}\" {status}.")
     return redirect('student_management:media_library')
 
-
-@login_required(login_url='admin_login')
+@admin_login_required
 def media_assets_api(request):
     """
     JSON API for the library picker modal.
@@ -1871,6 +1874,8 @@ class ExamForm(forms.ModelForm):
         self.fields['selected_questions'].queryset = Question.objects.filter(is_active=True)
         self.fields['description'].required = False
         self.fields['submodules'].required = False
+
+@admin_login_required
 def examtype_list(request):
     exam_types = ExamType.objects.all()
     add_form = ExamTypeForm()
@@ -1921,6 +1926,8 @@ def examtype_list(request):
         'add_form': add_form,
         'edit_forms_list': edit_forms_list,
     })
+
+@admin_login_required
 def exam_list(request):
     exams = Exam.objects.select_related('exam_type').prefetch_related('subjects', 'submodules')
 
@@ -1932,7 +1939,7 @@ def exam_list(request):
         return redirect('student_management:exam_list')
 
     return render(request, 'student_management/exam_list.html', {'exams': exams})
-
+@admin_login_required
 def exam_add(request):
     form = ExamForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
@@ -1942,6 +1949,7 @@ def exam_add(request):
     return render(request, 'student_management/exam_add.html', {'form': form})
 
 
+@admin_login_required
 def exam_edit(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     form = ExamForm(request.POST or None, request.FILES or None, instance=exam)
@@ -1956,7 +1964,8 @@ def exam_edit(request, pk):
 import json
 from django.http import JsonResponse
  
- 
+
+@admin_login_required
 def ajax_subjects_by_examtype(request):
     """
     GET /student_management/ajax/subjects/?exam_type_id=<id>
@@ -1982,7 +1991,7 @@ def ajax_subjects_by_examtype(request):
     return JsonResponse({"subjects": data})
  
  
-@login_required(login_url='admin_login')
+@admin_login_required
 def ajax_questions_by_filter(request):
     # Define questions FIRST before any if blocks
     questions = Question.objects.filter(is_active=True).select_related('subject', 'submodule')
@@ -2028,7 +2037,8 @@ def ajax_questions_by_filter(request):
         for q in questions.order_by('subject__name', 'id')
     ]
     return JsonResponse({'questions': data})
-@login_required
+
+@admin_login_required
 def submodule_list(request):
     empty_slug_submodules = SubModule.objects.filter(slug='')
     for sm in empty_slug_submodules:
@@ -2066,7 +2076,8 @@ def submodule_list(request):
         'selected_status': status,
     }
     return render(request, 'student_management/submodule_list.html', context)
-@login_required
+
+@admin_login_required
 def submodule_add(request):
     subjects = Subject.objects.filter(is_active=True).order_by('name')
     initial = {
@@ -2133,7 +2144,8 @@ def submodule_add(request):
     return render(request, 'student_management/submodule_form.html', context)
 
 
-@login_required
+
+@admin_login_required
 def submodule_edit(request, slug):
     submodule = get_object_or_404(SubModule, slug=slug)
     subjects = Subject.objects.filter(is_active=True).order_by('name')
@@ -2210,7 +2222,8 @@ def submodule_edit(request, slug):
     return render(request, 'student_management/submodule_form.html', context)
 
 
-@login_required
+
+@admin_login_required
 def submodule_delete(request, slug):
     submodule = get_object_or_404(SubModule, slug=slug)
 
@@ -2265,6 +2278,7 @@ class SubscriptionPlanForm(forms.ModelForm):
         fields = ["name", "price", "duration_days", "subjects", "submodules", "exams", "is_active"]
 
 
+@admin_login_required
 def plan_list(request):
     query = request.GET.get("q", "")
     plans = SubscriptionPlan.objects.prefetch_related("subjects", "exams", "submodules")
@@ -2273,11 +2287,13 @@ def plan_list(request):
     return render(request, "student_management/plan_list.html", {"plans": plans, "query": query})
 
 
+@admin_login_required
 def plan_detail(request, pk):
     plan = get_object_or_404(SubscriptionPlan, pk=pk)
     return render(request, "student_management/plan_detail.html", {"plan": plan})
 
 
+@admin_login_required
 def plan_create(request):
     form = SubscriptionPlanForm(request.POST or None)
     if form.is_valid():
@@ -2287,6 +2303,7 @@ def plan_create(request):
     return render(request, "student_management/plan_form.html", {"form": form, "title": "Create Plan"})
 
 
+@admin_login_required
 def plan_update(request, pk):
     plan = get_object_or_404(SubscriptionPlan, pk=pk)
     form = SubscriptionPlanForm(request.POST or None, instance=plan)
@@ -2297,6 +2314,7 @@ def plan_update(request, pk):
     return render(request, "student_management/plan_form.html", {"form": form, "title": "Edit Plan", "plan": plan})
 
 
+@admin_login_required
 def plan_delete(request, pk):
     plan = get_object_or_404(SubscriptionPlan, pk=pk)
     name = plan.name
@@ -2308,7 +2326,7 @@ from student_portal.models import Student
 from .models import Payment, SubscriptionPlan
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def payment_list(request):
     payments = Payment.objects.select_related('student', 'plan').order_by('-created_at')
 
@@ -2339,7 +2357,7 @@ def payment_list(request):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def payment_detail(request, id):
     payment = get_object_or_404(
         Payment.objects.select_related('student', 'plan'), id=id
@@ -2349,7 +2367,7 @@ def payment_detail(request, id):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def payment_create(request):
     students = Student.objects.filter(is_active=True).order_by('full_name')
     plans    = SubscriptionPlan.objects.filter(is_active=True).order_by('name')
@@ -2426,7 +2444,7 @@ def payment_create(request):
     })
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def payment_update_status(request, id):
     payment = get_object_or_404(Payment, id=id)
 
@@ -2453,7 +2471,7 @@ def payment_update_status(request, id):
     return redirect('student_management:payment_detail', id=payment.id)
 
 
-@login_required(login_url='admin_login')
+@admin_login_required
 def payment_delete(request, id):
     payment = get_object_or_404(Payment, id=id)
     if request.method == 'POST':

@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
   :root {
@@ -14,79 +15,144 @@
     --blue-900: #042c53;
   }
 
-  .avatar-upload-wrap {
+  /* ── Hero ── */
+  .sp-hero {
     position: relative;
-    width: 100px;
-    height: 100px;
-    margin: 0 auto;
+    background: linear-gradient(120deg, #1246c8 0%, #1a56db 35%, #3b7ef8 65%, #5b8dee 100%);
+    background-size: 200% 200%;
+    animation: heroDrift 14s ease-in-out infinite;
+    border-radius: 16px;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    overflow: hidden;
+    box-shadow: 0 6px 28px rgba(26,86,219,.28);
+    margin-bottom: 1.5rem;
   }
+  @keyframes heroDrift {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  .sp-hero::before {
+    content: ''; position: absolute;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.07) 0%, transparent 70%);
+    top: -80px; right: 80px; pointer-events: none;
+  }
+  .sp-hero::after {
+    content: ''; position: absolute;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
+    bottom: -45px; left: 200px; pointer-events: none;
+  }
+  .sp-hero-av {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,.38);
+    object-fit: cover; flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .sp-hero-av-i {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(255,255,255,.16); border: 2.5px solid rgba(255,255,255,.32);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: 700; color: #fff;
+    flex-shrink: 0; position: relative; z-index: 1; backdrop-filter: blur(6px);
+  }
+  .sp-hero-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+  .sp-hero-name {
+    font-size: 1.25rem; font-weight: 700; color: #fff;
+    letter-spacing: -.02em; margin-bottom: 2px; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sp-hero-email {
+    font-size: .82rem; color: rgba(255,255,255,.75); margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sp-hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sp-hero-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 100px;
+    font-size: .72rem; font-weight: 500;
+    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.2);
+    color: rgba(255,255,255,.88);
+  }
+  .sp-hero-tag i { font-size: 10px; }
+  .sp-hero-tag.active { background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.35); color: #d1fae5; }
+  .sp-hero-stats { display: flex; gap: 8px; position: relative; z-index: 1; flex-shrink: 0; }
+  .sp-hst {
+    text-align: center; background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.18); border-radius: 11px;
+    padding: 8px 16px; backdrop-filter: blur(4px); min-width: 62px; transition: background .2s;
+  }
+  .sp-hst:hover { background: rgba(255,255,255,.22); }
+  .sp-hst-n { font-size: 1.2rem; font-weight: 700; color: #fff; line-height: 1; margin-bottom: 2px; }
+  .sp-hst-l { font-size: .62rem; color: rgba(255,255,255,.68); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+
+  /* ── Avatar upload ── */
+  .avatar-upload-wrap { position: relative; width: 88px; height: 88px; margin: 0 auto; }
   .avatar-upload-wrap img,
   .avatar-upload-wrap .avatar-initials {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--blue-200);
+    width: 88px; height: 88px; border-radius: 50%;
+    object-fit: cover; border: 3px solid var(--blue-200);
   }
   .avatar-initials {
-    background: var(--blue-50);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.6rem;
-    font-weight: 800;
-    color: var(--blue-600);
+    background: var(--blue-50); display: flex; align-items: center;
+    justify-content: center; font-size: 2.2rem; font-weight: 800; color: var(--blue-600);
   }
   .avatar-upload-btn {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--blue-600);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 13px;
-    border: 2px solid #fff;
-    transition: background .15s;
+    position: absolute; bottom: 2px; right: 2px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--blue-600); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 12px; border: 2px solid #fff; transition: background .15s;
   }
   .avatar-upload-btn:hover { background: var(--blue-800); }
   #id_profile_image { display: none; }
 
-  /* Section title accent */
-  .card-title i { color: var(--blue-400) !important; }
-
-  /* Save button */
+  /* ── Save button ── */
   .btn-blue-save {
-    background: var(--blue-600);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 22px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    transition: background .15s;
-    text-decoration: none;
+    background: var(--blue-600); color: #fff; border: none;
+    border-radius: 8px; padding: 9px 22px; font-size: .875rem; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+    transition: background .15s; text-decoration: none;
   }
   .btn-blue-save:hover { background: var(--blue-800); }
 
-  /* Info banner override to blue */
+  /* ── Blue info banner ── */
   .ai-insight-banner.blue-info {
     border-color: var(--blue-200) !important;
     background: var(--blue-50) !important;
   }
   .ai-insight-banner.blue-info .ai-banner-icon { color: var(--blue-600) !important; }
   .ai-insight-banner.blue-info .ai-banner-text { color: var(--blue-800) !important; }
-</style>
 
+  /* ── Form field alignment: label + input in a clean grid ── */
+  .sp-field { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 0 16px; padding: 10px 0; border-bottom: 1px solid rgba(56,138,221,.08); }
+  .sp-field:last-child { border-bottom: none; }
+  .sp-field-label { font-size: .85rem; font-weight: 600; color: #374151; white-space: nowrap; }
+  .sp-field-label .req { color: #ef4444; margin-left: 2px; }
+  .sp-field-input { min-width: 0; }
+  .sp-field-input .form-control,
+  .sp-field-input input,
+  .sp-field-input select,
+  .sp-field-input textarea { width: 100%; }
+  .sp-field-error { grid-column: 2; font-size: .75rem; color: #ef4444; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+
+  /* password fields same grid but full row for info banner */
+  .sp-field-full { padding: 10px 0 6px; }
+
+  /* sidebar info rows */
+  .sd-meta-row { display: flex; justify-content: space-between; font-size: .82rem; padding: 5px 0; border-bottom: 1px solid rgba(56,138,221,.08); }
+  .sd-meta-row:last-child { border-bottom: none; }
+  .sd-meta-lbl { color: #6b7280; }
+  .sd-meta-val { font-weight: 600; color: #111827; }
+  #imat-bg-canvas {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+}
+</style>
+<canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
 <!-- Page Header -->
 <div class="page-header">
   <div>
@@ -100,18 +166,19 @@
   </div>
 </div>
 
+
+
+ 
 <div class="row g-4">
 
-  <!-- Left — Avatar preview -->
+  <!-- Left — Avatar sidebar -->
   <div class="col-lg-4">
     <div class="admio-card">
-      <div class="admio-card-body d-flex flex-column align-items-center text-center gap-3 py-4">
+      <div class="admio-card-body d-flex flex-column align-items-center text-center gap-3 py-3">
 
         <div class="avatar-upload-wrap">
           {% if student.profile_image %}
-            <img src="{{ student.profile_image.url }}"
-                 alt="{{ student.full_name }}"
-                 id="avatarPreviewImg">
+            <img src="{{ student.profile_image.url }}" alt="{{ student.full_name }}" id="avatarPreviewImg">
           {% else %}
             <div class="avatar-initials" id="avatarInitialsBox">
               <span id="previewInitial">{{ student.full_name|slice:":1"|upper }}</span>
@@ -133,19 +200,19 @@
           {% if student.is_active %}Active{% else %}Inactive{% endif %}
         </span>
 
-        <div class="w-100"
-             style="background:var(--blue-50);border:1px solid var(--blue-100);
-                    border-radius:12px; padding:14px 16px;">
+        <div class="w-100" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:10px;padding:12px 14px;">
           <p class="text-xs mb-2 fw-600" style="color:var(--blue-800);">ACCOUNT DETAILS</p>
-          <div class="d-flex flex-column gap-2">
-            <div class="d-flex justify-content-between text-sm">
-              <span class="text-secondary-c">Member Since</span>
-              <span class="fw-600">{{ student.created_at|date:"d M Y" }}</span>
-            </div>
-            <div class="d-flex justify-content-between text-sm">
-              <span class="text-secondary-c">Exams Taken</span>
-              <span class="fw-600">{{ student.exam_attempts.count }}</span>
-            </div>
+          <div class="sd-meta-row">
+            <span class="sd-meta-lbl">Member Since</span>
+            <span class="sd-meta-val">{{ student.created_at|date:"d M Y" }}</span>
+          </div>
+          <div class="sd-meta-row">
+            <span class="sd-meta-lbl">Exams Taken</span>
+            <span class="sd-meta-val">{{ student.exam_attempts.count }}</span>
+          </div>
+          <div class="sd-meta-row">
+            <span class="sd-meta-lbl">Last Login</span>
+            <span class="sd-meta-val">{{ student.user.last_login|date:"d M Y" }}</span>
           </div>
         </div>
 
@@ -167,9 +234,7 @@
       {% if form.non_field_errors %}
       <div class="ai-insight-banner mb-4"
            style="border-color:#ef4444; background:rgba(239,68,68,.06); margin-bottom:1rem;">
-        <div class="ai-banner-icon" style="color:#ef4444;">
-          <i class="icon-triangle-alert"></i>
-        </div>
+        <div class="ai-banner-icon" style="color:#ef4444;"><i class="icon-triangle-alert"></i></div>
         <div class="ai-banner-content">
           {% for error in form.non_field_errors %}
           <p class="ai-banner-text mb-0">{{ error }}</p>
@@ -178,49 +243,31 @@
       </div>
       {% endif %}
 
-      {% if messages %}
-        {% for message in messages %}
-        <div class="ai-insight-banner mb-4"
-             style="border-color:#22c55e; background:rgba(34,197,94,.06); margin-bottom:1rem;">
-          <div class="ai-banner-icon" style="color:#22c55e;"><i class="icon-circle-check"></i></div>
-          <div class="ai-banner-content">
-            <p class="ai-banner-text mb-0">{{ message }}</p>
-          </div>
-        </div>
-        {% endfor %}
-      {% endif %}
-
       <!-- Profile Information -->
       <div class="admio-card mb-4">
         <div class="admio-card-header">
           <h2 class="card-title mb-0">
-            <i class="icon-circle-user me-2"></i>
+            <i class="icon-circle-user me-2" style="color:var(--blue-400);"></i>
             Profile Information
           </h2>
         </div>
         <div class="admio-card-body admio-card-body-sm">
 
-          <div class="mb-4">
-            <label class="form-label fw-600">
-              Full Name <span style="color:#ef4444;">*</span>
-            </label>
-            {{ form.full_name }}
+          <!-- Full Name -->
+          <div class="sp-field">
+            <label class="sp-field-label">Full Name <span class="req">*</span></label>
+            <div class="sp-field-input">{{ form.full_name }}</div>
             {% if form.full_name.errors %}
-            <div class="text-xs mt-1" style="color:#ef4444;">
-              <i class="icon-circle-alert"></i> {{ form.full_name.errors.0 }}
-            </div>
+            <div class="sp-field-error"><i class="icon-circle-alert"></i> {{ form.full_name.errors.0 }}</div>
             {% endif %}
           </div>
 
-          <div class="mb-2">
-            <label class="form-label fw-600">
-              Email Address <span style="color:#ef4444;">*</span>
-            </label>
-            {{ form.email }}
+          <!-- Email -->
+          <div class="sp-field">
+            <label class="sp-field-label">Email Address <span class="req">*</span></label>
+            <div class="sp-field-input">{{ form.email }}</div>
             {% if form.email.errors %}
-            <div class="text-xs mt-1" style="color:#ef4444;">
-              <i class="icon-circle-alert"></i> {{ form.email.errors.0 }}
-            </div>
+            <div class="sp-field-error"><i class="icon-circle-alert"></i> {{ form.email.errors.0 }}</div>
             {% endif %}
           </div>
 
@@ -237,50 +284,46 @@
       <div class="admio-card mb-4">
         <div class="admio-card-header">
           <h2 class="card-title mb-0">
-            <i class="icon-lock me-2"></i>
+            <i class="icon-lock me-2" style="color:var(--blue-400);"></i>
             Change Password
           </h2>
           <span class="badge-admio badge-gray text-xs">Optional</span>
         </div>
         <div class="admio-card-body admio-card-body-sm">
 
-          <div class="ai-insight-banner blue-info mb-4"
-               style="padding:14px 18px !important; border-radius:12px !important;">
-            <div class="ai-banner-icon"><i class="icon-info"></i></div>
-            <div class="ai-banner-content">
-              <p class="ai-banner-text mb-0">
-                Leave all password fields blank to keep your current password unchanged.
-              </p>
+          <div class="sp-field-full">
+            <div class="ai-insight-banner blue-info" style="padding:12px 16px !important; border-radius:10px !important;">
+              <div class="ai-banner-icon"><i class="icon-info"></i></div>
+              <div class="ai-banner-content">
+                <p class="ai-banner-text mb-0">Leave all password fields blank to keep your current password unchanged.</p>
+              </div>
             </div>
           </div>
 
-          <div class="mb-4">
-            <label class="form-label fw-600">Current Password</label>
-            {{ form.old_password }}
+          <!-- Current Password -->
+          <div class="sp-field">
+            <label class="sp-field-label">Current Password</label>
+            <div class="sp-field-input">{{ form.old_password }}</div>
             {% if form.old_password.errors %}
-            <div class="text-xs mt-1" style="color:#ef4444;">
-              <i class="icon-circle-alert"></i> {{ form.old_password.errors.0 }}
-            </div>
+            <div class="sp-field-error"><i class="icon-circle-alert"></i> {{ form.old_password.errors.0 }}</div>
             {% endif %}
           </div>
 
-          <div class="mb-4">
-            <label class="form-label fw-600">New Password</label>
-            {{ form.new_password1 }}
+          <!-- New Password -->
+          <div class="sp-field">
+            <label class="sp-field-label">New Password</label>
+            <div class="sp-field-input">{{ form.new_password1 }}</div>
             {% if form.new_password1.errors %}
-            <div class="text-xs mt-1" style="color:#ef4444;">
-              <i class="icon-circle-alert"></i> {{ form.new_password1.errors.0 }}
-            </div>
+            <div class="sp-field-error"><i class="icon-circle-alert"></i> {{ form.new_password1.errors.0 }}</div>
             {% endif %}
           </div>
 
-          <div class="mb-2">
-            <label class="form-label fw-600">Confirm New Password</label>
-            {{ form.new_password2 }}
+          <!-- Confirm Password -->
+          <div class="sp-field">
+            <label class="sp-field-label">Confirm Password</label>
+            <div class="sp-field-input">{{ form.new_password2 }}</div>
             {% if form.new_password2.errors %}
-            <div class="text-xs mt-1" style="color:#ef4444;">
-              <i class="icon-circle-alert"></i> {{ form.new_password2.errors.0 }}
-            </div>
+            <div class="sp-field-error"><i class="icon-circle-alert"></i> {{ form.new_password2.errors.0 }}</div>
             {% endif %}
           </div>
 
@@ -318,18 +361,25 @@
   const previewName  = document.getElementById('previewName');
   const previewInit  = document.getElementById('previewInitial');
   const previewEmail = document.getElementById('previewEmail');
+  const heroName     = document.getElementById('heroName');
+  const heroEmail    = document.getElementById('heroEmail');
+  const heroAvI      = document.getElementById('heroAvI');
 
   if (nameInput) {
     nameInput.addEventListener('input', function () {
       const val = this.value.trim() || '—';
       if (previewName) previewName.textContent = val;
       if (previewInit) previewInit.textContent = val.charAt(0).toUpperCase();
+      if (heroName)    heroName.textContent = val;
+      if (heroAvI)     heroAvI.textContent  = val.charAt(0).toUpperCase();
     });
   }
 
-  if (emailInput && previewEmail) {
+  if (emailInput) {
     emailInput.addEventListener('input', function () {
-      previewEmail.textContent = this.value.trim() || '—';
+      const val = this.value.trim() || '—';
+      if (previewEmail) previewEmail.textContent = val;
+      if (heroEmail)    heroEmail.textContent    = val;
     });
   }
 
@@ -339,22 +389,137 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function (e) {
+        /* sidebar avatar */
         const wrap = document.querySelector('.avatar-upload-wrap');
         let img = wrap.querySelector('img#avatarPreviewImg');
         const initialsBox = wrap.querySelector('#avatarInitialsBox');
         if (!img) {
           img = document.createElement('img');
-          img.id  = 'avatarPreviewImg';
-          img.alt = 'Profile preview';
-          img.style.cssText = 'width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #85b7eb;';
+          img.id = 'avatarPreviewImg'; img.alt = 'Profile preview';
+          img.style.cssText = 'width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid #85b7eb;';
           if (initialsBox) initialsBox.replaceWith(img);
           else wrap.insertBefore(img, wrap.querySelector('label'));
         }
         img.src = e.target.result;
+
+        /* hero avatar */
+        let heroImg = document.getElementById('heroAv');
+        if (!heroImg) {
+          heroImg = document.createElement('img');
+          heroImg.id = 'heroAv'; heroImg.alt = 'Hero avatar';
+          heroImg.className = 'sp-hero-av';
+          if (heroAvI) heroAvI.replaceWith(heroImg);
+        }
+        heroImg.src = e.target.result;
       };
       reader.readAsDataURL(file);
     });
   }
+  /* ══ ANIMATED BACKGROUND ENGINE ══ */
+(function(){
+  var canvas = document.getElementById('imat-bg-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var TAU = Math.PI * 2;
+  var W, H;
+  var DARK = function() { return document.documentElement.getAttribute('data-theme') === 'dark'; };
+  var PAL = {
+    bio:   function() { return DARK() ? 'rgba(16,185,129,'  : 'rgba(5,150,105,'; },
+    chem:  function() { return DARK() ? 'rgba(139,92,246,'  : 'rgba(124,58,237,'; },
+    phys:  function() { return DARK() ? 'rgba(59,130,246,'  : 'rgba(26,86,219,'; },
+    math:  function() { return DARK() ? 'rgba(245,158,11,'  : 'rgba(217,119,6,'; },
+    logic: function() { return DARK() ? 'rgba(236,72,153,'  : 'rgba(219,39,119,'; },
+    grid:  function() { return DARK() ? 'rgba(91,141,238,'  : 'rgba(26,86,219,'; },
+  };
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  var rng = function(s) { var x = Math.sin(s*9301+49297)*233280; return x-Math.floor(x); };
+
+  function drawGrid(t) {
+    var gs=36, pulse=0.04+0.02*Math.sin(t*0.0005);
+    ctx.save(); ctx.globalAlpha=pulse; ctx.fillStyle=PAL.grid()+'1)';
+    for(var x=0;x<W;x+=gs) for(var y=0;y<H;y+=gs){
+      var r=1.3+0.4*Math.sin(t*0.001+x*0.05+y*0.04);
+      ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  var helixData=[
+    {x:W*0.06,y0:0,y1:H,speed:0.006,cA:'#10b981',cB:'#3b82f6',t:0},
+    {x:W*0.94,y0:0,y1:H,speed:0.005,cA:'#8b5cf6',cB:'#ec4899',t:0}
+  ];
+  function drawHelix(h) {
+    h.t += h.speed;
+    var amp=26,freq=0.042,steps=80,segH=(h.y1-h.y0)/steps;
+    ctx.save();
+    for(var i=0;i<=steps;i++){
+      var y=h.y0+i*segH, ph=h.t+i*freq*TAU;
+      var x1=h.x+Math.sin(ph)*amp, x2=h.x+Math.sin(ph+Math.PI)*amp;
+      if(i>0){
+        var py=h.y0+(i-1)*segH;
+        var px1=h.x+Math.sin(h.t+(i-1)*freq*TAU)*amp;
+        var px2=h.x+Math.sin(h.t+Math.PI+(i-1)*freq*TAU)*amp;
+        ctx.globalAlpha=DARK()?0.22:0.14;
+        ctx.beginPath();ctx.moveTo(px1,py);ctx.lineTo(x1,y);ctx.strokeStyle=h.cA;ctx.lineWidth=1.6;ctx.stroke();
+        ctx.beginPath();ctx.moveTo(px2,py);ctx.lineTo(x2,y);ctx.strokeStyle=h.cB;ctx.lineWidth=1.6;ctx.stroke();
+      }
+      if(i%5===0){
+        ctx.globalAlpha=DARK()?0.3:0.18;
+        ctx.beginPath();ctx.arc(x1,y,2.5,0,TAU);ctx.fillStyle=h.cA;ctx.fill();
+        ctx.beginPath();ctx.arc(x2,y,2.5,0,TAU);ctx.fillStyle=h.cB;ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  var SYMS=['Σ','∫','π','λ','α','β','γ','H₂O','CO₂','ATP','DNA','E=mc²','F=ma','pH','A','B','C','D','?','✓'];
+  var SYM_COLS=[PAL.bio,PAL.chem,PAL.phys,PAL.math,PAL.logic];
+  var floatSyms = [];
+  for(var _i=0;_i<30;_i++){
+    floatSyms.push({
+      x:rng(_i*3)*(window.innerWidth||1200), y:rng(_i*7)*(window.innerHeight||900),
+      vy:-(0.12+rng(_i*5)*0.28), vx:(rng(_i*9)-0.5)*0.18,
+      life:Math.floor(rng(_i*11)*400), maxLife:280+rng(_i*17)*500,
+      text:SYMS[Math.floor(rng(_i*19)*SYMS.length)], size:11+rng(_i*23)*9,
+      palIdx:Math.floor(rng(_i*29)*5), maxA:0.08+rng(_i*13)*0.12
+    });
+  }
+  function drawSyms(){
+    ctx.save();
+    floatSyms.forEach(function(s,i){
+      s.x+=s.vx; s.y+=s.vy; s.life++;
+      if(s.life>s.maxLife){ s.x=rng(s.life*3+i)*W; s.y=H+20; s.life=0; s.text=SYMS[Math.floor(rng(s.life+i*7)*SYMS.length)]; }
+      var tv=s.life/s.maxLife, a=tv<0.1?s.maxA*(tv/0.1):tv>0.82?s.maxA*(1-(tv-0.82)/0.18):s.maxA;
+      ctx.globalAlpha=a;
+      ctx.font=s.size+"px 'JetBrains Mono',monospace";
+      ctx.fillStyle=SYM_COLS[s.palIdx]()+'1)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(s.text,s.x,s.y);
+    });
+    ctx.restore();
+  }
+
+  var scanY = -40;
+  function drawScan(){
+    scanY+=0.6; if(scanY>H+40) scanY=-40;
+    ctx.save(); ctx.globalAlpha=DARK()?0.05:0.03;
+    ctx.beginPath(); ctx.moveTo(0,scanY); ctx.lineTo(W,scanY);
+    ctx.strokeStyle='#5b9cf6'; ctx.lineWidth=1.8; ctx.stroke(); ctx.restore();
+  }
+
+  var frame=0;
+  function tick(){
+    frame++;
+    ctx.clearRect(0,0,W,H);
+    drawGrid(frame);
+    helixData.forEach(drawHelix);
+    drawSyms();
+    drawScan();
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
 </script>
 
 {% endblock %}

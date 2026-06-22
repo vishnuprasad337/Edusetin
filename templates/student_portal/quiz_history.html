@@ -5,6 +5,9 @@
 
 {% block content %}
 
+<!-- Background Animation Canvas -->
+<canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
+
 <!-- Page Header -->
 <div class="page-header">
     <div>
@@ -156,6 +159,27 @@
 
 <style>
 /* =====================
+   Background Canvas - Fixed Position
+   ===================== */
+#imat-bg-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ensure content appears above background */
+.page-header,
+.count-bar,
+.admio-card,
+.pagination-wrap {
+    position: relative;
+    z-index: 1;
+}
+
+/* =====================
    Reset & Base
    ===================== */
 *, *::before, *::after { box-sizing: border-box; }
@@ -174,11 +198,20 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
+[data-theme="dark"] .page-header {
+    background: #1a1a2e;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
 .page-title {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
     color: var(--admio-text-color, #111827);
+}
+
+[data-theme="dark"] .page-title {
+    color: #e2e8f0;
 }
 
 .page-subtitle {
@@ -217,6 +250,12 @@
     width: 100%;
 }
 
+[data-theme="dark"] .admio-card {
+    background: #1a1a2e;
+    border-color: #2d2d44;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
 .admio-card-body { padding: 1.25rem; }
 .admio-card-body.p-0 { padding: 0; }
 
@@ -225,13 +264,13 @@
    ===================== */
 .table-responsive {
     width: 100%;
-    overflow: hidden; /* NO horizontal scroll — fixed layout handles it */
+    overflow: hidden;
 }
 
 .exam-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* CRITICAL — columns never overflow */
+    table-layout: fixed;
 }
 
 /* Column widths — total = 100% */
@@ -247,6 +286,11 @@
     border-bottom: 1px solid var(--admio-border-color, #e5e7eb);
 }
 
+[data-theme="dark"] .exam-table thead {
+    background: #1e1e2e;
+    border-color: #2d2d44;
+}
+
 .exam-table thead th {
     padding: 11px 12px;
     text-align: left;
@@ -260,6 +304,10 @@
     text-overflow: ellipsis;
 }
 
+[data-theme="dark"] .exam-table thead th {
+    color: #9ca3af;
+}
+
 .exam-table thead th:last-child { text-align: right; }
 
 .exam-table tbody tr {
@@ -267,9 +315,17 @@
     transition: background 0.12s;
 }
 
+[data-theme="dark"] .exam-table tbody tr {
+    border-color: #2d2d44;
+}
+
 .exam-table tbody tr:last-child { border-bottom: none; }
 
 .exam-table tbody tr:hover { background: #fafafa; }
+
+[data-theme="dark"] .exam-table tbody tr:hover {
+    background: rgba(124,58,237,.07);
+}
 
 .exam-table tbody td {
     padding: 11px 12px;
@@ -278,6 +334,10 @@
     color: var(--admio-text-color, #374151);
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .exam-table tbody td {
+    color: #e2e8f0;
 }
 
 .exam-table tbody td:last-child { text-align: right; }
@@ -293,6 +353,10 @@
 .score-high   { color: #15803d; }
 .score-medium { color: #854d0e; }
 .score-low    { color: #b91c1c; }
+
+[data-theme="dark"] .score-high   { color: #34d399; }
+[data-theme="dark"] .score-medium { color: #fbbf24; }
+[data-theme="dark"] .score-low    { color: #f87171; }
 
 /* =====================
    Correct / Wrong / Skip chips
@@ -317,6 +381,10 @@
 .chip-ng { color: #b91c1c; }
 .chip-sk { color: #6b7280; }
 
+[data-theme="dark"] .chip-ok { color: #34d399; }
+[data-theme="dark"] .chip-ng { color: #f87171; }
+[data-theme="dark"] .chip-sk { color: #9ca3af; }
+
 /* =====================
    Grade Badge
    ===================== */
@@ -335,6 +403,10 @@
 .grade-excellent { background: #dcfce7; color: #15803d; }
 .grade-average   { background: #fef9c3; color: #854d0e; }
 .grade-poor      { background: #fee2e2; color: #b91c1c; }
+
+[data-theme="dark"] .grade-excellent { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+[data-theme="dark"] .grade-average   { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+[data-theme="dark"] .grade-poor      { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
 /* =====================
    Mobile Score Badge
@@ -358,6 +430,11 @@
     border-radius: 12px;
     padding: 13px 14px;
     background: #ffffff;
+}
+
+[data-theme="dark"] .mobile-attempt-card {
+    background: #1a1a2e;
+    border-color: #2d2d44;
 }
 
 /* =====================
@@ -385,10 +462,22 @@
     color: var(--admio-text-color, #374151);
 }
 
+[data-theme="dark"] .btn-white {
+    background: #1a1a2e;
+    border-color: #2d2d44;
+    color: #e2e8f0;
+}
+
 .btn-white:hover {
     background: var(--admio-bg-hover, #f9fafb);
     border-color: #7c3aed;
     color: #7c3aed;
+}
+
+[data-theme="dark"] .btn-white:hover {
+    background: #252535;
+    border-color: #7c3aed;
+    color: #a78bfa;
 }
 
 .btn-white:disabled {
@@ -424,11 +513,17 @@
     gap: 0.5rem;
     margin-top: 1rem;
     padding: 0 0.1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .pager-info {
     font-size: 0.8rem;
     color: var(--admio-text-secondary, #6b7280);
+}
+
+[data-theme="dark"] .pager-info {
+    color: #9ca3af;
 }
 
 .pager-btns {
@@ -455,9 +550,21 @@
     transition: all 0.12s;
 }
 
+[data-theme="dark"] .pager-btns button,
+[data-theme="dark"] .pager-btns span {
+    background: #1a1a2e;
+    border-color: #2d2d44;
+    color: #e2e8f0;
+}
+
 .pager-btns button:hover {
     border-color: #7c3aed;
     color: #7c3aed;
+}
+
+[data-theme="dark"] .pager-btns button:hover {
+    border-color: #7c3aed;
+    color: #a78bfa;
 }
 
 .pager-btns button:disabled {
@@ -473,38 +580,25 @@
 }
 
 /* =====================
-   Icons (Font Awesome 6)
-   ===================== */
-.icon-plus-circle,
-.icon-calendar,
-.icon-check,
-.icon-x,
-.icon-minus,
-.icon-file-text,
-.icon-eye,
-.icon-arrow-left,
-.icon-arrow-right,
-.icon-clipboard-list {
-    display: inline-block;
-    font-family: 'Font Awesome 6 Free' !important;
-    font-weight: 900;
-    font-style: normal;
-    font-variant: normal;
-    line-height: 1;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-}
+   Icons — Lucide (admio-icons.css)
+   FIX: Removed the broken Font Awesome 6 override block.
+   These classes are already defined in admio-icons.css with the
+   correct Lucide font-family and unicode codepoints. No override
+   needed here. Listing them as a reference only:
 
-.icon-plus-circle::before   { content: '\f055'; }
-.icon-calendar::before      { content: '\f133'; }
-.icon-check::before         { content: '\f00c'; }
-.icon-x::before             { content: '\f00d'; }
-.icon-minus::before         { content: '\f068'; }
-.icon-file-text::before     { content: '\f15c'; }
-.icon-eye::before           { content: '\f06e'; }
-.icon-arrow-left::before    { content: '\f060'; }
-.icon-arrow-right::before   { content: '\f061'; }
-.icon-clipboard-list::before{ content: '\f46d'; }
+   icon-plus-circle  → \e086 (admio-icons)
+   icon-clipboard-list → \e086 (admio-icons)
+   icon-calendar     → \e063 (admio-icons)
+   icon-check        → \e38e (admio-icons)
+   icon-x            → \e1b2 (admio-icons)
+   icon-minus        → \e07e (admio-icons)
+   icon-file-text    → \e0cc (admio-icons)
+   icon-eye          → \e0ba (admio-icons)
+   icon-arrow-left   → \e048 (admio-icons)
+   icon-arrow-right  → \e049 (admio-icons)
+
+   DO NOT re-declare font-family here — it will break the Lucide font.
+   ===================== */
 
 /* =====================
    Utilities
@@ -530,60 +624,6 @@
 .me-1          { margin-right: 0.25rem; }
 .text-center   { text-align: center; }
 .py-5          { padding-top: 3rem; padding-bottom: 3rem; }
-
-/* =====================
-   Dark Mode
-   ===================== */
-[data-theme="dark"] .exam-table thead {
-    background: #1e1e2e;
-    border-color: var(--admio-border-color);
-}
-
-[data-theme="dark"] .exam-table thead th {
-    color: #9ca3af;
-}
-
-[data-theme="dark"] .exam-table tbody tr {
-    border-color: var(--admio-border-color);
-}
-
-[data-theme="dark"] .exam-table tbody tr:hover {
-    background: rgba(124,58,237,.07);
-}
-
-[data-theme="dark"] .mobile-attempt-card {
-    background: var(--admio-card-bg);
-    border-color: var(--admio-border-color);
-}
-
-[data-theme="dark"] .page-header,
-[data-theme="dark"] .admio-card {
-    background: var(--admio-card-bg);
-}
-
-[data-theme="dark"] .btn-white {
-    background: var(--admio-card-bg);
-    border-color: var(--admio-border-color);
-    color: var(--admio-text-color);
-}
-
-[data-theme="dark"] .btn-white:hover {
-    background: #252535;
-    border-color: #7c3aed;
-    color: #a78bfa;
-}
-
-[data-theme="dark"] .pager-btns button,
-[data-theme="dark"] .pager-btns span {
-    background: var(--admio-card-bg);
-    border-color: var(--admio-border-color);
-    color: var(--admio-text-color);
-}
-
-[data-theme="dark"] .pager-btns button:hover {
-    border-color: #7c3aed;
-    color: #a78bfa;
-}
 
 /* =====================
    Responsive
@@ -719,6 +759,168 @@
     });
 
     render();
+})();
+
+/* ════════════════════════════════════════════════════
+   ANIMATED BACKGROUND ENGINE
+   ════════════════════════════════════════════════════ */
+(function(){
+  var canvas = document.getElementById('imat-bg-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var TAU = Math.PI * 2;
+  var W, H;
+  var DARK = function() { return document.documentElement.getAttribute('data-theme') === 'dark'; };
+  var PAL = {
+    bio:   function() { return DARK() ? 'rgba(16,185,129,'  : 'rgba(5,150,105,'; },
+    chem:  function() { return DARK() ? 'rgba(139,92,246,'  : 'rgba(124,58,237,'; },
+    phys:  function() { return DARK() ? 'rgba(59,130,246,'  : 'rgba(26,86,219,'; },
+    math:  function() { return DARK() ? 'rgba(245,158,11,'  : 'rgba(217,119,6,'; },
+    logic: function() { return DARK() ? 'rgba(236,72,153,'  : 'rgba(219,39,119,'; },
+    grid:  function() { return DARK() ? 'rgba(91,141,238,'  : 'rgba(26,86,219,'; },
+  };
+  
+  function resize() { 
+    W = canvas.width = window.innerWidth; 
+    H = canvas.height = window.innerHeight; 
+  }
+  resize(); 
+  window.addEventListener('resize', resize);
+  
+  var rng = function(s) { 
+    var x = Math.sin(s*9301+49297)*233280; 
+    return x-Math.floor(x); 
+  };
+
+  function drawGrid(t) {
+    var gs=36, pulse=0.04+0.02*Math.sin(t*0.0005);
+    ctx.save(); 
+    ctx.globalAlpha=pulse; 
+    ctx.fillStyle=PAL.grid()+'1)';
+    for(var x=0;x<W;x+=gs) {
+      for(var y=0;y<H;y+=gs){
+        var r=1.3+0.4*Math.sin(t*0.001+x*0.05+y*0.04);
+        ctx.beginPath(); 
+        ctx.arc(x,y,r,0,TAU); 
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  var helixData=[
+    {x:W*0.06,y0:0,y1:H,speed:0.006,cA:'#10b981',cB:'#3b82f6',t:0},
+    {x:W*0.94,y0:0,y1:H,speed:0.005,cA:'#8b5cf6',cB:'#ec4899',t:0}
+  ];
+  
+  function drawHelix(h) {
+    h.t += h.speed;
+    var amp=26,freq=0.042,steps=80,segH=(h.y1-h.y0)/steps;
+    ctx.save();
+    for(var i=0;i<=steps;i++){
+      var y=h.y0+i*segH, ph=h.t+i*freq*TAU;
+      var x1=h.x+Math.sin(ph)*amp, x2=h.x+Math.sin(ph+Math.PI)*amp;
+      if(i>0){
+        var py=h.y0+(i-1)*segH;
+        var px1=h.x+Math.sin(h.t+(i-1)*freq*TAU)*amp;
+        var px2=h.x+Math.sin(h.t+Math.PI+(i-1)*freq*TAU)*amp;
+        ctx.globalAlpha=DARK()?0.22:0.14;
+        ctx.beginPath();
+        ctx.moveTo(px1,py);
+        ctx.lineTo(x1,y);
+        ctx.strokeStyle=h.cA;
+        ctx.lineWidth=1.6;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(px2,py);
+        ctx.lineTo(x2,y);
+        ctx.strokeStyle=h.cB;
+        ctx.lineWidth=1.6;
+        ctx.stroke();
+      }
+      if(i%5===0){
+        ctx.globalAlpha=DARK()?0.3:0.18;
+        ctx.beginPath();
+        ctx.arc(x1,y,2.5,0,TAU);
+        ctx.fillStyle=h.cA;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x2,y,2.5,0,TAU);
+        ctx.fillStyle=h.cB;
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  var SYMS=['Σ','∫','π','λ','α','β','γ','H₂O','CO₂','ATP','DNA','E=mc²','F=ma','pH','A','B','C','D','?','✓'];
+  var SYM_COLS=[PAL.bio,PAL.chem,PAL.phys,PAL.math,PAL.logic];
+  var floatSyms = [];
+  for(var _i=0;_i<30;_i++){
+    floatSyms.push({
+      x:rng(_i*3)*(window.innerWidth||1200), 
+      y:rng(_i*7)*(window.innerHeight||900),
+      vy:-(0.12+rng(_i*5)*0.28), 
+      vx:(rng(_i*9)-0.5)*0.18,
+      life:Math.floor(rng(_i*11)*400), 
+      maxLife:280+rng(_i*17)*500,
+      text:SYMS[Math.floor(rng(_i*19)*SYMS.length)], 
+      size:11+rng(_i*23)*9,
+      palIdx:Math.floor(rng(_i*29)*5), 
+      maxA:0.08+rng(_i*13)*0.12
+    });
+  }
+  
+  function drawSyms(){
+    ctx.save();
+    floatSyms.forEach(function(s,i){
+      s.x+=s.vx; 
+      s.y+=s.vy; 
+      s.life++;
+      if(s.life>s.maxLife){ 
+        s.x=rng(s.life*3+i)*W; 
+        s.y=H+20; 
+        s.life=0; 
+        s.text=SYMS[Math.floor(rng(s.life+i*7)*SYMS.length)]; 
+      }
+      var tv=s.life/s.maxLife, 
+          a=tv<0.1?s.maxA*(tv/0.1):tv>0.82?s.maxA*(1-(tv-0.82)/0.18):s.maxA;
+      ctx.globalAlpha=a;
+      ctx.font=s.size+"px 'JetBrains Mono',monospace";
+      ctx.fillStyle=SYM_COLS[s.palIdx]()+'1)';
+      ctx.textAlign='center'; 
+      ctx.textBaseline='middle';
+      ctx.fillText(s.text,s.x,s.y);
+    });
+    ctx.restore();
+  }
+
+  var scanY = -40;
+  function drawScan(){
+    scanY+=0.6; 
+    if(scanY>H+40) scanY=-40;
+    ctx.save(); 
+    ctx.globalAlpha=DARK()?0.05:0.03;
+    ctx.beginPath(); 
+    ctx.moveTo(0,scanY); 
+    ctx.lineTo(W,scanY);
+    ctx.strokeStyle='#5b9cf6'; 
+    ctx.lineWidth=1.8; 
+    ctx.stroke(); 
+    ctx.restore();
+  }
+
+  var frame=0;
+  function tick(){
+    frame++;
+    ctx.clearRect(0,0,W,H);
+    drawGrid(frame);
+    helixData.forEach(drawHelix);
+    drawSyms();
+    drawScan();
+    requestAnimationFrame(tick);
+  }
+  tick();
 })();
 </script>
 

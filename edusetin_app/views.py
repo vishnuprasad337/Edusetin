@@ -68,6 +68,7 @@ import json
 import pandas as pd
 from .models import ChatbotUser
 from django.db.models.functions import Lower
+from student_management.decorators import admin_login_required
 
 
 # User Side >>>>>>>>>>>>>>>>>>>>>>>>>
@@ -491,7 +492,7 @@ def subscriber_list(request):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_subscriber(request, pk):
     subscriber = get_object_or_404(NewsletterSubscriber, pk=pk)
     if request.method == "POST":
@@ -502,7 +503,7 @@ def delete_subscriber(request, pk):
 
 
 # Admin-side list messages (custom page)
-@login_required(login_url="admin_login")
+@admin_login_required
 def admin_contacts(request):
     contacts = ContactMessage.objects.all().order_by("-created_at")
 
@@ -519,7 +520,7 @@ def admin_contacts(request):
     return render(request, "admin_pages/contact_list.html", {"contacts": page_obj})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_contact(request, contact_id):
     contact = get_object_or_404(ContactMessage, id=contact_id)
     if request.method == "POST":
@@ -531,7 +532,7 @@ def delete_contact(request, contact_id):
 
 
 # Export to Excel/CSV
-@login_required(login_url="admin_login")
+@admin_login_required
 def export_contacts_excel(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
@@ -572,7 +573,7 @@ def export_contacts_excel(request):
     return response
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def admin_dashboard(request):
     # Stats
     stats = {
@@ -633,7 +634,7 @@ def page_404(request, exception):
     return render(request, "404.html", status=404)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def countries_list(request):
     countries = Country.objects.all().order_by('order', 'id')
     
@@ -642,7 +643,7 @@ def countries_list(request):
     }
     return render(request, 'admin_pages/country_list.html', context)
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def country_create(request):
     if request.method == "POST":
         form = CountryForm(request.POST, request.FILES)
@@ -662,7 +663,7 @@ def country_create(request):
     return render(request, "admin_pages/create-country.html", {"form": form})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def country_update(request, pk):
     country = get_object_or_404(Country, pk=pk)
     if request.method == "POST":
@@ -681,7 +682,7 @@ def country_update(request, pk):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def country_delete(request, pk):
     country = get_object_or_404(Country, pk=pk)
     if request.method == "POST":
@@ -691,7 +692,7 @@ def country_delete(request, pk):
     return render(request, "admin_pages/country_list.html", {"country": country})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def add_university(request):
     countries = Country.objects.all()
 
@@ -708,7 +709,7 @@ def add_university(request):
     return render(request, "admin_pages/create_university.html", context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def universities_list(request):
     universities = University.objects.select_related('country').order_by('order', 'id')
     countries = Country.objects.all()
@@ -720,7 +721,7 @@ def universities_list(request):
     return render(request, 'admin_pages/university_list.html', context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 # Update university
 def update_university(request, pk):
     university = get_object_or_404(University, pk=pk)
@@ -737,7 +738,7 @@ def update_university(request, pk):
     return render(request, "admin_pages/update_university.html", context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 #  Delete university
 def delete_university(request, pk):
     university = get_object_or_404(University, pk=pk)
@@ -751,7 +752,7 @@ def delete_university(request, pk):
 
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def course_list(request):
     courses = Course.objects.select_related('university', 'category', 'university__country').order_by('order', 'id')
     categories = CourseCategory.objects.all()
@@ -765,7 +766,7 @@ def course_list(request):
     return render(request, 'admin_pages/course_list.html', context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 # Add new course
 def course_add(request):
 
@@ -791,7 +792,7 @@ def course_add(request):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 #  Update course
 def course_update(request, pk):
     course = get_object_or_404(Course, pk=pk)
@@ -825,7 +826,7 @@ def course_update(request, pk):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def course_delete(request, pk):
     course = get_object_or_404(Course, pk=pk)
     if request.method == "POST":
@@ -835,7 +836,7 @@ def course_delete(request, pk):
     return render(request, "admin_pages/course_list.html", {"course": course})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def list_team(request):
     """Display all team members with pagination"""
     team_members_list = TeamMember.objects.all().order_by(Lower("name"))
@@ -852,7 +853,7 @@ def list_team(request):
     return render(request, "admin_pages/team_list.html", context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def create_team(request):
     if request.method == "POST":
         form = TeamMemberForm(request.POST, request.FILES)
@@ -867,7 +868,7 @@ def create_team(request):
     return render(request, "admin_pages/add_team.html", {"form": form})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def edit_team_member(request, pk):
     team_member = get_object_or_404(TeamMember, pk=pk)
     if request.method == "POST":
@@ -888,7 +889,7 @@ def edit_team_member(request, pk):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_team_member(request, pk):
     team_member = get_object_or_404(TeamMember, pk=pk)
     if request.method == "POST":
@@ -899,7 +900,7 @@ def delete_team_member(request, pk):
     return render(request, "admin_pages/team_list.html", {"team_member": team_member})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def testimonial_list(request):
     testimonials_list = Testimonial.objects.all().order_by(Lower("name"))
     paginator = Paginator(testimonials_list, 6)
@@ -911,7 +912,7 @@ def testimonial_list(request):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def testimonial_create(request):
     if request.method == "POST":
         form = TestimonialForm(request.POST, request.FILES)
@@ -924,7 +925,7 @@ def testimonial_create(request):
     return render(request, "admin_pages/create_review.html", {"form": form})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def testimonial_update(request, pk):
     testimonial = get_object_or_404(Testimonial, pk=pk)
     if request.method == "POST":
@@ -941,8 +942,7 @@ def testimonial_update(request, pk):
         {"form": form, "testimonial": testimonial},
     )
 
-
-@login_required(login_url="admin_login")
+@admin_login_required
 def testimonial_delete(request, pk):
     testimonial = get_object_or_404(Testimonial, pk=pk)
     if request.method == "POST":
@@ -953,13 +953,13 @@ def testimonial_delete(request, pk):
 
 
 # --------- Services ---------
-@login_required(login_url="admin_login")
+@admin_login_required
 def service_list(request):
     services = Service.objects.all().order_by('order', 'id')
     return render(request, "admin_pages/service_list.html", {"services": services})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def service_create(request):
     if request.method == "POST":
         form = ServiceForm(request.POST, request.FILES)
@@ -972,7 +972,7 @@ def service_create(request):
     return render(request, "admin_pages/create_service.html", {"form": form})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def service_update(request, pk):
     service = get_object_or_404(Service, pk=pk)
     if request.method == "POST":
@@ -988,7 +988,7 @@ def service_update(request, pk):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def service_delete(request, pk):
     service = get_object_or_404(Service, pk=pk)
     if request.method == "POST":
@@ -1001,7 +1001,7 @@ def service_delete(request, pk):
 
 
 # --------- Blogs ---------
-@login_required(login_url="admin_login")
+@admin_login_required
 def blog_list(request):
     blogs_qs = Blog.objects.all().order_by("title")# newest first
 
@@ -1012,7 +1012,7 @@ def blog_list(request):
     return render(request, "admin_pages/blog_list.html", {"blogs": blogs})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def blog_create(request):
     if request.method == "POST":
         form = BlogForm(request.POST, request.FILES)
@@ -1025,7 +1025,7 @@ def blog_create(request):
     return render(request, "admin_pages/create_blog.html", {"form": form})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def blog_update(request, pk):
     blog = get_object_or_404(Blog, pk=pk)
     if request.method == "POST":
@@ -1039,7 +1039,7 @@ def blog_update(request, pk):
     return render(request, "admin_pages/create_blog.html", {"form": form, "blog": blog})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def blog_delete(request, pk):
     blog = get_object_or_404(Blog, pk=pk)
     if request.method == "POST":
@@ -1049,7 +1049,7 @@ def blog_delete(request, pk):
     return render(request, "admin_pages/create_blog.html", {"blog": blog})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def gallery_images(request):
     categories = Category.objects.all().prefetch_related("images")
 
@@ -1078,7 +1078,7 @@ def gallery_images(request):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def add_image(request):
     categories = Category.objects.all()
 
@@ -1100,7 +1100,7 @@ def add_image(request):
     return render(request, "admin_pages/add_image.html", {"categories": categories})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def application_list(request):
     apps = Application.objects.all().order_by("-created_at")
 
@@ -1123,7 +1123,7 @@ def application_list(request):
         },
     )
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_application(request, app_id):
     app = get_object_or_404(Application, id=app_id)
     if request.method == "POST":
@@ -1141,7 +1141,7 @@ def get_courses_by_country(request, country_id):
     return JsonResponse(list(courses), safe=False)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def course_category_list_create(request):
     categories = CourseCategory.objects.all().order_by("-created_at")
 
@@ -1161,7 +1161,7 @@ def course_category_list_create(request):
     return render(request, "admin_pages/course_category.html", context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def export_applications_excel(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
@@ -1218,7 +1218,7 @@ def export_applications_excel(request):
     return response
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def course_category_list(request):
     categories = CourseCategory.objects.all().order_by('order', 'id')
     
@@ -1228,7 +1228,7 @@ def course_category_list(request):
     return render(request, 'admin_pages/course_category_list.html', context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def course_category_update(request, pk):
     category = get_object_or_404(CourseCategory, pk=pk)
     if request.method == "POST":
@@ -1246,7 +1246,7 @@ def course_category_update(request, pk):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def course_category_delete(request, pk):
     category = get_object_or_404(CourseCategory, pk=pk)
     if request.method == "POST":
@@ -1258,7 +1258,7 @@ def course_category_delete(request, pk):
     )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_image(request, image_id):
     image = get_object_or_404(GalleryImage, id=image_id)
 
@@ -1270,7 +1270,7 @@ def delete_image(request, image_id):
     return render(request, "admin_pages/image_list.html", {"image": image})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def category_list(request):
     categories = Category.objects.all().order_by("-created_at")
     paginator = Paginator(categories, 10)
@@ -1279,7 +1279,7 @@ def category_list(request):
     return render(request, "admin_pages/category_list.html", {"categories": categories})
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def add_category(request):
     if request.method == "POST":
         name = request.POST.get("name")
@@ -1289,7 +1289,7 @@ def add_category(request):
     return render(request, "admin_pages/add_category.html")
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def update_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == "POST":
@@ -1299,7 +1299,7 @@ def update_category(request, pk):
     return redirect("category_list")
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == "POST":
@@ -1308,7 +1308,7 @@ def delete_category(request, pk):
     return redirect("category_list")
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def inquiry_list(request):
     inquiries = Inquiry.objects.all().order_by("-created_at")
 
@@ -1332,7 +1332,7 @@ def inquiry_list(request):
     return render(request, "admin_pages/inquiry_list.html", context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_inquiry(request, pk):
     inquiry = get_object_or_404(Inquiry, pk=pk)
     if request.method == "POST":
@@ -1341,7 +1341,7 @@ def delete_inquiry(request, pk):
     return redirect("inquiry_list")
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def export_inquiries_excel(request):
     # Get filter parameters
     start_date = request.GET.get("start_date")
@@ -1404,7 +1404,7 @@ def admin_login(request):
     return render(request, "authenticate/login.html")
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def admin_logout(request):
     logout(request)
     messages.success(request, "You have been logged out.")
@@ -1522,7 +1522,7 @@ def get_chatbot_options(request):
         )
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def chatbot_enquiries_list(request):
     enquiries = ChatbotUser.objects.all().order_by("-created_at")
 
@@ -1546,7 +1546,7 @@ def chatbot_enquiries_list(request):
     return render(request, "admin_pages/chatuser_list.html", context)
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def delete_chatbot_enquiry(request, enquiry_id):
     enquiry = get_object_or_404(ChatbotUser, id=enquiry_id)
     if request.method == "POST":
@@ -1558,7 +1558,7 @@ def delete_chatbot_enquiry(request, enquiry_id):
 import openpyxl
 
 
-@login_required(login_url="admin_login")
+@admin_login_required
 def export_chatbot_enquiries_excel(request):
     enquiries = ChatbotUser.objects.all().order_by("-created_at")
 
@@ -1604,7 +1604,7 @@ def export_chatbot_enquiries_excel(request):
 
 from django.views.decorators.http import require_POST
 
-@login_required(login_url="admin_login")
+@admin_login_required
 @require_POST
 def reorder_universities(request):
     """Handle AJAX request to update university order"""
@@ -1648,7 +1648,7 @@ def reorder_services(request):
 # In your views.py
 @csrf_exempt
 @require_POST
-@login_required(login_url="admin_login")
+@admin_login_required
 def reorder_countries(request):
     try:
         data = json.loads(request.body)
@@ -1667,7 +1667,7 @@ def reorder_countries(request):
     
 @csrf_exempt
 @require_POST
-@login_required(login_url="admin_login")
+@admin_login_required
 def reorder_course_categories(request):
     try:
         data = json.loads(request.body)
@@ -1686,7 +1686,7 @@ def reorder_course_categories(request):
     
 @csrf_exempt
 @require_POST
-@login_required(login_url="admin_login")
+@admin_login_required
 def reorder_courses(request):
     try:
         data = json.loads(request.body)

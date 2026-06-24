@@ -35,7 +35,7 @@ path('plans/<uuid:plan_uuid>/checkout/', views.plan_checkout, name='plan_checkou
     path('quiz/',              views.quiz_setup,    name='quiz_setup'),
     path('quiz/generate/',     views.quiz_generate, name='quiz_generate'),
     path('quiz/<int:attempt_id>/submit/',  views.quiz_submit,  name='quiz_submit'),
-    path('quiz/<int:attempt_id>/result/',  views.quiz_result,  name='quiz_result'),
+   path('quiz/<slug:slug>/result/', views.quiz_result, name='quiz_result'),
     path('quiz/history/',      views.quiz_history,  name='quiz_history'),
     path(
         'notifications/',

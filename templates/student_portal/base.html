@@ -37,10 +37,22 @@
     }
     .loader { display: flex; align-items: center; justify-content: center; }
     .loader > div {
-      display: inline-flex; width: 25px; height: 25px; margin: 0 5px;
-      border-radius: 50%; background: #1565C0;
-      animation: bounce 1.48s ease-in-out infinite both;
-    }
+  display: inline-flex; width: 25px; height: 25px; margin: 0 5px;
+  border-radius: 50%; background: #1565C0;
+  animation: bounce 1.48s ease-in-out infinite both;
+}
+
+@media(max-width: 768px) {
+  .loader > div {
+    width: 16px; height: 16px; margin: 0 4px;
+  }
+}
+
+@media(max-width: 480px) {
+  .loader > div {
+    width: 12px; height: 12px; margin: 0 3px;
+  }
+}
     .loader > div:nth-child(1) { animation-delay: -0.32s; }
     .loader > div:nth-child(2) { animation-delay: -0.16s; }
     @keyframes bounce {
@@ -409,46 +421,44 @@
        RESPONSIVE
     ═══════════════════════════════════════════════ */
     @media (max-width: 1199px) {
-      .admio-content { padding: 28px 24px; }
-      .h-navbar-top { padding: 0 20px; }
-      .h-navbar-menu { padding: 0 20px; }
-    }
-    @media (max-width: 991px) {
-      .admio-content { padding: 24px 20px; }
-      .chart-h-lg { min-height: 320px !important; }
-      .h-navbar-top { padding: 0 16px; height: 64px; }
-      .h-navbar-menu { padding: 0 16px; }
-    }
-    @media (max-width: 767px) {
-      .h-menu-toggle { display: flex; }
-      .h-navbar-menu { display: none !important; }
-      .h-topbar-search { max-width: 160px; }
-      .h-navbar-top { padding: 0 12px; height: 58px; gap: 10px; }
-      .h-topbar-divider { height: 20px; }
-      .h-topbar-actions .h-topbar-divider:first-of-type { display: none; }
-      .admio-content { padding: 18px 16px; }
-      .page-title { font-size: 1.6rem !important; }
-      .stat-value { font-size: 1.9rem !important; }
-      .chart-h-lg { min-height: 280px !important; }
-      .chart-h-sm { min-height: 200px !important; }
-    }
-    @media (max-width: 575px) {
-      .h-navbar-top { height: 54px; padding: 0 10px; gap: 8px; }
-      .h-topbar-search { max-width: 130px; }
-      .h-navbar-brand-text { font-size: 1.25rem; }
-      .h-navbar-brand img { width: 28px; }
-      .admio-content { padding: 14px 12px; }
-      .stat-value { font-size: 1.65rem !important; }
-    }
-    @media (max-width: 479px) {
-      .h-ai-pill { display: none !important; }
-      .h-topbar-search { display: none !important; }
-      .h-navbar-brand-text { font-size: 1.15rem; }
-      .admio-content { padding: 12px 10px; }
-      .stat-value { font-size: 1.5rem !important; }
-      .h-topbar-actions .h-topbar-divider { display: none; }
-      .h-topbar-actions { gap: 4px; }
-    }
+  .admio-content { padding: 28px 24px; }
+  .h-navbar-top { padding: 0 20px; }
+  .h-navbar-menu { padding: 0 20px; }
+}
+@media (max-width: 991px) {
+  .admio-content { padding: 24px 20px; }
+  .chart-h-lg { min-height: 320px !important; }
+  .h-navbar-top { padding: 0 16px; height: 64px; }
+  .h-navbar-menu { padding: 0 16px; }
+}
+@media (max-width: 767px) {
+  .h-menu-toggle { display: flex; }
+  .h-navbar-menu { display: none !important; }
+  .h-topbar-search { display: none !important; }
+  .h-navbar-top { padding: 0 12px; height: 58px; gap: 10px; }
+  .h-topbar-divider { height: 20px; }
+  .h-topbar-actions .h-topbar-divider:first-of-type { display: none; }
+  .admio-content { padding: 18px 16px; }
+  .page-title { font-size: 1.6rem !important; }
+  .stat-value { font-size: 1.9rem !important; }
+  .chart-h-lg { min-height: 280px !important; }
+  .chart-h-sm { min-height: 200px !important; }
+}
+@media (max-width: 575px) {
+  .h-navbar-top { height: 54px; padding: 0 10px; gap: 8px; }
+  .h-navbar-brand-text { font-size: 1.25rem; }
+  .h-navbar-brand img { width: 28px; }
+  .admio-content { padding: 14px 12px; }
+  .stat-value { font-size: 1.65rem !important; }
+}
+@media (max-width: 479px) {
+  .h-ai-pill { display: none !important; }
+  .h-navbar-brand-text { font-size: 1.15rem; }
+  .admio-content { padding: 12px 10px; }
+  .stat-value { font-size: 1.5rem !important; }
+  .h-topbar-actions .h-topbar-divider { display: none; }
+  .h-topbar-actions { gap: 4px; }
+}
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -569,7 +579,7 @@
     <a href="{% url 'student_portal:student_update' %}"
        class="user-dropdown-item {% if request.path == url_student_update %}active{% endif %}">
         <i class="icon-user-pen"></i>
-        <span>Edit User</span>
+        <span>Edit Profile</span>
     </a>
 
     <a href="{% url 'student_portal:logout' %}"
@@ -642,21 +652,12 @@
     </div>
 
     <!-- Users -->
-    <div class="h-nav-item h-nav-dropdown" id="dd-users">
-      <span class="h-nav-link
-        {% if request.path == url_student_detail or request.path == url_student_update %}active{% endif %}"
-        role="button" tabindex="0">
-        <i class="icon-users"></i> Users
-        <i class="icon-chevron-down h-nav-arrow"></i>
-      </span>
-      <div class="h-nav-dropdown-menu">
-        <a href="{{ url_student_detail }}"
-           class="{% if request.path == url_student_detail %}active{% endif %}">
-          <i class="icon-circle-user"></i> User Detail
-        </a>
-        
-      </div>
-    </div>
+    <div class="h-nav-item">
+  <a href="{{ url_student_detail }}"
+     class="h-nav-link {% if request.path == url_student_detail or request.path == url_student_update %}active{% endif %}">
+    <i class="icon-users"></i> Profile
+  </a>
+</div>
 
   </div><!-- /h-navbar-menu -->
 
@@ -710,23 +711,11 @@
       </div>
     </div>
 
-    <!-- Users mobile -->
-    <div class="h-mobile-section
-      {% if request.path == url_student_detail or request.path == url_student_update %}open{% endif %}">
-      <button class="h-mobile-section-toggle
-        {% if request.path == url_student_detail or request.path == url_student_update %}active{% endif %}"
-        type="button">
-        <span><i class="icon-users left-ico"></i>Users</span>
-        <i class="icon-chevron-down h-mobile-arrow"></i>
-      </button>
-      <div class="h-mobile-sub">
-        <a href="{{ url_student_detail }}"
-           class="{% if request.path == url_student_detail %}active{% endif %}">
-          <i class="icon-circle-user"></i> User Detail
-        </a>
-        
-      </div>
-    </div>
+  <!-- Users mobile -->
+<a href="{{ url_student_detail }}"
+   class="h-mobile-direct {% if request.path == url_student_detail or request.path == url_student_update %}active{% endif %}">
+  <i class="icon-users"></i> Profile
+</a>
 
   </div><!-- /h-navbar-menu-mobile -->
 </nav>
@@ -737,13 +726,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="admio-footer">
-    <span>&copy; 2026 <strong>Admio</strong>. All rights reserved.</span>
-    <ul class="d-flex align-items-center mb-0 list-unstyled gap-4">
-      <li><a href="#">About</a></li>
-      <li><a href="#">Support</a></li>
-    </ul>
-  </footer>
+  
 
   <button class="back-to-top visible" id="backToTop" aria-label="Back to top">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"

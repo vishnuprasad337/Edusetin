@@ -3,40 +3,6 @@
 {% block title %}Exams | Student Management{% endblock %}
 
 {% block content %}
-<style>
-    .exam-table {
-        table-layout: fixed;
-        width: 100%;
-        min-width: 760px;
-    }
-    .exam-table thead th {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #6c757d;
-        font-weight: 600;
-        border-bottom: 1px solid #dee2e6;
-        white-space: nowrap;
-        padding-top: 0.85rem;
-        padding-bottom: 0.85rem;
-    }
-    .exam-table tbody td {
-        padding-top: 0.7rem;
-        padding-bottom: 0.7rem;
-        vertical-align: middle;
-    }
-    .exam-table .btn-group .btn {
-        border-radius: 0;
-    }
-    .exam-table .btn-group .btn:first-child {
-        border-top-left-radius: 0.375rem;
-        border-bottom-left-radius: 0.375rem;
-    }
-    .exam-table .btn-group .btn:last-child {
-        border-top-right-radius: 0.375rem;
-        border-bottom-right-radius: 0.375rem;
-    }
-</style>
 <div class="dashboard__form__wraper">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -61,83 +27,129 @@
         {% endfor %}
     {% endif %}
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            {% if exams %}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 exam-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3 text-center" style="width:5%">#</th>
-                            <th style="width:26%">Title</th>
-                            <th class="text-center" style="width:13%">Exam Type</th>
-                            <th class="text-center" style="width:11%">Duration</th>
-                            <th class="text-center" style="width:11%">Questions</th>
-                            <th class="text-center" style="width:11%">Marks/Q</th>
-                            <th class="text-center" style="width:11%">Status</th>
-                            <th class="text-center pe-3" style="width:12%">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for exam in exams %}
-                        <tr>
-                            <td class="ps-3 text-center text-muted small">{{ forloop.counter }}</td>
-                            <td>
-                                <span class="fw-semibold">{{ exam.title }}</span>
-                                {% if exam.custom_name %}
-                                <div class="text-muted small">{{ exam.custom_name }}</div>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-primary-subtle text-primary">{{ exam.exam_type.name|default:"—" }}</span>
-                            </td>
-                            <td class="text-center text-muted small">{{ exam.duration_minutes }} min</td>
-                            <td class="text-center text-muted small">{{ exam.total_questions }}</td>
-                            <td class="text-center text-muted small">{{ exam.marks_per_question }}</td>
-                            <td class="text-center">
-                                {% if exam.is_active %}
-                                    <span class="badge bg-success-subtle text-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center pe-3">
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-outline-secondary btn-sm"
-                                            title="View"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#viewModal{{ exam.pk }}">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <a href="{% url 'student_management:exam_edit' exam.pk %}"
-                                       class="btn btn-outline-primary btn-sm"
-                                       title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button class="btn btn-outline-danger btn-sm"
-                                            title="Delete"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteModal{{ exam.pk }}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-file-alt fa-2x mb-3 d-block"></i>
-                No exams found. <a href="{% url 'student_management:exam_add' %}">Create your first exam.</a>
-            </div>
-            {% endif %}
+    <!-- ── Filter bar ── -->
+    <div class="row g-2 align-items-end mb-3">
+        <div class="col-12 col-md-4 col-lg-3">
+            <label class="form-label small fw-semibold mb-1">Search</label>
+            <input type="text" id="searchInput" class="form-control form-control-sm"
+                   placeholder="Title or exam type…">
+        </div>
+        <div class="col-12 col-md-2 col-lg-2">
+            <label class="form-label small fw-semibold mb-1">Status</label>
+            <select id="statusFilter" class="form-select form-select-sm">
+                <option value="">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label small fw-semibold mb-1">Rows</label>
+            <select id="pageSizeSelect" class="form-select form-select-sm" style="width:auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+        <div class="col-auto d-flex gap-2 align-items-end">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="applyFilterBtn">
+                <i class="fas fa-filter"></i> Filter
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn">
+                <i class="fas fa-times"></i> Clear
+            </button>
         </div>
     </div>
+
+    <!-- Active filter badge -->
+    <div id="filterBadge" class="mb-2 d-none">
+        <span class="badge bg-primary fw-normal" id="filterBadgeText"></span>
+    </div>
+
+    <!-- ── Table ── -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle" id="examsTable">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3 text-center" style="width:50px;">#</th>
+                    <th>Title</th>
+                    <th class="text-center">Exam Type</th>
+                    <th class="text-center">Duration</th>
+                    <th class="text-center">Questions</th>
+                    <th class="text-center">Marks/Q</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="examsTableBody">
+                {% for exam in exams %}
+                <tr
+                    data-title="{{ exam.title|lower }}"
+                    data-examtype="{{ exam.exam_type.name|lower|default:'' }}"
+                    data-status="{% if exam.is_active %}active{% else %}inactive{% endif %}"
+                >
+                    <td class="ps-3 text-center text-muted small">{{ forloop.counter }}</td>
+                    <td>
+                        <span class="fw-semibold">{{ exam.title }}</span>
+                        {% if exam.custom_name %}
+                        <div class="text-muted small">{{ exam.custom_name }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-primary-subtle text-primary">{{ exam.exam_type.name|default:"—" }}</span>
+                    </td>
+                    <td class="text-center text-muted small">{{ exam.duration_minutes }} min</td>
+                    <td class="text-center text-muted small">{{ exam.total_questions }}</td>
+                    <td class="text-center text-muted small">{{ exam.marks_per_question }}</td>
+                    <td class="text-center">
+                        {% if exam.is_active %}
+                            <span class="badge bg-success-subtle text-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-3">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    title="View"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#viewModal{{ exam.pk }}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                           <a href="{% url 'student_management:exam_edit' exam.title %}"
+   class="btn btn-outline-primary btn-sm"
+   title="Edit">
+    <i class="fas fa-edit"></i>
+</a>
+                            <button class="btn btn-outline-danger btn-sm"
+                                    title="Delete"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal{{ exam.pk }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        No exams found. <a href="{% url 'student_management:exam_add' %}">Create your first exam.</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer: count + pagination -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 gap-2">
+        <span class="text-muted small" id="rowCountLabel"></span>
+        <nav id="paginationNav" aria-label="Exams pagination"></nav>
+    </div>
+
 </div>
 
-<!-- View Modals -->
+<!-- ── View Modals ── -->
 {% for exam in exams %}
 <div class="modal fade" id="viewModal{{ exam.pk }}" tabindex="-1">
     <div class="modal-dialog">
@@ -170,7 +182,11 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0">
+            <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                <a href="{% url 'student_management:exam_download_pdf' exam.pk %}"
+                   class="btn btn-success btn-sm" target="_blank">
+                    <i class="fas fa-file-pdf me-1"></i> Download Question Paper
+                </a>
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -178,7 +194,7 @@
 </div>
 {% endfor %}
 
-<!-- Delete Modals -->
+<!-- ── Delete Modals ── -->
 {% for exam in exams %}
 <div class="modal fade" id="deleteModal{{ exam.pk }}" tabindex="-1">
     <div class="modal-dialog modal-sm">
@@ -208,4 +224,177 @@
 </div>
 {% endfor %}
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput    = document.getElementById("searchInput");
+    const statusFilter   = document.getElementById("statusFilter");
+    const pageSizeSelect = document.getElementById("pageSizeSelect");
+    const applyFilterBtn = document.getElementById("applyFilterBtn");
+    const clearFiltersBtn= document.getElementById("clearFiltersBtn");
+    const tableBody      = document.getElementById("examsTableBody");
+    const filterBadge    = document.getElementById("filterBadge");
+    const filterBadgeText= document.getElementById("filterBadgeText");
+    const rowCountLabel  = document.getElementById("rowCountLabel");
+    const paginationNav  = document.getElementById("paginationNav");
+
+    if (!tableBody) return;
+
+    let currentPage  = 1;
+    let pageSize     = parseInt(pageSizeSelect.value);
+    let activeSearch = "";
+    let activeStatus = "";
+
+    const allRows = Array.from(tableBody.querySelectorAll("tr[data-title]"));
+
+    function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+    function escapeHtml(s)  { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+    function highlightCell(cell, term) {
+        if (!cell) return;
+        const original = cell.getAttribute("data-original") || cell.textContent;
+        cell.setAttribute("data-original", original);
+        if (!term) { cell.innerHTML = original; return; }
+        const rx = new RegExp(`(${escapeRegex(term)})`, "gi");
+        cell.innerHTML = original.replace(rx, '<mark class="bg-warning px-0">$1</mark>');
+    }
+
+    function resetHighlights() {
+        allRows.forEach(row => {
+            [2].forEach(n => {
+                const cell = row.querySelector(`td:nth-child(${n})`);
+                if (cell && cell.hasAttribute("data-original"))
+                    cell.innerHTML = cell.getAttribute("data-original");
+            });
+        });
+    }
+
+    function getFiltered() {
+        return allRows.filter(row => {
+            const title    = row.dataset.title    || "";
+            const examtype = row.dataset.examtype || "";
+            const status   = row.dataset.status   || "";
+
+            const okSearch = !activeSearch || title.includes(activeSearch) || examtype.includes(activeSearch);
+            const okStatus = !activeStatus || status === activeStatus;
+            return okSearch && okStatus;
+        });
+    }
+
+    function updateBadge() {
+        const parts = [];
+        if (activeSearch) parts.push(`Search: "${escapeHtml(activeSearch)}"`);
+        if (activeStatus) parts.push(`Status: ${activeStatus === "active" ? "Active" : "Inactive"}`);
+
+        if (parts.length) {
+            filterBadgeText.innerHTML = `<i class="fas fa-filter me-1"></i>${parts.join(" · ")}`;
+            filterBadge.classList.remove("d-none");
+        } else {
+            filterBadge.classList.add("d-none");
+        }
+    }
+
+    function renderPagination(total) {
+        paginationNav.innerHTML = "";
+        const totalPages = Math.ceil(total / pageSize);
+        if (totalPages <= 1) return;
+
+        const ul = document.createElement("ul");
+        ul.className = "pagination pagination-sm mb-0";
+
+        function mkItem(label, page, disabled, active) {
+            const li = document.createElement("li");
+            li.className = `page-item${disabled ? " disabled" : ""}${active ? " active" : ""}`;
+            const a = document.createElement("a");
+            a.className = "page-link";
+            a.href = "#";
+            a.innerHTML = label;
+            if (!disabled && !active)
+                a.addEventListener("click", e => { e.preventDefault(); currentPage = page; render(); });
+            li.appendChild(a);
+            return li;
+        }
+
+        ul.appendChild(mkItem("&laquo;", currentPage - 1, currentPage === 1, false));
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+                ul.appendChild(mkItem(i, i, false, i === currentPage));
+            } else if (Math.abs(i - currentPage) === 2) {
+                const li = document.createElement("li");
+                li.className = "page-item disabled";
+                li.innerHTML = '<span class="page-link">…</span>';
+                ul.appendChild(li);
+            }
+        }
+        ul.appendChild(mkItem("&raquo;", currentPage + 1, currentPage === totalPages, false));
+        paginationNav.appendChild(ul);
+    }
+
+    function render() {
+        resetHighlights();
+        const filtered   = getFiltered();
+        const total      = filtered.length;
+        const totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const start = (currentPage - 1) * pageSize;
+        const end   = start + pageSize;
+
+        const old = document.getElementById("noResultRow");
+        if (old) old.remove();
+
+        allRows.forEach(row => { row.style.display = "none"; });
+        filtered.forEach((row, i) => {
+            if (i >= start && i < end) {
+                row.style.display = "";
+                if (activeSearch)
+                    highlightCell(row.querySelector("td:nth-child(2)"), activeSearch);
+            }
+        });
+
+        if (total === 0) {
+            const tr = document.createElement("tr");
+            tr.id = "noResultRow";
+            tr.innerHTML = `<td colspan="8" class="text-center py-5 text-muted">
+                <i class="fas fa-search fa-2x mb-2 d-block opacity-25"></i>
+                No exams match the current filters.
+                <div class="small mt-1">Try adjusting your search or filters.</div>
+            </td>`;
+            tableBody.appendChild(tr);
+        }
+
+        rowCountLabel.textContent = total > 0
+            ? `${start + 1}–${Math.min(end, total)} of ${total} exams`
+            : "";
+
+        updateBadge();
+        renderPagination(total);
+    }
+
+    applyFilterBtn.addEventListener("click", () => {
+        activeSearch = searchInput.value.toLowerCase().trim();
+        activeStatus = statusFilter.value;
+        currentPage  = 1;
+        render();
+    });
+
+    searchInput.addEventListener("keydown", e => { if (e.key === "Enter") applyFilterBtn.click(); });
+
+    clearFiltersBtn.addEventListener("click", () => {
+        searchInput.value = statusFilter.value = "";
+        activeSearch = activeStatus = "";
+        currentPage  = 1;
+        render();
+    });
+
+    pageSizeSelect.addEventListener("change", () => {
+        pageSize    = parseInt(pageSizeSelect.value);
+        currentPage = 1;
+        render();
+    });
+
+    render();
+});
+</script>
 {% endblock %}

@@ -220,7 +220,11 @@
     <h1 class="page-title">My Profile</h1>
     <p class="page-subtitle">Account details and payment history</p>
   </div>
-  <div class="page-header-actions">
+  <div class="page-header-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'student_portal:plan_list' %}" class="sd-btn-edit"
+       style="background:#059669;">
+      <i class="ti ti-layout-grid"></i> View Plans
+    </a>
     <a href="{% url 'student_portal:student_update' %}" class="sd-btn-edit">
       <i class="ti ti-edit"></i> Edit Profile
     </a>

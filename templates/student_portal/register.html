@@ -242,7 +242,7 @@
             margin-bottom: 28px;
         }
 
-        /* Two-column grid for name fields */
+        /* Two-column grid */
         .field-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -506,6 +506,11 @@
                                 <i class="fas fa-envelope field-icon"></i>
                                 {{ field }}
                             </div>
+                        {% elif field.html_name == 'phone_number' %}
+                            <div class="field-shell">
+                                <i class="fas fa-phone field-icon"></i>
+                                {{ field }}
+                            </div>
                         {% else %}
                             <div class="field-shell">
                                 <i class="fas fa-user field-icon"></i>
@@ -578,7 +583,6 @@ function togglePassword(fieldId) {
         targetY = (e.clientY / h - 0.5) * 30;
     });
 
-    /* ── Orbs: bumped alpha so they show on near-white bg ── */
     const orbs = [
         { rx: 0.18, ry: 0.28, radius: 340, color: "37,99,235",   speed: 0.00028 },
         { rx: 0.82, ry: 0.62, radius: 380, color: "99,102,241",  speed: 0.00022 },
@@ -588,29 +592,22 @@ function togglePassword(fieldId) {
 
     function drawOrbs(t) {
         ctx.save();
-        /* "screen" blending keeps orbs visible yet never muddy */
         ctx.globalCompositeOperation = "multiply";
-
         orbs.forEach((orb, i) => {
             const x = w * orb.rx + Math.sin(t * orb.speed + i * 1.8) * 90 + mouseX * 0.45;
             const y = h * orb.ry + Math.cos(t * orb.speed + i * 1.8) * 70 + mouseY * 0.45;
-
             const g = ctx.createRadialGradient(x, y, 0, x, y, orb.radius);
-            /* alpha 0.18 → clearly visible on white, not overwhelming */
             g.addColorStop(0, `rgba(${orb.color},0.18)`);
             g.addColorStop(0.5, `rgba(${orb.color},0.07)`);
             g.addColorStop(1, `rgba(${orb.color},0)`);
-
             ctx.fillStyle = g;
             ctx.beginPath();
             ctx.arc(x, y, orb.radius, 0, Math.PI * 2);
             ctx.fill();
         });
-
         ctx.restore();
     }
 
-    /* ── Dot grid: slightly more visible than before ── */
     function drawGrid(t) {
         const gap = 38;
         ctx.save();
@@ -618,7 +615,6 @@ function togglePassword(fieldId) {
             for (let y = 0; y < h; y += gap) {
                 const pulse = Math.sin(t * 0.0009 + x * 0.028 + y * 0.028);
                 const size  = 1.2 + pulse * 0.7;
-                /* alternate between two blues for a subtle two-tone grid */
                 const alpha = 0.10 + pulse * 0.04;
                 ctx.fillStyle = `rgba(37,99,235,${alpha})`;
                 ctx.beginPath();
@@ -633,13 +629,11 @@ function togglePassword(fieldId) {
         ctx.restore();
     }
 
-    /* ── Soft flowing lines across the right panel ── */
     function drawWaves(t) {
         ctx.save();
         ctx.globalAlpha = 0.045;
         ctx.strokeStyle = "#2563eb";
         ctx.lineWidth   = 1.2;
-
         const count = 6;
         for (let i = 0; i < count; i++) {
             const yBase = (h / (count - 1)) * i;
@@ -658,13 +652,10 @@ function togglePassword(fieldId) {
     function animate(t) {
         mouseX += (targetX - mouseX) * 0.05;
         mouseY += (targetY - mouseY) * 0.05;
-
         ctx.clearRect(0, 0, w, h);
-
         drawOrbs(t);
         drawGrid(t);
         drawWaves(t);
-
         requestAnimationFrame(animate);
     }
 

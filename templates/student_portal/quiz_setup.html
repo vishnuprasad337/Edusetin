@@ -757,18 +757,22 @@ function qsBuildTopicGrid(){
         card.id = 'qsTC_' + sm.id;
 
         card.innerHTML = `
-            ${locked ? `<div class="qs-lock-badge"><i class="ti ti-lock"></i> Locked</div>` : ''}
-            <div class="qs-topic-icon-wrap" id="qsTIW_${sm.id}"
-                 style="background:${pal.bg};border-color:${pal.bd};">
-                <i class="ti ${icon}" style="font-size:26px;color:${locked ? '#94a3b8' : pal.ic};"></i>
-                <span class="qs-topic-check" id="qsTCk_${sm.id}"
-                      style="background:${pal.ck};">
-                    <i class="ti ti-check" style="font-size:9px;"></i>
-                </span>
-            </div>
-            <div class="qs-topic-name" style="${locked ? 'color:#94a3b8;' : ''}">${sm.name}</div>
-            <div class="qs-topic-qty">${sm.question_count != null ? sm.question_count + ' questions' : ''}</div>`;
-
+    ${locked ? `<div class="qs-lock-badge"><i class="ti ti-lock"></i> Locked</div>` : ''}
+    <div class="qs-topic-icon-wrap" id="qsTIW_${sm.id}"
+         style="background:${pal.bg};border-color:${pal.bd};overflow:hidden;">
+        ${sm.image
+            ? `<img src="${sm.image}" alt="${sm.name}"
+                    style="width:100%;height:100%;object-fit:cover;border-radius:50%;
+                           ${locked ? 'filter:grayscale(1);opacity:0.5;' : ''}">`
+            : `<i class="ti ${icon}" style="font-size:26px;color:${locked ? '#94a3b8' : pal.ic};"></i>`
+        }
+        <span class="qs-topic-check" id="qsTCk_${sm.id}"
+              style="background:${pal.ck};">
+            <i class="ti ti-check" style="font-size:9px;"></i>
+        </span>
+    </div>
+    <div class="qs-topic-name" style="${locked ? 'color:#94a3b8;' : ''}">${sm.name}</div>
+    <div class="qs-topic-qty">${sm.question_count != null ? sm.question_count + ' questions' : ''}</div>`;
         card.addEventListener('click', () => {
             /* ── LOCKED: show toast, do nothing else ── */
             if(locked){

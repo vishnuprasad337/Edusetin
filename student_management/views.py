@@ -216,10 +216,23 @@ def student_management_dashboard(request):
 # STUDENTS
 # ─────────────────────────────────────────────
 
+from student_management.models import SubscriptionPlan, Payment
+
 @admin_login_required
 def student_list(request):
     students = Student.objects.select_related('user').order_by('-created_at')
-    return render(request, 'student_management/student_list.html', {'students': students})
+    now = timezone.now()
+    for student in students:
+        student.active_plan = student.payments.filter(
+            status=Payment.STATUS_SUCCESS,
+            expires_at__gt=now,
+        ).select_related('plan').order_by('-expires_at').first()
+
+    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('name')
+    return render(request, 'student_management/student_list.html', {
+        'students': students,
+        'plans': plans,
+    })
 
 
 @admin_login_required
@@ -347,24 +360,24 @@ def subject_create(request):
 
 
 @admin_login_required
-def subject_edit(request, id):
-    subject = get_object_or_404(Subject, id=id)
+def subject_edit(request, name):
+    subject = get_object_or_404(Subject, name=name)
 
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
+        new_name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         is_active = request.POST.get('is_active') == 'on'
         image = request.FILES.get('image')
 
-        if not name:
+        if not new_name:
             messages.error(request, "Subject name is required.")
             return render(request, 'student_management/subject_edit.html', {'subject': subject})
 
-        if Subject.objects.filter(name__iexact=name).exclude(id=id).exists():
-            messages.error(request, f"Another subject with the name \"{name}\" already exists.")
+        if Subject.objects.filter(name__iexact=new_name).exclude(name=name).exists():
+            messages.error(request, f"Another subject with the name \"{new_name}\" already exists.")
             return render(request, 'student_management/subject_edit.html', {'subject': subject})
 
-        subject.name = name
+        subject.name = new_name
         subject.description = description or None
         subject.is_active = is_active
         if image:
@@ -374,7 +387,6 @@ def subject_edit(request, id):
         return redirect('student_management:subject_list')
 
     return render(request, 'student_management/subject_edit.html', {'subject': subject})
-
 
 @admin_login_required
 def subject_activate(request, id):
@@ -1950,8 +1962,8 @@ def exam_add(request):
 
 
 @admin_login_required
-def exam_edit(request, pk):
-    exam = get_object_or_404(Exam, pk=pk)
+def exam_edit(request, title):
+    exam = get_object_or_404(Exam, title = title)
     form = ExamForm(request.POST or None, request.FILES or None, instance=exam)
     if request.method == 'POST' and form.is_valid():
         form.save()
@@ -2304,15 +2316,14 @@ def plan_create(request):
 
 
 @admin_login_required
-def plan_update(request, pk):
-    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+def plan_update(request, name):
+    plan = get_object_or_404(SubscriptionPlan, name=name)
     form = SubscriptionPlanForm(request.POST or None, instance=plan)
     if form.is_valid():
         plan = form.save()
         messages.success(request, f'Plan "{plan.name}" updated successfully.')
         return redirect("student_management:plan_list")
     return render(request, "student_management/plan_form.html", {"form": form, "title": "Edit Plan", "plan": plan})
-
 
 @admin_login_required
 def plan_delete(request, pk):
@@ -2479,3 +2490,515 @@ def payment_delete(request, id):
         messages.success(request, "Payment record deleted successfully.")
         return redirect('student_management:payment_list')
     return redirect('student_management:payment_detail', id=payment.id)
+
+
+import openpyxl
+from django.http import HttpResponse
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl import Workbook
+from django.db.models import Q
+
+@admin_login_required
+def student_export_excel(request):
+    now      = timezone.now()
+    students = Student.objects.select_related('user').order_by('-created_at')
+ 
+    # ── apply the same filters the frontend sent ──────────────────────────
+    search = request.GET.get('search', '').strip().lower()
+    plan   = request.GET.get('plan',   '').strip()
+    status = request.GET.get('status', '').strip()   # 'yes' | 'no' | ''
+ 
+    if search:
+        students = students.filter(
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)  |
+            Q(user__email__icontains=search)
+        )
+ 
+    if status == 'yes':
+        students = students.filter(is_active=True)
+    elif status == 'no':
+        students = students.filter(is_active=False)
+ 
+    # plan filter applied after fetching active_plan per student (see loop below)
+    filter_by_plan    = plan and plan != 'no_plan'
+    filter_no_plan    = plan == 'no_plan'
+ 
+    # ── build workbook ────────────────────────────────────────────────────
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Students"
+ 
+    headers = ["ID", "Full Name", "Email", "Phone", "Active", "Date Joined", "Plan", "Expires At"]
+    for col, h in enumerate(headers, 1):
+        c = ws.cell(row=1, column=col, value=h)
+        c.font      = Font(bold=True, color="FFFFFF")
+        c.fill      = PatternFill("solid", start_color="2563EB")
+        c.alignment = Alignment(horizontal="center")
+ 
+    row_idx = 2
+    for student in students:
+        active_plan = student.payments.filter(
+            status=Payment.STATUS_SUCCESS,
+            expires_at__gt=now,
+        ).select_related('plan').order_by('-expires_at').first()
+ 
+        # apply plan filter here (needs active_plan resolved first)
+        if filter_no_plan and active_plan:
+            continue
+        if filter_by_plan and (not active_plan or str(active_plan.plan.id) != plan):
+            continue
+ 
+        ws.append([
+            student.id,
+            student.full_name,
+            student.user.email,
+            student.phone_number or "—",
+            "Yes" if student.is_active else "No",
+            student.created_at.strftime("%b %d, %Y"),
+            active_plan.plan.name if active_plan else "—",
+            active_plan.expires_at.strftime("%b %d, %Y") if active_plan else "—",
+        ])
+        row_idx += 1
+ 
+    # ── auto-size columns ─────────────────────────────────────────────────
+    for col in ws.columns:
+        max_len = max((len(str(cell.value or "")) for cell in col), default=0)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+ 
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="students_export.xlsx"'
+    wb.save(response)
+    return response
+
+admin_login_required
+def question_export_excel(request):
+    questions = (
+        Question.objects
+        .select_related('subject', 'submodule')
+        .order_by('-created_at')
+    )
+ 
+    # ── apply the same filters the frontend sends ─────────────────────────
+    subject_id   = request.GET.get('subject',   '').strip()
+    submodule_id = request.GET.get('submodule', '').strip()
+    source       = request.GET.get('source',    '').strip()
+    year         = request.GET.get('year',      '').strip()
+ 
+    if subject_id:
+        questions = questions.filter(subject_id=subject_id)
+    if submodule_id:
+        questions = questions.filter(submodule_id=submodule_id)
+    if source:
+        questions = questions.filter(source=source)
+    if year:
+        questions = questions.filter(year=year)
+ 
+    # ── build workbook ────────────────────────────────────────────────────
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Questions"
+ 
+    headers = ["ID", "Subject", "Submodule", "Question Text", "Source", "Year", "Status"]
+    for col, h in enumerate(headers, 1):
+        c = ws.cell(row=1, column=col, value=h)
+        c.font      = Font(bold=True, color="FFFFFF")
+        c.fill      = PatternFill("solid", start_color="2563EB")
+        c.alignment = Alignment(horizontal="center")
+ 
+    for q in questions:
+        ws.append([
+            q.id,
+            q.subject.name      if q.subject   else "—",
+            q.submodule.name    if q.submodule else "—",
+            q.question_text,
+            q.source            or "—",
+            q.year              or "—",
+            "Active"            if q.is_active else "Inactive",
+        ])
+ 
+    # ── auto-size columns ─────────────────────────────────────────────────
+    for col in ws.columns:
+        max_len = max((len(str(cell.value or "")) for cell in col), default=0)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 60)
+ 
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="questions_export.xlsx"'
+    wb.save(response)
+    return response
+ 
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+from .decorators import admin_login_required
+from .models import Exam
+import os
+
+
+@admin_login_required
+def exam_download_pdf(request, pk):
+    exam = get_object_or_404(
+        Exam.objects.select_related('exam_type')
+                    .prefetch_related('subjects', 'submodules', 'selected_questions__subject'),
+        pk=pk
+    )
+    questions = exam.selected_questions.filter(is_active=True).select_related('subject', 'submodule')
+
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import cm
+        from reportlab.lib.colors import HexColor, black, white
+        from reportlab.platypus import (
+            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+            HRFlowable, Image, KeepTogether, PageBreak
+        )
+        from reportlab.pdfbase import pdfmetrics
+        from PIL import Image as PILImage
+        import io
+
+        buffer   = io.BytesIO()
+        page_w, page_h = A4
+
+        # ── Page template with footer ──────────────────────────────
+        def add_page_number(canvas, doc):
+            canvas.saveState()
+            canvas.setFont('Helvetica', 8)
+            canvas.setFillColor(HexColor('#6B7280'))
+            page_num = canvas.getPageNumber()
+            text = f"Page {page_num}  |  {exam.title}"
+            canvas.drawCentredString(page_w / 2, 1.2 * cm, text)
+            # footer line
+            canvas.setStrokeColor(HexColor('#D1D5DB'))
+            canvas.setLineWidth(0.5)
+            canvas.line(2 * cm, 1.5 * cm, page_w - 2 * cm, 1.5 * cm)
+            canvas.restoreState()
+
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=2 * cm,
+            leftMargin=2 * cm,
+            topMargin=2 * cm,
+            bottomMargin=2.2 * cm,
+        )
+
+        styles      = getSampleStyleSheet()
+        black_color = HexColor('#0F172A')
+        gray        = HexColor('#6B7280')
+        light_gray  = HexColor('#F9FAFB')
+        border_gray = HexColor('#D1D5DB')
+        dark_border = HexColor('#374151')
+
+        usable_width = page_w - 4 * cm
+
+        # ── Styles ─────────────────────────────────────────────────
+        inst_head_style = ParagraphStyle(
+            'InstHead', parent=styles['Normal'],
+            fontSize=9, fontName='Helvetica-Bold',
+            textColor=black_color, spaceAfter=3,
+        )
+        inst_style = ParagraphStyle(
+            'Inst', parent=styles['Normal'],
+            fontSize=9, fontName='Helvetica',
+            textColor=black_color, leading=14, spaceAfter=2,
+        )
+        q_style = ParagraphStyle(
+            'Question', parent=styles['Normal'],
+            fontSize=11, fontName='Helvetica',
+            textColor=black_color, leading=16,
+        )
+        opt_style = ParagraphStyle(
+            'Option', parent=styles['Normal'],
+            fontSize=10, fontName='Helvetica',
+            textColor=black_color, leading=15,
+        )
+        ak_head_style = ParagraphStyle(
+            'AKHead', parent=styles['Normal'],
+            fontSize=12, fontName='Helvetica-Bold',
+            textColor=black_color, spaceAfter=6, alignment=1,
+        )
+        ak_item_style = ParagraphStyle(
+            'AKItem', parent=styles['Normal'],
+            fontSize=9, fontName='Helvetica',
+            textColor=black_color, alignment=1,
+        )
+
+        story = []
+
+        # ══════════════════════════════════════════════════════════
+        # TRADITIONAL HEADER BOX
+        # ══════════════════════════════════════════════════════════
+        logo_path = None
+        for candidate in [
+            os.path.join(settings.BASE_DIR, 'static', 'student_portal', 'assets', 'img', 'edu.png'),
+            os.path.join(settings.BASE_DIR, 'student_portal', 'static', 'student_portal', 'assets', 'img', 'edu.png'),
+        ]:
+            if os.path.exists(candidate):
+                logo_path = candidate
+                break
+
+        # Organisation name / logo row
+        if logo_path:
+            with PILImage.open(logo_path) as pil_img:
+                orig_w, orig_h = pil_img.size
+            logo_h = 4 * cm
+            logo_w = logo_h * (orig_w / orig_h)
+            logo_img = Image(logo_path, width=logo_w, height=logo_h)
+            org_cell = logo_img
+        else:
+            org_cell = Paragraph(
+                "<b>ORGANISATION NAME</b>",
+                ParagraphStyle('Org', parent=styles['Normal'],
+                               fontSize=13, fontName='Helvetica-Bold',
+                               alignment=1, textColor=black_color),
+            )
+
+        # Exam title (centre)
+        exam_title_style = ParagraphStyle(
+            'ExamTitle', parent=styles['Normal'],
+            fontSize=15, fontName='Helvetica-Bold',
+            textColor=black_color, alignment=1, leading=20,
+        )
+        exam_sub_style = ParagraphStyle(
+            'ExamSub', parent=styles['Normal'],
+            fontSize=10, fontName='Helvetica',
+            textColor=black_color, alignment=1, leading=14,
+        )
+
+        # ── Top banner: [logo] [EXAM TITLE] [blank for roll no] ───
+        roll_no_cell = Paragraph(
+            "Roll No.: _______________",
+            ParagraphStyle('Roll', parent=styles['Normal'],
+                           fontSize=9, fontName='Helvetica',
+                           textColor=black_color, alignment=2),
+        )
+
+        top_row = Table(
+            [[org_cell,
+              [Paragraph(exam.title, exam_title_style),
+               Paragraph(exam.custom_name or '', exam_sub_style)],
+              roll_no_cell]],
+            colWidths=[3.5 * cm, usable_width - 7 * cm, 3.5 * cm],
+        )
+        top_row.setStyle(TableStyle([
+            ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN',         (0, 0), (0, 0),   'LEFT'),
+            ('ALIGN',         (1, 0), (1, 0),   'CENTER'),
+            ('ALIGN',         (2, 0), (2, 0),   'RIGHT'),
+            ('TOPPADDING',    (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING',  (0, 0), (-1, -1), 6),
+            ('BOX',           (0, 0), (-1, -1), 1.5, black_color),
+        ]))
+        story.append(top_row)
+
+        # ── Info row: Time | Marks | Subject etc. ─────────────────
+        info_parts = []
+        if exam.exam_type:
+            info_parts.append(f"Exam Type: {exam.exam_type.name}")
+        info_parts.append(f"Time Allowed: {exam.duration_minutes} Minutes")
+        info_parts.append(f"Total Questions: {exam.total_questions}")
+        total_marks = float(exam.marks_per_question) * int(exam.total_questions)
+        info_parts.append(f"Maximum Marks: {total_marks:.0f}")
+        if exam.negative_marks:
+            info_parts.append(f"Negative Marking: {exam.negative_marks}")
+
+        info_cell_style = ParagraphStyle(
+            'InfoCell', parent=styles['Normal'],
+            fontSize=9, fontName='Helvetica-Bold',
+            textColor=black_color, alignment=1, leading=13,
+        )
+
+        info_data   = [[Paragraph(p, info_cell_style) for p in info_parts]]
+        col_w_info  = usable_width / len(info_parts)
+        info_table  = Table(info_data, colWidths=[col_w_info] * len(info_parts))
+        info_table.setStyle(TableStyle([
+            ('BOX',           (0, 0), (-1, -1), 1.5, black_color),
+            ('INNERGRID',     (0, 0), (-1, -1), 0.5, black_color),
+            ('TOPPADDING',    (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(info_table)
+
+        # ── General Instructions ───────────────────────────────────
+        story.append(Spacer(1, 0.3 * cm))
+        instructions = [
+            "1. All questions are compulsory.",
+            f"2. Each question carries {exam.marks_per_question} mark(s).",
+        ]
+        if exam.negative_marks:
+            instructions.append(f"3. There is a negative marking of {exam.negative_marks} mark(s) for each wrong answer.")
+        instructions.append(f"{'3' if not exam.negative_marks else '4'}. Do not write anything on the question paper except Roll No.")
+        instructions.append(f"{'4' if not exam.negative_marks else '5'}. Use of calculator / mobile phone is not permitted.")
+
+        instr_items = [[Paragraph("General Instructions:", inst_head_style)]]
+        for line in instructions:
+            instr_items.append([Paragraph(line, inst_style)])
+
+        instr_table = Table(instr_items, colWidths=[usable_width])
+        instr_table.setStyle(TableStyle([
+            ('BOX',           (0, 0), (-1, -1), 0.8, black_color),
+            ('BACKGROUND',    (0, 0), (-1, -1), light_gray),
+            ('TOPPADDING',    (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING',  (0, 0), (-1, -1), 8),
+        ]))
+        story.append(instr_table)
+        story.append(Spacer(1, 0.4 * cm))
+
+        # ── Section heading ────────────────────────────────────────
+        section_style = ParagraphStyle(
+            'Section', parent=styles['Normal'],
+            fontSize=10, fontName='Helvetica-Bold',
+            textColor=black_color, alignment=1,
+        )
+        marks_note_style = ParagraphStyle(
+            'MarksNote', parent=styles['Normal'],
+            fontSize=9, fontName='Helvetica',
+            textColor=black_color, alignment=2,
+        )
+
+        section_data = [[
+            Paragraph("SECTION — A (Multiple Choice Questions)", section_style),
+            Paragraph(f"[{exam.marks_per_question} Mark each]", marks_note_style),
+        ]]
+        section_table = Table(section_data, colWidths=[usable_width * 0.72, usable_width * 0.28])
+        section_table.setStyle(TableStyle([
+            ('LINEABOVE',     (0, 0), (-1, 0), 1, black_color),
+            ('LINEBELOW',     (0, 0), (-1, 0), 1, black_color),
+            ('TOPPADDING',    (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING',  (0, 0), (-1, -1), 0),
+            ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(section_table)
+        story.append(Spacer(1, 0.3 * cm))
+
+        # ══════════════════════════════════════════════════════════
+        # QUESTIONS  — classic newspaper column style
+        # ══════════════════════════════════════════════════════════
+        options_map = [
+            ('a', 'option_a'), ('b', 'option_b'),
+            ('c', 'option_c'), ('d', 'option_d'), ('e', 'option_e'),
+        ]
+
+        for idx, q in enumerate(questions, 1):
+            block = []
+
+            # Question line
+            q_row = Table(
+                [[Paragraph(f"<b>{idx}.</b>", q_style),
+                  Paragraph(q.question_text, q_style)]],
+                colWidths=[0.7 * cm, usable_width - 0.7 * cm],
+            )
+            q_row.setStyle(TableStyle([
+                ('VALIGN',        (0, 0), (-1, -1), 'TOP'),
+                ('LEFTPADDING',   (0, 0), (-1, -1), 0),
+                ('RIGHTPADDING',  (0, 0), (-1, -1), 0),
+                ('TOPPADDING',    (0, 0), (-1, -1), 0),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            block.append(q_row)
+
+            # Options — 2 per row like real MCQ papers
+            opts = [(l, getattr(q, f, None)) for l, f in options_map if getattr(q, f, None)]
+            if opts:
+                opt_col_w = (usable_width - 0.7 * cm) / 2
+                opt_rows  = []
+                for i in range(0, len(opts), 2):
+                    row = []
+                    for letter, val in opts[i:i+2]:
+                        row.append(Paragraph(f"({letter})  {val}", opt_style))
+                    if len(row) == 1:
+                        row.append(Paragraph('', opt_style))
+                    opt_rows.append(row)
+
+                opt_table = Table(opt_rows, colWidths=[opt_col_w, opt_col_w])
+                opt_table.setStyle(TableStyle([
+                    ('LEFTPADDING',   (0, 0), (-1, -1), 20),
+                    ('RIGHTPADDING',  (0, 0), (-1, -1), 4),
+                    ('TOPPADDING',    (0, 0), (-1, -1), 1),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+                    ('VALIGN',        (0, 0), (-1, -1), 'TOP'),
+                ]))
+                block.append(opt_table)
+
+            block.append(Spacer(1, 0.3 * cm))
+            story.append(KeepTogether(block))
+
+        # ══════════════════════════════════════════════════════════
+        # ANSWER KEY (on a new page, traditional style)
+        # ══════════════════════════════════════════════════════════
+        story.append(PageBreak())
+
+        ak_title_tbl = Table(
+            [[Paragraph("ANSWER KEY", ak_head_style)]],
+            colWidths=[usable_width],
+        )
+        ak_title_tbl.setStyle(TableStyle([
+            ('BOX',           (0, 0), (-1, -1), 1.5, black_color),
+            ('BACKGROUND',    (0, 0), (-1, -1), HexColor('#F3F4F6')),
+            ('TOPPADDING',    (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        story.append(ak_title_tbl)
+        story.append(Spacer(1, 0.3 * cm))
+
+        answers  = [f"{i}. ({q.correct_answer})" for i, q in enumerate(questions, 1)]
+        row_size = 8
+        ak_rows  = []
+        for i in range(0, len(answers), row_size):
+            row = answers[i:i + row_size]
+            while len(row) < row_size:
+                row.append('')
+            ak_rows.append([Paragraph(a, ak_item_style) for a in row])
+
+        if ak_rows:
+            col_w    = usable_width / row_size
+            ak_table = Table(ak_rows, colWidths=[col_w] * row_size)
+            ak_table.setStyle(TableStyle([
+                ('BOX',           (0, 0), (-1, -1), 1, black_color),
+                ('INNERGRID',     (0, 0), (-1, -1), 0.4, border_gray),
+                ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+                ('TOPPADDING',    (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                ('FONTSIZE',      (0, 0), (-1, -1), 9),
+                ('ROWBACKGROUNDS', (0, 0), (-1, -1), [white, light_gray]),
+            ]))
+            story.append(ak_table)
+
+        # ── End mark ──────────────────────────────────────────────
+        story.append(Spacer(1, 0.5 * cm))
+        story.append(Paragraph(
+            "— End of Question Paper —",
+            ParagraphStyle('End', parent=styles['Normal'],
+                           fontSize=9, fontName='Helvetica',
+                           textColor=gray, alignment=1),
+        ))
+
+        doc.build(story, onFirstPage=add_page_number, onLaterPages=add_page_number)
+        buffer.seek(0)
+
+        safe_title = "".join(c if c.isalnum() or c in (' ', '-', '_') else '_' for c in exam.title).strip()
+        filename   = f"question_paper_{safe_title}.pdf"
+
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    except ImportError:
+        return HttpResponse(
+            "ReportLab is not installed. Run: pip install reportlab pillow",
+            status=500,
+        )

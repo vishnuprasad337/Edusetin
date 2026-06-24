@@ -10,6 +10,11 @@ class StudentRegistrationForm(forms.Form):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email address'})
     )
+    phone_number = forms.CharField(    
+        max_length=15,
+        required=True,                  
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your phone number'})
+    )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter a strong password'})
     )
@@ -22,7 +27,11 @@ class StudentRegistrationForm(forms.Form):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
         return email
-
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number')
+        if phone and not phone.isdigit():
+            raise forms.ValidationError("Phone number must contain only digits.")
+        return phone
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")

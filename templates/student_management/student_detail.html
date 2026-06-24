@@ -39,6 +39,10 @@
                             <span class="fw-medium">{{ student.user.email }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+    <span class="text-muted">Phone Number</span>
+    <span class="fw-medium">{{ student.phone_number|default:"—" }}</span>
+</li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span class="text-muted">Username</span>
                             <span class="fw-medium">{{ student.user.username }}</span>
                         </li>

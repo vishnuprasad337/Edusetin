@@ -68,7 +68,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 }
 .ds-wrap.ready { opacity:1; transform:translateY(0) }
 
-/* HERO */
+/* ── HERO ── */
 .ds-hero {
   position:relative;
   background:linear-gradient(120deg,#1246c8 0%,#1a56db 30%,#3b7ef8 60%,#5b8dee 85%,#1a56db 100%);
@@ -96,7 +96,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-hero-close { position:absolute; top:14px; right:14px; z-index:2; background:rgba(255,255,255,.12); border:none; cursor:pointer; color:rgba(255,255,255,.7); width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; transition:all .2s }
 .ds-hero-close:hover { background:rgba(255,255,255,.22); color:#fff }
 
-/* PAGE HEADER */
+/* ── PAGE HEADER ── */
 .ds-page-hd { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:30px; gap:16px; flex-wrap:wrap }
 .ds-page-title { font-family:var(--f-head); font-size:2.8rem; font-weight:700; color:var(--ink); letter-spacing:-.04em; line-height:1.15; margin-bottom:8px }
 .ds-page-sub { font-size:1.15rem; font-family:var(--f-body); color:var(--muted); font-weight:400 }
@@ -108,7 +108,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-btn.outline:hover { border-color:var(--blue); background:var(--blue-xl) }
 .ds-btn.sm { padding:10px 22px; font-size:1rem }
 
-/* STAT CARDS */
+/* ── STAT CARDS ── */
 .ds-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:32px }
 @media(max-width:900px){ .ds-stats { grid-template-columns:repeat(2,1fr) } }
 @media(max-width:480px){ .ds-stats { grid-template-columns:1fr } }
@@ -141,89 +141,168 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-stat.s-gold { background:linear-gradient(135deg,#fef9c3 0%,#fde68a 100%)!important; border-color:#fbbf24!important }
 [data-theme="dark"] .ds-stat.s-gold { background:linear-gradient(135deg,#292100 0%,#3d3000 100%)!important; border-color:#92400e!important }
 
-/* SECTION LABEL */
+/* ── SECTION LABEL ── */
 .ds-section-label { display:flex; align-items:center; gap:12px; margin-bottom:20px; font-family:var(--f-head); font-size:1.55rem; font-weight:700; color:var(--ink); letter-spacing:-.02em }
 .ds-section-label i { font-size:24px; color:var(--blue) }
 .ds-section-label::after { content:''; flex:1; height:1px; background:var(--border) }
 
-/* EXAM CARDS */
+/* ══════════════════════════════════════════════
+   EXAM CARDS — HORIZONTAL SCROLL ROW
+   Shows exactly 4 cards at desktop, rest scroll.
+   overflow:hidden on wrapper clips the fade gradient.
+   overflow-x:auto on grid handles the actual scroll.
+══════════════════════════════════════════════ */
 .ds-exam-outer { margin-bottom:32px }
-.ds-exam-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:26px; flex-wrap:wrap; gap:12px }
-.ds-exam-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 340px));
-  gap: 24px;
-  justify-content: center;
-  margin-left: 48px;
-  margin-right: auto;
+.ds-exam-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px }
+
+/* Outer wrapper — clips gradient, does NOT scroll */
+.ds-exam-scroll-wrap {
+  position: relative;
+  overflow: hidden;           /* clips the right-side fade */
 }
-@media(max-width:1100px){ .ds-exam-grid { grid-template-columns: repeat(2, minmax(0, 340px)); margin-left: 32px; } }
-@media(max-width:640px)  { .ds-exam-grid { grid-template-columns: minmax(0, 340px); margin-left: 16px; } }
+
+/* Fade-out gradient on the right edge */
+.ds-exam-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 100px;
+  height: calc(100% - 12px); /* don't cover the scrollbar area */
+  background: linear-gradient(to right, transparent, var(--paper));
+  pointer-events: none;
+  z-index: 2;
+}
+[data-theme="dark"] .ds-exam-scroll-wrap::after {
+  background: linear-gradient(to right, transparent, #060d1f);
+}
+
+/* The actual scrollable row */
+.ds-exam-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 12px;       /* room for the thin scrollbar */
+  padding-right: 100px;       /* room for the fade gradient */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  /* ── KEY: lock width to exactly 4 cards ──
+     4 × 300px cards  +  3 × 20px gaps  +  100px fade padding */
+  max-width: calc(4 * 300px + 3 * 20px + 100px);
+}
+.ds-exam-grid::-webkit-scrollbar { height: 5px; }
+.ds-exam-grid::-webkit-scrollbar-track { background: transparent; }
+.ds-exam-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* Each card — fixed width, never shrinks */
 .ds-exam-card {
-  background:#fff; border:1.5px solid #ebebeb; border-radius:20px;
-  overflow:hidden; display:flex; flex-direction:column;
-  box-shadow:0 2px 16px rgba(13,27,42,.07);
-  transition:transform .32s var(--ease),box-shadow .32s,border-color .25s;
-  cursor:pointer; position:relative; transform-style:preserve-3d; will-change:transform;
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  background: #fff;
+  border: 1.5px solid #ebebeb;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 16px rgba(13,27,42,.07);
+  transition: transform .28s var(--ease), box-shadow .28s, border-color .25s;
+  cursor: pointer;
+  position: relative;
+  will-change: transform;
 }
 [data-theme="dark"] .ds-exam-card { background:var(--card); border-color:var(--border) }
-.ds-exam-card:hover { box-shadow:0 28px 56px rgba(13,27,42,.14); border-color:#1a56db; }
-.ds-ec-thumb { position:relative; width:100%; height:230px; overflow:hidden; flex-shrink:0; background:#f5f5f5; }
+.ds-exam-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(13,27,42,.13);
+  border-color: #1a56db;
+}
+
+/* Responsive — step down visible cards on smaller screens */
+@media(max-width:1400px){
+  .ds-exam-grid { max-width: calc(3 * 300px + 2 * 20px + 100px); }
+}
+@media(max-width:1050px){
+  .ds-exam-grid { max-width: calc(2 * 300px + 1 * 20px + 100px); }
+}
+@media(max-width:768px){
+  .ds-exam-card { flex: 0 0 260px; }
+  .ds-exam-grid { max-width: calc(2 * 260px + 1 * 20px + 80px); padding-right: 80px; }
+}
+@media(max-width:480px){
+  .ds-exam-grid { max-width: 100%; padding-right: 60px; }
+}
+
+/* Thumb */
+.ds-ec-thumb { position:relative; width:100%; height:180px; overflow:hidden; flex-shrink:0; background:#f5f5f5; }
 .ds-ec-thumb-img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.25,.46,.45,.94) }
 .ds-exam-card:hover .ds-ec-thumb-img { transform:scale(1.06) }
-.ds-ec-thumb-placeholder { width:100%; height:100%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; transition:transform .5s cubic-bezier(.25,.46,.45,.94); }
-.ds-exam-card:hover .ds-ec-thumb-placeholder { transform:scale(1.04) }
-.ds-ec-thumb-placeholder .ph-icon { position:relative; z-index:2; width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,.22); border:2px solid rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.95); font-size:32px; }
-.ds-ec-thumb-placeholder .ph-subject-tag { position:absolute; left:16px; bottom:14px; z-index:2; font-family:var(--f-head); font-size:.82rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.85); }
-.ds-ec-thumb-canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:.22; pointer-events:none; }
-.ds-ec-status { position:absolute; top:14px; right:14px; z-index:3; font-size:.78rem; font-weight:600; font-family:var(--f-head); padding:6px 14px; border-radius:100px; letter-spacing:.03em; text-transform:uppercase; box-shadow:0 2px 8px rgba(0,0,0,.15); display:inline-flex; align-items:center; gap:5px; }
-.ds-ec-status i { font-size:12px }
+.ds-ec-thumb-placeholder { width:100%; height:100%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.ds-ec-thumb-placeholder .ph-icon { position:relative; z-index:2; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.22); border:2px solid rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.95); font-size:26px; }
+.ds-ec-thumb-placeholder .ph-subject-tag { position:absolute; left:14px; bottom:12px; z-index:2; font-family:var(--f-head); font-size:.78rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.85); }
+.ds-ec-thumb-canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+.ds-ec-status { position:absolute; top:12px; right:12px; z-index:3; font-size:.74rem; font-weight:600; font-family:var(--f-head); padding:5px 12px; border-radius:100px; letter-spacing:.03em; text-transform:uppercase; box-shadow:0 2px 8px rgba(0,0,0,.15); display:inline-flex; align-items:center; gap:5px; }
+.ds-ec-status i { font-size:11px }
 .ds-ec-status.new-s   { background:#059669; color:#fff }
 .ds-ec-status.live-s  { background:#d97706; color:#fff; animation:statusBlink 2s infinite }
 .ds-ec-status.done-s  { background:#1a56db; color:#fff }
 @keyframes statusBlink { 0%,100%{opacity:1} 50%{opacity:.6} }
-.ds-ec-body { padding:22px 24px 24px; display:flex; flex-direction:column; flex:1 }
-.ds-ec-row1 { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px }
-.ds-ec-instructor { display:flex; align-items:center; gap:10px; min-width:0 }
-.ds-ec-av { width:34px; height:34px; border-radius:50%; border:2px solid #eee; flex-shrink:0; background:var(--blue-xl); overflow:hidden; display:flex; align-items:center; justify-content:center; color:var(--blue); font-size:17px; }
+
+/* Card body */
+.ds-ec-body { padding:18px 20px 20px; display:flex; flex-direction:column; flex:1 }
+.ds-ec-row1 { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px }
+.ds-ec-instructor { display:flex; align-items:center; gap:8px; min-width:0 }
+.ds-ec-av { width:30px; height:30px; border-radius:50%; border:2px solid #eee; flex-shrink:0; background:var(--blue-xl); overflow:hidden; display:flex; align-items:center; justify-content:center; color:var(--blue); font-size:14px; }
 .ds-ec-av img { width:100%; height:100%; object-fit:cover; border-radius:50% }
-.ds-ec-instr-name { font-size:.95rem; font-weight:500; font-family:var(--f-body); color:#555 }
+.ds-ec-instr-name { font-size:.88rem; font-weight:500; font-family:var(--f-body); color:#555 }
 [data-theme="dark"] .ds-ec-instr-name { color:var(--muted) }
-.ds-ec-cat { font-size:.85rem; font-weight:500; font-family:var(--f-head); color:#374151; background:#f3f4f6; border:1px solid #e5e7eb; padding:5px 14px; border-radius:100px; white-space:nowrap; flex-shrink:0 }
+.ds-ec-cat { font-size:.78rem; font-weight:500; font-family:var(--f-head); color:#374151; background:#f3f4f6; border:1px solid #e5e7eb; padding:4px 11px; border-radius:100px; white-space:nowrap; flex-shrink:0 }
 [data-theme="dark"] .ds-ec-cat { background:rgba(255,255,255,.08); border-color:var(--border); color:var(--muted) }
-.ds-ec-title { font-family:var(--f-head); font-size:1.2rem; font-weight:700; color:#111; line-height:1.4; margin-bottom:12px; letter-spacing:-.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+.ds-ec-title { font-family:var(--f-head); font-size:1.05rem; font-weight:700; color:#111; line-height:1.4; margin-bottom:10px; letter-spacing:-.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
 [data-theme="dark"] .ds-ec-title { color:var(--ink) }
-.ds-ec-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px }
-.ds-ec-chip { display:inline-flex; align-items:center; gap:6px; font-size:.85rem; color:var(--muted); background:var(--paper); border:1px solid var(--border); padding:5px 13px; border-radius:100px; font-family:var(--f-body) }
-.ds-ec-chip i { font-size:13px }
-.ds-ec-arc-wrap { display:flex; align-items:center; gap:13px; background:var(--paper); border-radius:13px; padding:12px 16px; margin-bottom:16px }
-.ds-ec-arc-svg { width:50px; height:50px; flex-shrink:0 }
+.ds-ec-meta { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px }
+.ds-ec-chip { display:inline-flex; align-items:center; gap:5px; font-size:.78rem; color:var(--muted); background:var(--paper); border:1px solid var(--border); padding:4px 10px; border-radius:100px; font-family:var(--f-body) }
+.ds-ec-chip i { font-size:12px }
+.ds-ec-arc-wrap { display:flex; align-items:center; gap:10px; background:var(--paper); border-radius:11px; padding:10px 13px; margin-bottom:12px }
+.ds-ec-arc-svg { width:44px; height:44px; flex-shrink:0 }
 .ds-ec-arc-track { fill:none; stroke:var(--border); stroke-width:4.5; stroke-linecap:round }
 .ds-ec-arc-fill  { fill:none; stroke-width:4.5; stroke-linecap:round; stroke-dasharray:94; stroke-dashoffset:94; transition:stroke-dashoffset 1s var(--ease) .2s }
-.ds-ec-arc-pct   { font-family:var(--f-mono); font-size:18px; font-weight:500; color:var(--ink); line-height:1 }
-.ds-ec-arc-sub   { font-size:.82rem; font-family:var(--f-body); color:var(--muted); margin-top:4px }
-.ds-ec-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; padding-top:16px; border-top:1px solid #f0f0f0 }
+.ds-ec-arc-pct   { font-family:var(--f-mono); font-size:16px; font-weight:500; color:var(--ink); line-height:1 }
+.ds-ec-arc-sub   { font-size:.75rem; font-family:var(--f-body); color:var(--muted); margin-top:3px }
+.ds-ec-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; padding-top:14px; border-top:1px solid #f0f0f0 }
 [data-theme="dark"] .ds-ec-footer { border-top-color:var(--border) }
-.ds-ec-price { font-family:var(--f-head); font-size:1.45rem; font-weight:800; color:#e63946; display:flex; align-items:center; gap:8px }
-.ds-ec-price .orig { font-size:.92rem; font-weight:400; color:#aaa; text-decoration:line-through }
-.ds-ec-cta { display:inline-flex; align-items:center; gap:8px; padding:13px 26px; border-radius:100px; background:#0d1b2a; color:#fff; font-size:.95rem; font-weight:600; font-family:var(--f-head); border:none; cursor:pointer; text-decoration:none; white-space:nowrap; flex-shrink:0; transition:all .22s var(--ease); box-shadow:0 3px 10px rgba(13,27,42,.18) }
+.ds-ec-price { font-family:var(--f-head); font-size:1.25rem; font-weight:800; color:#e63946; display:flex; align-items:center; gap:6px }
+.ds-ec-price .orig { font-size:.85rem; font-weight:400; color:#aaa; text-decoration:line-through }
+.ds-ec-cta { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius:100px; background:#0d1b2a; color:#fff; font-size:.88rem; font-weight:600; font-family:var(--f-head); border:none; cursor:pointer; text-decoration:none; white-space:nowrap; flex-shrink:0; transition:all .22s var(--ease); box-shadow:0 3px 10px rgba(13,27,42,.18) }
 .ds-ec-cta:hover { background:var(--blue); transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,86,219,.38) }
-.ds-ec-cta i { font-size:15px; transition:transform .2s var(--ease) }
+.ds-ec-cta i { font-size:14px; transition:transform .2s var(--ease) }
 .ds-ec-cta:hover i { transform:translateX(3px) }
 
-/* ══════════════════════════════════════════════════
-   FLIP QUIZ CARDS — FIXED
-   Key fixes:
-   1. .ds-fc-wrap gets transform-style:preserve-3d
-   2. .ds-fc-inner is the actual rotating element (present in HTML)
-   3. -webkit- prefixes on all 3D properties
-   4. overflow:hidden REMOVED from faces (breaks 3D in Chrome/Safari)
-   5. Subject image shown at top of front face
-   6. pointer-events disabled on the hidden face so clicks on the
-      visible back face's CTA always navigate instead of re-flipping
-═══════════════════════════════════════════════════ */
-.ds-suggest-outer { margin-bottom:32px }
+/* Scroll dot indicators */
+.ds-exam-dots {
+  display: none; /* JS shows this only when needed */
+  gap: 6px;
+  justify-content: center;
+  margin-top: 14px;
+}
+.ds-exam-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background .2s, transform .2s;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+.ds-exam-dot.active {
+  background: var(--blue);
+  transform: scale(1.3);
+}
 
+/* ── FLIP QUIZ CARDS ── */
+.ds-suggest-outer { margin-bottom:32px }
 .ds-sg-flip-grid {
   display:grid;
   grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
@@ -233,7 +312,6 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-sg-flip-grid.sg-count-2 { grid-template-columns:repeat(2,minmax(260px,380px)); justify-content:center }
 @media(max-width:640px){ .ds-sg-flip-grid { grid-template-columns:1fr !important } }
 
-/* ── perspective wrapper ── */
 .ds-fc-wrap {
   height:240px;
   perspective:1100px;
@@ -255,22 +333,9 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
   transform:rotateY(180deg);
   -webkit-transform:rotateY(180deg);
 }
+.ds-fc-wrap.flipped .ds-fc-front { pointer-events:none; }
+.ds-fc-wrap:not(.flipped) .ds-fc-back { pointer-events:none; }
 
-/* ── FIX: prevent the hidden face from intercepting clicks.
-   backface-visibility:hidden hides a face visually but isn't
-   guaranteed to remove it from hit-testing in every browser,
-   especially when the face has its own animated/composited
-   background (the conic-gradient sweep below). Without this,
-   clicking the back face's CTA can land on the invisible front
-   face instead and just re-trigger the flip. ── */
-.ds-fc-wrap.flipped .ds-fc-front {
-  pointer-events: none;
-}
-.ds-fc-wrap:not(.flipped) .ds-fc-back {
-  pointer-events: none;
-}
-
-/* ── FRONT: full-bleed image/canvas background with text overlay ── */
 .ds-fc-front {
   position:absolute; inset:0;
   backface-visibility:hidden;
@@ -280,8 +345,6 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
   overflow:hidden;
   display:flex; flex-direction:column;
 }
-
-/* animated border on front */
 @property --fc-sweep { syntax:'<angle>'; inherits:false; initial-value:0deg }
 .ds-fc-front {
   background:
@@ -296,88 +359,24 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 @keyframes fcSweepAnim { to { --fc-sweep:360deg } }
 .ds-fc-wrap.flipped .ds-fc-front { animation-play-state:paused; }
 
-/* full-bleed background layer (image OR canvas) */
-.ds-fc-bg {
-  position:absolute; inset:2px;
-  border-radius:18px;
-  overflow:hidden;
-  z-index:0;
-}
-.ds-fc-bg img {
-  width:100%; height:100%; object-fit:cover; display:block;
-  transition:transform .5s ease;
-}
+.ds-fc-bg { position:absolute; inset:2px; border-radius:18px; overflow:hidden; z-index:0; }
+.ds-fc-bg img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
 .ds-fc-wrap:hover .ds-fc-bg img { transform:scale(1.06); }
-.ds-fc-bg canvas.fc-canvas {
-  position:absolute; inset:0; width:100%; height:100%; display:block;
-}
-.ds-fc-bg .fc-icon-wrap {
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:2;
-}
-.ds-fc-bg .fc-subj-icon {
-  font-size:52px; color:rgba(255,255,255,.9);
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));
-  transition:transform .35s var(--ease);
-}
+.ds-fc-bg canvas.fc-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+.ds-fc-bg .fc-icon-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:2; }
+.ds-fc-bg .fc-subj-icon { font-size:52px; color:rgba(255,255,255,.9); filter:drop-shadow(0 4px 12px rgba(0,0,0,.4)); transition:transform .35s var(--ease); }
 .ds-fc-wrap:hover .fc-subj-icon { transform:scale(1.12) rotate(-5deg); }
-
-/* dark scrim over image so text is readable */
-.ds-fc-scrim {
-  position:absolute; inset:2px; border-radius:18px; z-index:1;
-  background:linear-gradient(
-    to bottom,
-    rgba(0,0,0,.18) 0%,
-    rgba(0,0,0,.30) 40%,
-    rgba(0,0,0,.72) 100%
-  );
-}
-
-/* all front text content sits on top of image */
-.ds-fc-front-body {
-  position:relative; z-index:2;
-  margin:2px;
-  display:flex; flex-direction:column;
-  flex:1; padding:16px 18px 16px;
-  border-radius:18px;
-}
-
-/* subject name badge top-left */
-.ds-fc-subj-tag {
-  display:inline-flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3);
-  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  border-radius:100px; padding:4px 12px;
-  font-family:var(--f-head); font-size:.72rem; font-weight:700;
-  letter-spacing:.06em; text-transform:uppercase; color:#fff;
-  width:fit-content; margin-bottom:auto;
-}
+.ds-fc-scrim { position:absolute; inset:2px; border-radius:18px; z-index:1; background:linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(0,0,0,.30) 40%,rgba(0,0,0,.72) 100%); }
+.ds-fc-front-body { position:relative; z-index:2; margin:2px; display:flex; flex-direction:column; flex:1; padding:16px 18px 16px; border-radius:18px; }
+.ds-fc-subj-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); border-radius:100px; padding:4px 12px; font-family:var(--f-head); font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#fff; width:fit-content; margin-bottom:auto; }
 .ds-fc-subj-tag i { font-size:13px; }
-
-/* main title on image */
-.ds-fc-title {
-  font-family:var(--f-head); font-size:1.15rem; font-weight:800;
-  color:#fff; line-height:1.3; margin-bottom:10px;
-  text-shadow:0 2px 8px rgba(0,0,0,.5);
-}
+.ds-fc-title { font-family:var(--f-head); font-size:1.15rem; font-weight:800; color:#fff; line-height:1.3; margin-bottom:10px; text-shadow:0 2px 8px rgba(0,0,0,.5); }
 .ds-fc-meta-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-.ds-fc-chip {
-  display:inline-flex; align-items:center; gap:5px;
-  font-size:.75rem; font-family:var(--f-body);
-  color:rgba(255,255,255,.9);
-  background:rgba(255,255,255,.15);
-  border:1px solid rgba(255,255,255,.25);
-  backdrop-filter:blur(4px);
-  padding:3px 10px; border-radius:100px;
-}
+.ds-fc-chip { display:inline-flex; align-items:center; gap:5px; font-size:.75rem; font-family:var(--f-body); color:rgba(255,255,255,.9); background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); backdrop-filter:blur(4px); padding:3px 10px; border-radius:100px; }
 .ds-fc-chip i { font-size:11px; }
-.ds-fc-hint {
-  display:flex; align-items:center; gap:6px;
-  font-size:.75rem; font-family:var(--f-body); color:rgba(255,255,255,.7);
-  animation:fcHintPulse 2.4s ease-in-out infinite;
-}
+.ds-fc-hint { display:flex; align-items:center; gap:6px; font-size:.75rem; font-family:var(--f-body); color:rgba(255,255,255,.7); animation:fcHintPulse 2.4s ease-in-out infinite; }
 @keyframes fcHintPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
 
-/* ── BACK face ── */
 .ds-fc-back {
   position:absolute; inset:0;
   backface-visibility:hidden;
@@ -398,68 +397,34 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
   overflow:hidden;
 }
 .ds-fc-wrap:not(.flipped) .ds-fc-back { animation-play-state:paused; }
-.ds-fc-back-inner {
-  position:absolute; inset:2px; border-radius:18px;
-  background:var(--paper);
-  display:flex; flex-direction:column;
-}
-
-/* ── BACK face ── */
+.ds-fc-back-inner { position:absolute; inset:2px; border-radius:18px; background:var(--paper); display:flex; flex-direction:column; }
 .ds-fc-back-inner { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .ds-fc-back-body { padding:14px 16px; display:flex; flex-direction:column; flex:1; }
-.ds-fc-status-pill {
-  display:inline-flex; align-items:center; gap:5px;
-  font-size:.75rem; font-weight:600; font-family:var(--f-head);
-  padding:4px 11px; border-radius:100px; margin-bottom:10px; width:fit-content;
-  background:var(--fc-badge-bg, var(--blue-xl));
-  color:var(--fc-badge-txt, var(--blue));
-}
+.ds-fc-status-pill { display:inline-flex; align-items:center; gap:5px; font-size:.75rem; font-weight:600; font-family:var(--f-head); padding:4px 11px; border-radius:100px; margin-bottom:10px; width:fit-content; background:var(--fc-badge-bg, var(--blue-xl)); color:var(--fc-badge-txt, var(--blue)); }
 .ds-fc-stats { display:flex; gap:8px; margin-bottom:10px; }
-.ds-fc-stat {
-  flex:1; background:var(--card);
-  border:1px solid var(--border); border-radius:12px;
-  padding:9px 6px; text-align:center;
-  transition:border-color .2s, transform .2s var(--ease);
-}
+.ds-fc-stat { flex:1; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:9px 6px; text-align:center; transition:border-color .2s, transform .2s var(--ease); }
 .ds-fc-wrap:hover .ds-fc-stat { border-color:var(--fc-accent, var(--blue)); transform:translateY(-2px) }
 .ds-fc-stat-val { font-family:var(--f-mono); font-size:1.25rem; font-weight:700; line-height:1; }
 .ds-fc-stat-lbl { font-size:.68rem; font-family:var(--f-head); color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.05em; }
 .ds-fc-bar-track { height:6px; background:var(--border); border-radius:100px; overflow:hidden; margin-bottom:12px; }
 .ds-fc-bar-fill { height:100%; border-radius:100px; width:0; transition:width 1.1s cubic-bezier(.22,.68,0,1.2); background:var(--fc-accent, var(--blue)); }
-.ds-fc-baseline {
-  background:var(--amber-xl); border:1px solid #fde68a; border-radius:10px;
-  padding:8px 12px; display:flex; align-items:center; gap:8px; margin-bottom:12px;
-}
+.ds-fc-baseline { background:var(--amber-xl); border:1px solid #fde68a; border-radius:10px; padding:8px 12px; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
 .ds-fc-baseline i { font-size:15px; color:var(--amber); flex-shrink:0 }
 .ds-fc-baseline span { font-size:.78rem; font-family:var(--f-body); color:#92400e; font-weight:500 }
 .ds-fc-sm-row { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px }
-.ds-fc-sm-chip {
-  display:inline-flex; align-items:center; gap:4px;
-  font-size:.72rem; font-family:var(--f-body); color:var(--muted);
-  background:var(--card); border:1px solid var(--border);
-  padding:3px 9px; border-radius:100px; text-decoration:none; transition:all .18s;
-}
+.ds-fc-sm-chip { display:inline-flex; align-items:center; gap:4px; font-size:.72rem; font-family:var(--f-body); color:var(--muted); background:var(--card); border:1px solid var(--border); padding:3px 9px; border-radius:100px; text-decoration:none; transition:all .18s; }
 .ds-fc-sm-chip:hover { border-color:var(--fc-accent, var(--blue)); color:var(--fc-accent, var(--blue)); background:var(--fc-badge-bg, var(--blue-xl)) }
 .ds-fc-sm-chip i { font-size:10px }
-.ds-fc-cta {
-  display:flex; align-items:center; justify-content:center; gap:7px;
-  padding:10px 16px; border-radius:100px; border:none; cursor:pointer;
-  font-size:.88rem; font-weight:600; font-family:var(--f-head);
-  width:100%; margin-top:auto; text-decoration:none;
-  background:var(--fc-badge-bg, var(--blue-xl));
-  color:var(--fc-badge-txt, var(--blue));
-  transition:opacity .18s, transform .18s var(--ease);
-}
+.ds-fc-cta { display:flex; align-items:center; justify-content:center; gap:7px; padding:10px 16px; border-radius:100px; border:none; cursor:pointer; font-size:.88rem; font-weight:600; font-family:var(--f-head); width:100%; margin-top:auto; text-decoration:none; background:var(--fc-badge-bg, var(--blue-xl)); color:var(--fc-badge-txt, var(--blue)); transition:opacity .18s, transform .18s var(--ease); }
 .ds-fc-cta:hover { opacity:.85; transform:translateY(-1px) }
 .ds-fc-cta i { font-size:14px; transition:transform .2s var(--ease) }
 .ds-fc-cta:hover i.arr { transform:translateX(3px) }
 
-/* empty state */
 .ds-suggest-empty { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:44px 30px; text-align:center; color:var(--muted) }
 .ds-suggest-empty i { font-size:44px; margin-bottom:12px; display:block; color:var(--green) }
 .ds-suggest-empty p { font-size:1.1rem; font-family:var(--f-head) }
 
-/* CHARTS ROW */
+/* ── CHARTS ROW ── */
 .ds-charts-row { display:grid; grid-template-columns:1fr 420px; gap:20px; margin-bottom:28px }
 @media(max-width:1024px){ .ds-charts-row { grid-template-columns:1fr } }
 .ds-card { background:var(--card); border-radius:var(--r); border:1px solid var(--border); box-shadow:0 2px 12px rgba(13,27,42,.05); overflow:hidden; transition:transform .28s var(--ease),box-shadow .28s }
@@ -474,7 +439,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-toggle button { border:none; background:transparent; font-size:.92rem; font-weight:400; padding:7px 18px; border-radius:100px; cursor:pointer; color:var(--muted); transition:all .18s; font-family:var(--f-head) }
 .ds-toggle button.active { background:var(--card); color:var(--blue); box-shadow:0 1px 4px rgba(13,27,42,.1) }
 
-/* ANSWER BREAKDOWN DROPDOWN */
+/* ── ANSWER BREAKDOWN DROPDOWN ── */
 .ds-exam-filter-wrap { padding: 14px 26px 0; display: flex; flex-direction: column; gap: 8px; }
 .ds-exam-filter-label { font-size: .82rem; font-family: var(--f-head); color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; display: flex; align-items: center; gap: 5px; }
 .ds-ef-select-wrap { position: relative; }
@@ -504,7 +469,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-ef-drop-item.active .ds-ef-check { opacity: 1; }
 .ds-ef-no-results { padding: 16px 12px; text-align: center; font-size: .85rem; font-family: var(--f-body); color: var(--muted-lt); display: none; }
 
-/* MID */
+/* ── MID ── */
 .ds-mid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; margin-bottom:28px }
 @media(max-width:768px){ .ds-mid { grid-template-columns:1fr } }
 .ds-subj-item { display:flex; align-items:center; gap:14px; padding:16px 0; border-bottom:1px solid rgba(225,232,240,.4); cursor:pointer; border-radius:11px; padding-left:8px; padding-right:8px; transition:background .18s; }
@@ -520,7 +485,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-prog-fill  { height:100%; border-radius:100px; transition:width 1s var(--ease) .2s; position:relative }
 .ds-subj-pct   { font-family:var(--f-mono); font-size:1.08rem; font-weight:500; min-width:48px; text-align:right }
 
-/* BOTTOM */
+/* ── BOTTOM ── */
 .ds-bottom { display:grid; grid-template-columns:1fr 440px; gap:20px }
 @media(max-width:1024px){ .ds-bottom { grid-template-columns:1fr } }
 .ds-table { width:100%; border-collapse:separate; border-spacing:0 }
@@ -546,6 +511,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
 .ds-donut-dot { width:13px; height:13px; border-radius:50% }
 .ds-donut-val { font-family:var(--f-mono); font-size:1.02rem; font-weight:500; color:var(--ink) }
 
+/* ── REDUCED MOTION + MOBILE ── */
 @media(prefers-reduced-motion:reduce){
   .ds-reveal,.ds-reveal-left,.ds-reveal-scale{opacity:1!important;transform:none!important;transition:none!important}
   .ds-stat,.ds-exam-card,.ds-card{transition:none!important;animation:none!important}
@@ -554,7 +520,32 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
   #imat-bg-canvas{display:none}
   .ds-fc-front::after{display:none}
 }
-@media(max-width:768px){.ds-hero{flex-wrap:wrap}.ds-page-hd{flex-direction:column}}
+@media(max-width:768px){
+  .ds-hero { flex-wrap:wrap; padding:22px 24px; margin-bottom:22px; min-height:auto; }
+  .ds-hero-title { font-size:1.55rem; gap:8px; }
+  .ds-hero-title i { font-size:1.4rem !important; }
+  .ds-hero-sub { font-size:.95rem; gap:6px; }
+  .ds-plan-pill { font-size:.85rem; padding:4px 14px; }
+  .ds-valid-txt { font-size:.9rem; }
+  .ds-expiry-chip { font-size:.82rem; padding:4px 12px; }
+  .ds-hbtn { padding:11px 22px; font-size:.95rem; }
+  .ds-hero-btns { gap:8px; }
+  .ds-page-hd { flex-direction:column; }
+  .ds-page-title { font-size:2rem; }
+  .ds-page-sub { font-size:1rem; }
+}
+
+@media(max-width:480px){
+  .ds-hero { padding:18px 16px; margin-bottom:18px; }
+  .ds-hero-title { font-size:1.25rem; }
+  .ds-hero-title i { font-size:1.1rem !important; }
+  .ds-hero-sub { font-size:.85rem; }
+  .ds-hbtn { padding:10px 18px; font-size:.88rem; }
+  .ds-plan-pill { font-size:.78rem; padding:3px 11px; }
+  .ds-expiry-chip { font-size:.78rem; }
+  .ds-page-title { font-size:1.7rem; }
+  .ds-page-sub { font-size:.95rem; }
+}
 </style>
 
 <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
@@ -691,90 +682,120 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
       <i class="ti ti-books" aria-hidden="true"></i>
       Available Exams
     </div>
-    <a href="{% url 'student_portal:exam_list' %}" class="ds-btn outline sm">View All <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+    <a href="{% url 'student_portal:exam_list' %}" class="ds-btn outline sm">
+      View All <i class="ti ti-arrow-right" aria-hidden="true"></i>
+    </a>
   </div>
-  <div class="ds-exam-grid" id="dsExamGrid">
-    {% for type_name, type_exams in exams_by_type.items %}
-      {% for exam in type_exams %}
-      <div class="ds-exam-card ds-reveal" style="--delay:{{ forloop.counter0|floatformat:0 }}00ms">
-        <div class="ds-ec-thumb">
-          {% if exam.image %}
-            <img class="ds-ec-thumb-img" src="{{ exam.image.url }}" alt="{{ exam.title }}">
-          {% else %}
-            <div class="ds-ec-thumb-placeholder" data-subject="{{ exam.subjects.first.name|default:type_name }}">
-              <canvas class="ds-ec-thumb-canvas" data-subject="{{ exam.subjects.first.name|default:type_name }}"></canvas>
-              <div class="ph-icon"><i class="ti qs-auto-icon" aria-hidden="true"></i></div>
-              <span class="ph-subject-tag">{{ exam.subjects.first.name|default:type_name }}</span>
-            </div>
-          {% endif %}
-          {% if exam.in_progress_attempt %}
-            <span class="ds-ec-status live-s"><i class="ti ti-bolt" aria-hidden="true"></i> Live</span>
-          {% elif exam.last_attempt %}
-            <span class="ds-ec-status done-s"><i class="ti ti-check" aria-hidden="true"></i> Done</span>
-          {% else %}
-            <span class="ds-ec-status new-s"><i class="ti ti-sparkles" aria-hidden="true"></i> New</span>
-          {% endif %}
-        </div>
-        <div class="ds-ec-body">
-          <div class="ds-ec-row1">
-            <div class="ds-ec-instructor">
-              <div class="ds-ec-av qs-auto-ring" data-name="{{ exam.subjects.first.name|default:exam.title|escapejs }}" data-idx="{{ forloop.counter0 }}">
-                <i class="ti qs-auto-icon" aria-hidden="true"></i>
-              </div>
-            </div>
-            <span class="ds-ec-cat">{{ type_name }}</span>
-          </div>
-          <div class="ds-ec-title">{{ exam.title }}</div>
-          <div class="ds-ec-meta">
-            <span class="ds-ec-chip"><i class="ti ti-clock" aria-hidden="true"></i> {{ exam.duration_minutes }}m</span>
-            <span class="ds-ec-chip"><i class="ti ti-help-circle" aria-hidden="true"></i> {{ exam.question_count }}Q</span>
-            <span class="ds-ec-chip"><i class="ti ti-chart-bar" aria-hidden="true"></i> {{ exam.total_marks_val }}pts</span>
-          </div>
-          {% if exam.last_attempt or exam.in_progress_attempt %}
-            {% with att=exam.in_progress_attempt|default:exam.last_attempt %}
-            <div class="ds-ec-arc-wrap">
-              <svg class="ds-ec-arc-svg" viewBox="0 0 42 42" aria-hidden="true">
-                <path class="ds-ec-arc-track" d="M21 5 A16 16 0 1 1 20.99 5"/>
-                <path class="ds-ec-arc-fill" d="M21 5 A16 16 0 1 1 20.99 5"
-                  style="stroke:{% if att.percentage >= 80 %}#059669{% elif att.percentage >= 60 %}#1a56db{% elif att.percentage >= 40 %}#d97706{% else %}#dc2626{% endif %};"
-                  data-pct="{{ att.percentage|floatformat:0 }}"/>
-              </svg>
-              <div>
-                <div class="ds-ec-arc-pct" style="color:{% if att.percentage >= 80 %}var(--green){% elif att.percentage >= 60 %}var(--blue){% elif att.percentage >= 40 %}var(--amber){% else %}var(--red){% endif %};">
-                  {% if exam.in_progress_attempt %}{{ att.correct_count }}/{{ exam.question_count }}{% else %}{{ att.percentage|floatformat:1 }}%{% endif %}
-                </div>
-                <div class="ds-ec-arc-sub">{% if exam.in_progress_attempt %}Answered{% else %}Last score · {{ att.correct_count }} correct{% endif %}</div>
-              </div>
-            </div>
-            {% endwith %}
-          {% endif %}
-          <div class="ds-ec-footer">
-            <div class="ds-ec-price">
-              {% if exam.last_attempt %}
-                {% with att=exam.last_attempt %}
-                  <span style="color:{% if att.percentage >= 80 %}var(--green){% elif att.percentage >= 60 %}var(--blue){% elif att.percentage >= 40 %}var(--amber){% else %}#e63946{% endif %};">{{ att.percentage|floatformat:0 }}%</span>
-                  <span class="orig">{{ att.correct_count }}/{{ exam.question_count }}</span>
-                {% endwith %}
-              {% else %}
-                <span style="color:var(--muted);font-size:1.05rem;font-weight:500;">Free</span>
-              {% endif %}
-            </div>
-            {% if exam.in_progress_attempt %}
-              <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">Resume <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
-            {% elif exam.last_attempt %}
-              <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">Retry <i class="ti ti-refresh" aria-hidden="true"></i></a>
+
+  <!-- scroll wrapper gives us the fade-out edge -->
+  <div class="ds-exam-scroll-wrap">
+    <div class="ds-exam-grid" id="dsExamGrid">
+      {% for type_name, type_exams in exams_by_type.items %}
+        {% for exam in type_exams %}
+        <div class="ds-exam-card ds-reveal" style="--delay:{{ forloop.counter0|floatformat:0 }}00ms">
+          <div class="ds-ec-thumb">
+            {% if exam.image %}
+              <img class="ds-ec-thumb-img" src="{{ exam.image.url }}" alt="{{ exam.title }}">
             {% else %}
-              <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">Start Exam <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+              <div class="ds-ec-thumb-placeholder" data-subject="{{ exam.subjects.first.name|default:type_name }}">
+                <canvas class="ds-ec-thumb-canvas" data-subject="{{ exam.subjects.first.name|default:type_name }}"></canvas>
+                <div class="ph-icon"><i class="ti qs-auto-icon" aria-hidden="true"></i></div>
+                <span class="ph-subject-tag">{{ exam.subjects.first.name|default:type_name }}</span>
+              </div>
+            {% endif %}
+            {% if exam.in_progress_attempt %}
+              <span class="ds-ec-status live-s"><i class="ti ti-bolt" aria-hidden="true"></i> Live</span>
+            {% elif exam.last_attempt %}
+              <span class="ds-ec-status done-s"><i class="ti ti-check" aria-hidden="true"></i> Done</span>
+            {% else %}
+              <span class="ds-ec-status new-s"><i class="ti ti-sparkles" aria-hidden="true"></i> New</span>
             {% endif %}
           </div>
+
+          <div class="ds-ec-body">
+            <div class="ds-ec-row1">
+              <div class="ds-ec-instructor">
+                <div class="ds-ec-av qs-auto-ring"
+                     data-name="{{ exam.subjects.first.name|default:exam.title|escapejs }}"
+                     data-idx="{{ forloop.counter0 }}">
+                  <i class="ti qs-auto-icon" aria-hidden="true"></i>
+                </div>
+              </div>
+              <span class="ds-ec-cat">{{ type_name }}</span>
+            </div>
+
+            <div class="ds-ec-title">{{ exam.title }}</div>
+
+            <div class="ds-ec-meta">
+              <span class="ds-ec-chip"><i class="ti ti-clock" aria-hidden="true"></i> {{ exam.duration_minutes }}m</span>
+              <span class="ds-ec-chip"><i class="ti ti-help-circle" aria-hidden="true"></i> {{ exam.question_count }}Q</span>
+              <span class="ds-ec-chip"><i class="ti ti-chart-bar" aria-hidden="true"></i> {{ exam.total_marks_val }}pts</span>
+            </div>
+
+            {% if exam.last_attempt or exam.in_progress_attempt %}
+              {% with att=exam.in_progress_attempt|default:exam.last_attempt %}
+              <div class="ds-ec-arc-wrap">
+                <svg class="ds-ec-arc-svg" viewBox="0 0 42 42" aria-hidden="true">
+                  <path class="ds-ec-arc-track" d="M21 5 A16 16 0 1 1 20.99 5"/>
+                  <path class="ds-ec-arc-fill" d="M21 5 A16 16 0 1 1 20.99 5"
+                    style="stroke:{% if att.percentage >= 80 %}#059669{% elif att.percentage >= 60 %}#1a56db{% elif att.percentage >= 40 %}#d97706{% else %}#dc2626{% endif %};"
+                    data-pct="{{ att.percentage|floatformat:0 }}"/>
+                </svg>
+                <div>
+                  <div class="ds-ec-arc-pct"
+                       style="color:{% if att.percentage >= 80 %}var(--green){% elif att.percentage >= 60 %}var(--blue){% elif att.percentage >= 40 %}var(--amber){% else %}var(--red){% endif %};">
+                    {% if exam.in_progress_attempt %}
+                      {{ att.correct_count }}/{{ exam.question_count }}
+                    {% else %}
+                      {{ att.percentage|floatformat:1 }}%
+                    {% endif %}
+                  </div>
+                  <div class="ds-ec-arc-sub">
+                    {% if exam.in_progress_attempt %}Answered{% else %}Last score · {{ att.correct_count }} correct{% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endwith %}
+            {% endif %}
+
+            <div class="ds-ec-footer">
+              <div class="ds-ec-price">
+                {% if exam.last_attempt %}
+                  {% with att=exam.last_attempt %}
+                    <span style="color:{% if att.percentage >= 80 %}var(--green){% elif att.percentage >= 60 %}var(--blue){% elif att.percentage >= 40 %}var(--amber){% else %}#e63946{% endif %};">
+                      {{ att.percentage|floatformat:0 }}%
+                    </span>
+                    <span class="orig">{{ att.correct_count }}/{{ exam.question_count }}</span>
+                  {% endwith %}
+                {% else %}
+                  <span style="color:var(--muted);font-size:1.05rem;font-weight:500;">Free</span>
+                {% endif %}
+              </div>
+              {% if exam.in_progress_attempt %}
+                <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">
+                  Resume <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                </a>
+              {% elif exam.last_attempt %}
+                <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">
+                  Retry <i class="ti ti-refresh" aria-hidden="true"></i>
+                </a>
+              {% else %}
+                <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">
+                  Start Exam <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
         </div>
-      </div>
+        {% endfor %}
       {% endfor %}
-    {% endfor %}
-  </div>
+    </div><!-- /ds-exam-grid -->
+  </div><!-- /ds-exam-scroll-wrap -->
+
+  <!-- scroll position dots — JS populates these -->
+  <div class="ds-exam-dots" id="dsExamDots"></div>
 </div>
 {% endif %}
-
 {% if show_suggested_quizzes %}
 <div class="ds-suggest-outer ds-reveal">
   <div class="ds-exam-header">
@@ -1721,5 +1742,43 @@ document.addEventListener('click',function(e){
     document.querySelectorAll('.ds-ef-dropdown.open').forEach(d=>{d.classList.remove('open');d.closest('.ds-ef-select-wrap').querySelector('.ds-ef-select-trigger').classList.remove('open');});
   }
 });
+/* ══ EXAM SCROLL DOTS ══ */
+(function(){
+  const grid = document.getElementById('dsExamGrid');
+  const dotsWrap = document.getElementById('dsExamDots');
+  if(!grid || !dotsWrap) return;
+
+  const CARD_W = 300;   /* must match flex: 0 0 300px */
+  const GAP    = 20;
+
+  function buildDots(){
+    dotsWrap.innerHTML = '';
+    const total = grid.querySelectorAll('.ds-exam-card').length;
+    const visible = Math.floor(grid.clientWidth / (CARD_W + GAP)) || 1;
+    const pages = Math.max(1, total - visible + 1);
+    if(pages <= 1){ dotsWrap.style.display = 'none'; return; }
+    dotsWrap.style.display = 'flex';
+    for(let i = 0; i < pages; i++){
+      const dot = document.createElement('button');
+      dot.className = 'ds-exam-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', 'Go to exam ' + (i+1));
+      dot.addEventListener('click', () => {
+        grid.scrollTo({ left: i * (CARD_W + GAP), behavior: 'smooth' });
+      });
+      dotsWrap.appendChild(dot);
+    }
+  }
+
+  function syncDots(){
+    const dots = dotsWrap.querySelectorAll('.ds-exam-dot');
+    if(!dots.length) return;
+    const idx = Math.round(grid.scrollLeft / (CARD_W + GAP));
+    dots.forEach((d,i) => d.classList.toggle('active', i === idx));
+  }
+
+  grid.addEventListener('scroll', syncDots, { passive: true });
+  window.addEventListener('resize', buildDots);
+  buildDots();
+})();
 </script>
 {% endblock %}

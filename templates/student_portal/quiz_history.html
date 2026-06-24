@@ -100,7 +100,7 @@
                             <div class="text-secondary-c text-xs">{{ attempt.submitted_at|date:"h:i A" }}</div>
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'student_portal:quiz_result' attempt.id %}" class="btn-admio btn-white btn-sm">
+                            <a href="{% url 'student_portal:quiz_result' attempt.slug %}" class="btn-admio btn-white btn-sm">
                                 <i class="icon-eye"></i> Review
                             </a>
                         </td>
@@ -138,7 +138,7 @@
                                 <span class="grade-badge {% if attempt.percentage >= 70 %}grade-excellent{% elif attempt.percentage >= 40 %}grade-average{% else %}grade-poor{% endif %}">
                                     {{ attempt.grade }}
                                 </span>
-                                <a href="{% url 'student_portal:quiz_result' attempt.id %}" class="btn-admio btn-white btn-sm">
+                                <a href="{% url 'student_portal:quiz_result' attempt.slug %}" class="btn-admio btn-white btn-sm">
                                     <i class="icon-eye"></i> Review
                                 </a>
                             </div>

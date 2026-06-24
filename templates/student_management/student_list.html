@@ -4,277 +4,355 @@
 
 {% block content %}
 <div class="dashboard__form__wraper">
-     <div class="create__course__title mb-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+    <div class="create__course__title mb-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
         <h4 class="mb-0">Students List</h4>
-        
-        <div class="d-flex align-items-center gap-2 ms-auto">
-            <div class="search-box">
-                <input type="text" id="studentSearchInput" class="form-control form-control-sm" placeholder="Search students...">
-            </div>
-        </div>
     </div>
 
-    <div class="custom-table-container">
-        <table class="table table-striped table-hover align-middle">
+    <!-- Filter bar + rows per page + export all in one row -->
+    <div class="row g-2 align-items-end mb-3">
+
+        <div class="col-12 col-md-4 col-lg-3">
+            <label class="form-label small fw-semibold mb-1">Search</label>
+            <input type="text" id="studentSearchInput"
+                   class="form-control form-control-sm"
+                   placeholder="Name or email...">
+        </div>
+
+        <div class="col-12 col-md-3 col-lg-2">
+            <label class="form-label small fw-semibold mb-1">Plan</label>
+            <select id="planFilterSelect" class="form-select form-select-sm">
+                <option value="">All Plans</option>
+                <option value="no_plan">No Active Plan</option>
+                {% for plan in plans %}
+                <option value="{{ plan.id }}">{{ plan.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12 col-md-2 col-lg-2">
+            <label class="form-label small fw-semibold mb-1">Status</label>
+            <select id="activeFilterSelect" class="form-select form-select-sm">
+                <option value="">All</option>
+                <option value="yes">Active</option>
+                <option value="no">Inactive</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label small fw-semibold mb-1">Rows</label>
+            <select id="pageSizeSelect" class="form-select form-select-sm" style="width:auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+
+        <div class="col-auto d-flex gap-2 align-items-end">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="applyFilterBtn">
+                <i class="fas fa-filter"></i> Filter
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+
+        <div class="col-auto ms-auto align-self-end">
+            <a id="exportBtn"
+               href="{% url 'student_management:student_export_excel' %}"
+               class="btn btn-outline-success btn-sm">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Active filter badge -->
+    <div id="filterBadge" class="mb-2 d-none">
+        <span class="badge bg-primary fw-normal" id="filterBadgeText"></span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle" id="studentsTable">
             <thead class="table-light">
                 <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Active</th>
-                    <th scope="col">Date Joined</th>
-                    <th scope="col" class="text-center">Actions</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                    <th>Plan</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="studentsTableBody">
                 {% for student in students %}
-                <tr>
+                {% with active_plan=student.active_plan %}
+                <tr
+                    data-name="{{ student.full_name|lower }}"
+                    data-email="{{ student.user.email|lower }}"
+                    data-active="{% if student.is_active %}yes{% else %}no{% endif %}"
+                    data-plan-id="{{ active_plan.plan.id|default:'' }}"
+                >
                     <td>#{{ student.id }}</td>
                     <td>{{ student.full_name }}</td>
                     <td>{{ student.user.email }}</td>
+                    <td>{{ student.phone_number|default:"—" }}</td>
                     <td>
                         {% if student.is_active %}
-                            <span class="badge bg-success">Yes</span>
+                            <span class="badge bg-success">Active</span>
                         {% else %}
-                            <span class="badge bg-danger">No</span>
+                            <span class="badge bg-danger">Inactive</span>
                         {% endif %}
                     </td>
                     <td>{{ student.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        {% if active_plan %}
+                            <span class="badge bg-warning text-dark">{{ active_plan.plan.name }}</span>
+                            <div class="text-muted" style="font-size:11px;">
+                                Exp: {{ active_plan.expires_at|date:"M d, Y" }}
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
                     <td class="text-center">
-                        <div class="btn-group" role="group">
-                            <a href="{% url 'student_management:student_detail' student.id %}" class="btn btn-sm btn-primary me-1">
-                                View
-                            </a>
-                        </div>
+                        <a href="{% url 'student_management:student_detail' student.id %}"
+                           class="btn btn-sm btn-primary">View</a>
                     </td>
                 </tr>
+                {% endwith %}
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-4">
-                        <p class="text-muted">No students found.</p>
-                    </td>
+                    <td colspan="8" class="text-center py-4 text-muted">No students found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Footer: count + pagination -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 gap-2">
+        <span class="text-muted small" id="rowCountLabel"></span>
+        <nav id="paginationNav" aria-label="Students pagination"></nav>
+    </div>
+
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const searchInput = document.getElementById("studentSearchInput");
-    const tableBody = document.querySelector(".custom-table-container table tbody");
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput     = document.getElementById("studentSearchInput");
+    const planFilter      = document.getElementById("planFilterSelect");
+    const activeFilter    = document.getElementById("activeFilterSelect");
+    const applyFilterBtn  = document.getElementById("applyFilterBtn");
+    const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+    const pageSizeSelect  = document.getElementById("pageSizeSelect");
+    const exportBtn       = document.getElementById("exportBtn");
+    const tableBody       = document.getElementById("studentsTableBody");
+    const filterBadge     = document.getElementById("filterBadge");
+    const filterBadgeText = document.getElementById("filterBadgeText");
+    const rowCountLabel   = document.getElementById("rowCountLabel");
+    const paginationNav   = document.getElementById("paginationNav");
 
-    if (!searchInput || !tableBody) return;
+    if (!tableBody) return;
 
-    const rows = Array.from(tableBody.querySelectorAll("tr")).filter(
-        (row) => !row.id || row.id !== "noResultRow"
-    );
+    let currentPage  = 1;
+    let pageSize     = parseInt(pageSizeSelect.value);
+    let activeSearch = "";
+    let activePlan   = "";
+    let activeStatus = "";
 
-    // Debounce helper — avoids lag on fast typing
-    function debounce(fn, delay) {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => fn.apply(this, args), delay);
-        };
+    const allRows = Array.from(tableBody.querySelectorAll("tr[data-name]"));
+
+    /* ── helpers ── */
+    function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+    function escapeHtml(s)  { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+    function highlightCell(cell, term) {
+        if (!cell) return;
+        const original = cell.getAttribute("data-original") || cell.textContent;
+        cell.setAttribute("data-original", original);
+        if (!term) { cell.innerHTML = original; return; }
+        const rx = new RegExp(`(${escapeRegex(term)})`, "gi");
+        cell.innerHTML = original.replace(rx, '<mark class="bg-warning px-0">$1</mark>');
     }
 
-    // Core search logic
-    function performSearch() {
-        const searchText = searchInput.value.toLowerCase().trim();
-        let visibleCount = 0;
-
-        // Reset any previous highlights for Name (col 2) and Email (col 3)
-        rows.forEach((row) => {
-            [2, 3].forEach(colIndex => {
-                const cell = row.querySelector(`td:nth-child(${colIndex})`);
-                if (cell && cell.hasAttribute("data-original-text")) {
-                    cell.innerHTML = cell.getAttribute("data-original-text");
-                }
+    function resetHighlights() {
+        allRows.forEach(row => {
+            [1, 2].forEach(n => {
+                const cell = row.querySelector(`td:nth-child(${n})`);
+                if (cell && cell.hasAttribute("data-original"))
+                    cell.innerHTML = cell.getAttribute("data-original");
             });
         });
+    }
 
-        rows.forEach((row) => {
-            const nameCell = row.querySelector("td:nth-child(2)");
-            const emailCell = row.querySelector("td:nth-child(3)");
-            
-            const nameText = nameCell ? nameCell.textContent.toLowerCase() : "";
-            const emailText = emailCell ? emailCell.textContent.toLowerCase() : "";
+    /* ── filter ── */
+    function getFiltered() {
+        return allRows.filter(row => {
+            const name   = row.dataset.name   || "";
+            const email  = row.dataset.email  || "";
+            const active = row.dataset.active || "";
+            const planId = row.dataset.planId || "";
 
-            if (searchText === "" || nameText.includes(searchText) || emailText.includes(searchText)) {
-                row.style.display = "";
-                visibleCount++;
+            const okSearch = !activeSearch || name.includes(activeSearch) || email.includes(activeSearch);
+            const okStatus = !activeStatus || active === activeStatus;
+            let   okPlan   = true;
+            if      (activePlan === "no_plan") okPlan = !planId;
+            else if (activePlan)               okPlan = planId === activePlan;
 
-                if (searchText !== "") {
-                    if (nameText.includes(searchText)) highlightMatch(nameCell, searchText);
-                    if (emailText.includes(searchText)) highlightMatch(emailCell, searchText);
-                }
-            } else {
-                row.style.display = "none";
-            }
+            return okSearch && okStatus && okPlan;
         });
-
-        handleNoResults(visibleCount, searchText);
     }
 
-    // Highlight matches
-    function highlightMatch(cell, text) {
-        if (!cell) return;
-        const original = cell.textContent;
-        cell.setAttribute("data-original-text", original);
-        const regex = new RegExp(`(${escapeRegex(text)})`, "gi");
-        cell.innerHTML = original.replace(
-            regex,
-            `<mark style="background-color:#fff3cd;padding:2px 4px;border-radius:3px;">$1</mark>`
-        );
+    /* ── update export URL with current filters so server exports only filtered students ── */
+    function updateExportUrl() {
+        const base   = "{% url 'student_management:student_export_excel' %}";
+        const params = new URLSearchParams();
+        if (activeSearch) params.set("search", activeSearch);
+        if (activePlan)   params.set("plan",   activePlan);
+        if (activeStatus) params.set("status", activeStatus);
+        exportBtn.href = params.toString() ? `${base}?${params}` : base;
     }
 
-    // Prevent regex injection
-    function escapeRegex(str) {
-        return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    }
+    /* ── badge ── */
+    function updateBadge() {
+        const parts = [];
+        if (activeSearch) parts.push(`Search: "${escapeHtml(activeSearch)}"`);
+        if (activePlan) {
+            const opt = planFilter.options[planFilter.selectedIndex];
+            parts.push(`Plan: ${opt.text}`);
+        }
+        if (activeStatus) parts.push(`Status: ${activeStatus === "yes" ? "Active" : "Inactive"}`);
 
-    // Show or hide "no results"
-    function handleNoResults(visibleCount, searchText) {
-        let noResultRow = document.getElementById("noResultRow");
-
-        if (visibleCount === 0 && searchText !== "") {
-            if (!noResultRow) {
-                noResultRow = document.createElement("tr");
-                noResultRow.id = "noResultRow";
-                tableBody.appendChild(noResultRow);
-            }
-            const colCount = rows[0]?.querySelectorAll("td").length || 6;
-
-            noResultRow.innerHTML = `
-                <td colspan="${colCount}" class="text-center py-4 text-muted">
-                    <div style="margin-bottom:0.5rem;">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity:0.5;margin:auto;">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.35-4.35"></path>
-                        </svg>
-                    </div>
-                    No results found for "<strong>${escapeHtml(searchText)}</strong>"
-                    <div style="font-size:0.875rem;margin-top:0.5rem;color:#adb5bd;">
-                        Try adjusting your search term
-                    </div>
-                </td>`;
-            noResultRow.style.display = "";
-        } else if (noResultRow) {
-            noResultRow.style.display = "none";
+        if (parts.length) {
+            filterBadgeText.innerHTML = `<i class="fas fa-filter me-1"></i>${parts.join(" · ")}`;
+            filterBadge.classList.remove("d-none");
+        } else {
+            filterBadge.classList.add("d-none");
         }
     }
 
-    // Prevent XSS
-    function escapeHtml(str) {
-        const div = document.createElement("div");
-        div.textContent = str;
-        return div.innerHTML;
+    /* ── pagination ── */
+    function renderPagination(total) {
+        paginationNav.innerHTML = "";
+        const totalPages = Math.ceil(total / pageSize);
+        if (totalPages <= 1) return;
+
+        const ul = document.createElement("ul");
+        ul.className = "pagination pagination-sm mb-0";
+
+        function mkItem(label, page, disabled, active) {
+            const li = document.createElement("li");
+            li.className = `page-item${disabled ? " disabled" : ""}${active ? " active" : ""}`;
+            const a = document.createElement("a");
+            a.className = "page-link";
+            a.href = "#";
+            a.innerHTML = label;
+            if (!disabled && !active) {
+                a.addEventListener("click", e => { e.preventDefault(); currentPage = page; render(); });
+            }
+            li.appendChild(a);
+            return li;
+        }
+
+        ul.appendChild(mkItem("&laquo;", currentPage - 1, currentPage === 1, false));
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+                ul.appendChild(mkItem(i, i, false, i === currentPage));
+            } else if (Math.abs(i - currentPage) === 2) {
+                const li = document.createElement("li");
+                li.className = "page-item disabled";
+                li.innerHTML = '<span class="page-link">…</span>';
+                ul.appendChild(li);
+            }
+        }
+        ul.appendChild(mkItem("&raquo;", currentPage + 1, currentPage === totalPages, false));
+        paginationNav.appendChild(ul);
     }
 
-    // Attach event listeners
-    searchInput.addEventListener("input", debounce(performSearch, 150));
+    /* ── main render ── */
+    function render() {
+        resetHighlights();
+
+        const filtered   = getFiltered();
+        const total      = filtered.length;
+        const totalPages = Math.ceil(total / pageSize);
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const start = (currentPage - 1) * pageSize;
+        const end   = start + pageSize;
+
+        const old = document.getElementById("noResultRow");
+        if (old) old.remove();
+
+        allRows.forEach(row => { row.style.display = "none"; });
+
+        filtered.forEach((row, i) => {
+            if (i >= start && i < end) {
+                row.style.display = "";
+                if (activeSearch) {
+                    highlightCell(row.querySelector("td:nth-child(2)"), activeSearch);
+                    highlightCell(row.querySelector("td:nth-child(3)"), activeSearch);
+                }
+            }
+        });
+
+        if (total === 0) {
+            const tr = document.createElement("tr");
+            tr.id = "noResultRow";
+            tr.innerHTML = `<td colspan="8" class="text-center py-5 text-muted">
+                <i class="fas fa-search fa-2x mb-2 d-block opacity-25"></i>
+                No students match the current filters.
+                <div class="small mt-1">Try adjusting your search or filters.</div>
+            </td>`;
+            tableBody.appendChild(tr);
+        }
+
+        rowCountLabel.textContent = total > 0
+            ? `${start + 1}–${Math.min(end, total)} of ${total} student${total !== 1 ? "s" : ""}`
+            : "";
+
+        updateBadge();
+        updateExportUrl();
+        renderPagination(total);
+    }
+
+    /* ── events ── */
+    applyFilterBtn.addEventListener("click", () => {
+        activeSearch = searchInput.value.toLowerCase().trim();
+        activePlan   = planFilter.value;
+        activeStatus = activeFilter.value;
+        currentPage  = 1;
+        render();
+    });
+
+    searchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") applyFilterBtn.click();
+    });
+
+    clearFiltersBtn.addEventListener("click", () => {
+        searchInput.value  = "";
+        planFilter.value   = "";
+        activeFilter.value = "";
+        activeSearch = "";
+        activePlan   = "";
+        activeStatus = "";
+        currentPage  = 1;
+        render();
+    });
+
+    pageSizeSelect.addEventListener("change", () => {
+        pageSize    = parseInt(pageSizeSelect.value);
+        currentPage = 1;
+        render();
+    });
+
+    render();
 });
 </script>
-
-{% endblock %}
-
-{% block extra_css %}
-<style>
-/* Custom table container for horizontal scrolling */
-.custom-table-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    background: white;
-    margin-bottom: 1rem;
-    position: relative;
-    overflow-y: hidden;
-}
-
-/* Make sure table has minimum width */
-.custom-table-container table {
-    min-width: 800px;
-    width: 100%;
-    margin-bottom: 0;
-}
-
-/* Visual indicator for horizontal scrolling on mobile */
-@media (max-width: 768px) {
-    .custom-table-container:after {
-        content: '← Scroll →';
-        position: sticky;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%);
-        color: #6c757d;
-        padding: 8px 12px;
-        font-size: 12px;
-        font-weight: bold;
-        pointer-events: none;
-        z-index: 5;
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-    }
-}
-
-/* Table styling adjustments */
-.custom-table-container .table th,
-.custom-table-container .table td {
-    vertical-align: middle;
-    padding: 0.75rem;
-}
-
-/* Make sure the table header stays visible during horizontal scroll */
-.custom-table-container thead th {
-    position: sticky;
-    top: 0;
-    background-color: #f8f9fa;
-    z-index: 10;
-    box-shadow: 0 1px 0 #dee2e6;
-}
-
-/* Responsive button adjustments */
-@media (max-width: 768px) {
-    .btn-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-    
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-        white-space: nowrap;
-    }
-}
-
-/* Scrollbar styling for better visibility */
-.custom-table-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.custom-table-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.custom-table-container::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-}
-
-.custom-table-container::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-</style>
 {% endblock %}

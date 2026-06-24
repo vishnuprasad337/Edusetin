@@ -1,44 +1,36 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout — {{ plan.name }}</title>
-<link rel="shortcut icon" href="{% static 'assets/img/favicon.ico' %}" type="image/x-icon" />
+<link rel="shortcut icon" href="{% static 'student_portal/assets/img/edu.png' %}" type="image/x-icon" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'student_portal/assets/css/admio-icons.css' %}">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    /* Same token set as the dashboard and the plans page */
-    --navy-950: #0A1029;
-    --navy-900: #111A42;
-    --navy-800: #1B265C;
-    --navy-700: #283577;
-
     --blue: #2F6BFF;
     --blue-dark: #1E54E0;
     --blue-light: #5C92FF;
     --blue-tint: #EAF1FF;
-
     --green: #15A36B;
     --green-tint: #E4F8EE;
     --amber: #D97706;
     --amber-tint: #FFF3DE;
     --violet: #7C5CFC;
     --violet-tint: #F0ECFE;
-
     --ink: #0F172A;
     --ink-soft: #51607A;
     --ink-faint: #94A0B8;
     --border: #E7EAF2;
     --bg: #F6F8FC;
     --white: #FFFFFF;
-
     --page-pad: 32px;
     --checkout-max: 1000px;
   }
@@ -49,157 +41,139 @@
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
   }
-  a { color: inherit; }
+  a { color: inherit; text-decoration: none; }
   button { font-family: inherit; }
 
-  /* ── NAV : identical to the plans page, colour-matched to the dashboard ── */
-  .nav-top {
-    background: linear-gradient(135deg, var(--navy-900), var(--navy-950));
-    padding: 0 var(--page-pad);
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    box-shadow: 0 4px 16px rgba(10,16,41,.12);
-  }
-  .nav-actions { display: flex; align-items: center; gap: 14px; }
-  .nav-actions a.link {
-    font-size: 13.5px;
-    color: rgba(255,255,255,.72);
-    text-decoration: none;
-    font-weight: 500;
-  }
-  .nav-actions a.link:hover { color: #fff; }
-  .btn-pill-light {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
+  /* ── NAVBAR — matches plan_list white style ── */
+  .h-navbar {
+    position: sticky; top: 0; z-index: 9999;
     background: #fff;
-    color: var(--navy-900) !important;
-    padding: 9px 18px;
-    border-radius: 100px;
-    font-weight: 700;
-    font-size: 13.5px;
-    text-decoration: none;
-    transition: background .15s, transform .15s, box-shadow .15s;
+    border-bottom: 1px solid #dde3f0;
+    box-shadow: 0 2px 12px rgba(21,101,192,.10);
   }
-  .btn-pill-light svg { width: 14px; height: 14px; flex-shrink: 0; }
-  .btn-pill-light:hover {
-    background: #DCE6FF;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0,0,0,.18);
+  .h-navbar-top {
+    display: flex; align-items: center; gap: 18px;
+    padding: 0 32px; height: 70px;
+    background: #ffffff;
   }
+  .brand-logo a {
+    display: flex; align-items: center;
+    text-decoration: none; line-height: 1;
+  }
+  .brand-logo img {
+    height: 220px; width: auto; object-fit: contain;
+  }
+  .h-topbar-actions {
+    display: flex; align-items: center; gap: 8px;
+    margin-left: auto; flex-shrink: 0;
+  }
+  .h-topbar-divider { width: 1px; height: 24px; background: #dde3f0; flex-shrink: 0; }
 
-  /* ── BREADCRUMB + PAGE HEAD ──────────────────────────── */
-  .breadcrumb { max-width: var(--checkout-max); margin: 22px auto 0; padding: 0 var(--page-pad); }
-  .breadcrumb a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-soft);
+  #themeToggle {
+    background: transparent; border: none; cursor: pointer;
+    color: #374151; width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; font-size: 16px;
+    transition: background .15s, color .15s;
+  }
+  #themeToggle:hover { background: #e3f0fb; color: #1565C0; }
+
+  .nav-link-plain {
+    font-size: 14px; font-weight: 600; color: #374151;
+    text-decoration: none; padding: 7px 14px; border-radius: 8px;
+    transition: background .15s, color .15s;
+  }
+  .nav-link-plain:hover { background: #e3f0fb; color: #1565C0; }
+
+  .nav-btn-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #1565C0; color: #fff !important;
+    padding: 8px 18px; border-radius: 100px;
+    font-weight: 700; font-size: 13.5px; text-decoration: none;
+    transition: background .15s, transform .15s;
+  }
+  .nav-btn-pill:hover { background: #1251a3; transform: translateY(-1px); }
+  .nav-btn-pill i { font-size: 14px; }
+
+  /* Dark mode navbar */
+  [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
+  [data-theme="dark"] .h-navbar-top { background: #080f20; }
+  [data-theme="dark"] .brand-logo img { filter: brightness(0) invert(1); }
+  [data-theme="dark"] body { background: #080f20; color: #e2e8f0; }
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb-wrap {
+    max-width: var(--checkout-max); margin: 22px auto 0;
+    padding: 0 var(--page-pad);
+  }
+  .breadcrumb-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--ink-soft);
     text-decoration: none;
   }
-  .breadcrumb a:hover { color: var(--blue); }
-  .breadcrumb svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .breadcrumb-link:hover { color: var(--blue); }
+  .breadcrumb-link svg { width: 14px; height: 14px; flex-shrink: 0; }
 
+  /* ── PAGE ── */
   .page { max-width: var(--checkout-max); margin: 0 auto; padding: 14px var(--page-pad) 60px; }
 
   .page-head { margin-bottom: 22px; }
   .page-eyebrow {
-    display: inline-block;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--blue-dark);
-    background: var(--blue-tint);
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: .03em;
-    margin-bottom: 8px;
+    display: inline-block; font-size: 10.5px; font-weight: 700;
+    color: var(--blue-dark); background: var(--blue-tint);
+    padding: 3px 10px; border-radius: 20px; letter-spacing: .03em; margin-bottom: 8px;
   }
-  h1.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+  h1.page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
 
   .layout {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 22px;
-    align-items: start;
+    display: grid; grid-template-columns: 1.6fr 1fr;
+    gap: 22px; align-items: start;
   }
-  @media (max-width: 800px) {
-    .layout { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
 
   .panel {
-    position: relative;
-    background: #fff;
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    overflow: hidden;
+    position: relative; background: #fff;
+    border: 1.5px solid var(--border); border-radius: 16px;
+    padding: 24px; overflow: hidden;
     box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
   }
+  [data-theme="dark"] .panel { background: #0d1a3a; border-color: #1a2a5e; }
+
   .panel.plan-panel::before {
-    content: "";
-    position: absolute;
-    top: 0; bottom: 0; left: 0;
-    width: 4px;
-    background: var(--blue);
+    content: ""; position: absolute;
+    top: 0; bottom: 0; left: 0; width: 4px; background: var(--blue);
   }
 
-  /* ── PLAN PANEL ──────────────────────────────────────── */
+  /* Plan panel */
   .plan-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
   .plan-icon {
-    width: 44px; height: 44px;
-    border-radius: 11px;
-    background: var(--blue-tint);
-    color: var(--blue);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 11px;
+    background: var(--blue-tint); color: var(--blue);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .plan-icon svg { width: 21px; height: 21px; }
   .plan-header h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
   .plan-header .plan-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
 
   .desc-box {
-    font-size: 13px;
-    color: var(--ink-soft);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 18px;
-    line-height: 1.5;
+    font-size: 13px; color: var(--ink-soft); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 18px; line-height: 1.5;
   }
 
   .duration-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 0;
-    margin-bottom: 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 16px 0; margin-bottom: 18px;
   }
   .duration-row .label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px;
   }
   .duration-row .value-chip {
-    display: inline-flex;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--blue-dark);
-    background: var(--blue-tint);
-    padding: 4px 11px;
-    border-radius: 20px;
+    display: inline-flex; font-size: 12.5px; font-weight: 700;
+    color: var(--blue-dark); background: var(--blue-tint);
+    padding: 4px 11px; border-radius: 20px;
   }
   .duration-row .price-side { text-align: right; }
   .duration-row .price-big { font-size: 26px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
@@ -207,119 +181,74 @@
   .duration-row .price-caption { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
 
   .feature-section h3 {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    margin: 18px 0 10px;
+    font-size: 11px; font-weight: 700; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: .06em; margin: 18px 0 10px;
   }
   .feature-section:first-of-type h3 { margin-top: 0; }
 
   .feature-list { list-style: none; }
   .feature-list li {
-    font-size: 13.5px;
-    color: #334155;
-    padding: 6px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    line-height: 1.4;
+    font-size: 13.5px; color: #334155; padding: 6px 0;
+    display: flex; align-items: flex-start; gap: 9px; line-height: 1.4;
   }
+  [data-theme="dark"] .feature-list li { color: #90CAF9; }
   .feature-list li .tick {
-    flex-shrink: 0;
-    width: 17px;
-    height: 17px;
-    border-radius: 50%;
-    background: var(--blue-tint);
-    color: var(--blue);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1px;
+    flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%;
+    background: var(--blue-tint); color: var(--blue);
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
   .feature-list li .tick svg { width: 9px; height: 9px; }
 
-  /* ── ORDER SUMMARY PANEL ─────────────────────────────── */
+  /* Summary panel */
   .summary-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
   .summary-icon {
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    background: var(--green-tint);
-    color: var(--green);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--green-tint); color: var(--green);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .summary-icon svg { width: 17px; height: 17px; }
   .summary-panel h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
 
   .summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 7px 0;
-    font-size: 13px;
-    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+    padding: 7px 0; font-size: 13px; color: var(--ink-soft);
   }
   .summary-row .val { font-weight: 600; color: var(--ink); }
-  .summary-row .strike { text-decoration: line-through; color: var(--ink-faint); font-weight: 400; margin-right: 6px; }
-
   .summary-divider { border-top: 1px solid var(--border); margin: 12px 0; }
 
   .total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 20px;
+    display: flex; justify-content: space-between;
+    align-items: baseline; margin-bottom: 20px;
   }
   .total-row .label { font-size: 15px; font-weight: 700; color: var(--ink); }
   .total-row .val { font-size: 27px; font-weight: 800; color: var(--blue); letter-spacing: -0.02em; }
 
   .btn-primary {
-    display: block;
-    width: 100%;
-    padding: 13px;
-    border-radius: 10px;
-    font-size: 14.5px;
-    font-weight: 600;
-    background: var(--blue);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    transition: background .15s, opacity .15s;
+    display: block; width: 100%; padding: 13px;
+    border-radius: 10px; font-size: 14.5px; font-weight: 600;
+    background: var(--blue); color: #fff; border: none;
+    cursor: pointer; transition: background .15s, opacity .15s;
   }
   .btn-primary:hover { background: var(--blue-dark); }
   .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
 
   .error-msg {
-    color: #991B1B;
-    background: #FEF2F2;
-    border: 1px solid #FCA5A5;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    margin-top: 14px;
-    display: none;
+    color: #991B1B; background: #FEF2F2; border: 1px solid #FCA5A5;
+    padding: 10px 12px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; margin-top: 14px; display: none;
   }
 
   .secure-note {
-    margin-top: 16px;
-    font-size: 12px;
-    color: var(--ink-faint);
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    margin-top: 16px; font-size: 12px; color: var(--ink-faint);
+    text-align: center; display: flex; align-items: center;
+    justify-content: center; gap: 6px;
   }
   .secure-note svg { width: 13px; height: 13px; color: var(--blue); flex-shrink: 0; }
 
-  .empty-note { font-size: 13px; color: var(--ink-faint); }
-
-  @media(max-width:680px){
-    .nav-top { padding: 0 16px; }
+  @media(max-width: 767px) {
+    .h-navbar-top { padding: 0 16px; height: 58px; }
   }
-  @media(max-width:500px){
+  @media(max-width: 500px) {
     :root { --page-pad: 16px; }
     .panel { padding: 20px; }
     .duration-row .price-big { font-size: 22px; }
@@ -329,40 +258,49 @@
 </head>
 <body>
 
-<div class="nav-top">
-  <div class="brand-logo">
-    <a href="{% url 'student_portal:dashboard' %}"
-       style="display:flex; align-items:center; gap:2px; text-decoration:none; line-height:1;">
-        <img src="{% static 'admin-static/assets/img/favicon.ico' %}"
-             alt="EdusetIn"
-             style="height:32px; width:32px; border-radius:6px; object-fit:contain; filter: brightness(0) invert(1);">
-        <span class="logo-text"
-              style="color:#ffffff; font-weight:700; font-size:1.6rem; letter-spacing:-0.01em; font-family:'Segoe UI', sans-serif; line-height:1;">
-            edusetin
-        </span>
-    </a>
-  </div>
+<!-- NAVBAR -->
+<nav class="h-navbar">
+  <div class="h-navbar-top">
 
-  <div class="nav-actions">
-    {% if request.user.is_authenticated %}
-      <a href="{% url 'student_portal:dashboard' %}" class="btn-pill-light">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-        Dashboard
+    <!-- Brand -->
+    <div class="brand-logo">
+      <a href="{% url 'student_portal:dashboard' %}">
+        <img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin">
       </a>
-    {% else %}
-      <a href="{% url 'student_portal:login' %}" class="link">Log in</a>
-      <a href="{% url 'student_portal:register' %}" class="btn-pill-light">Register</a>
-    {% endif %}
-  </div>
-</div>
+    </div>
 
-<div class="breadcrumb">
-  <a href="{% url 'student_portal:plan_list' %}">
+    <!-- Right actions -->
+    <div class="h-topbar-actions">
+
+      <button id="themeToggle" title="Toggle theme" type="button">
+        <i class="icon-moon" id="themeIcon"></i>
+      </button>
+
+      <div class="h-topbar-divider"></div>
+
+      {% if request.user.is_authenticated %}
+        <a href="{% url 'student_portal:dashboard' %}" class="nav-btn-pill">
+          <i class="icon-gauge"></i>
+          Dashboard
+        </a>
+      {% else %}
+        <a href="{% url 'student_portal:login' %}" class="nav-link-plain">Log in</a>
+        <a href="{% url 'student_portal:register' %}" class="nav-btn-pill">Register</a>
+      {% endif %}
+
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb-wrap">
+  <a href="{% url 'student_portal:plan_list' %}" class="breadcrumb-link">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
     Back to plans
   </a>
 </div>
 
+<!-- PAGE -->
 <div class="page">
   <div class="page-head">
     <span class="page-eyebrow">Secure checkout</span>
@@ -490,44 +428,55 @@
 </div>
 
 <script>
-  const payBtn = document.getElementById("pay-btn");
+  /* ── THEME TOGGLE ── */
+  (function () {
+    var html   = document.documentElement;
+    var btn    = document.getElementById('themeToggle');
+    var icon   = document.getElementById('themeIcon');
+    var saved  = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', saved);
+    icon.className = saved === 'dark' ? 'icon-sun' : 'icon-moon';
+    btn.addEventListener('click', function () {
+      var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      icon.className = next === 'dark' ? 'icon-sun' : 'icon-moon';
+    });
+  })();
+
+  /* ── RAZORPAY ── */
+  const payBtn   = document.getElementById("pay-btn");
   const errorBox = document.getElementById("error-box");
 
-  function showError(msg) {
-    errorBox.style.display = "block";
-    errorBox.innerText = msg;
-  }
-
-  function hideError() {
-    errorBox.style.display = "none";
-  }
+  function showError(msg) { errorBox.style.display = "block"; errorBox.innerText = msg; }
+  function hideError()    { errorBox.style.display = "none"; }
 
   const options = {
-    "key": "{{ razorpay_key_id }}",
-    "amount": "{{ amount_paise }}",
-    "currency": "INR",
-    "name": "Edusetin",
+    "key":         "{{ razorpay_key_id }}",
+    "amount":      {{ amount_paise }},      // number, not string
+    "currency":    "INR",
+    "name":        "Edusetin",
     "description": "{{ plan.name }} Subscription",
-    "order_id": "{{ razorpay_order_id }}",
+    "order_id":    "{{ razorpay_order_id }}",
     "prefill": {
-      "name": "{{ student_name }}",
+      "name":  "{{ student_name }}",
       "email": "{{ student_email }}"
     },
     "theme": { "color": "#2F6BFF" },
     "handler": function (response) {
-      payBtn.disabled = true;
+      payBtn.disabled  = true;
       payBtn.innerText = "Verifying payment...";
 
       fetch("{% url 'student_portal:razorpay_callback' %}", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token }}"
+          "X-CSRFToken":  "{{ csrf_token }}"
         },
         body: JSON.stringify({
-          razorpay_order_id: response.razorpay_order_id,
+          razorpay_order_id:   response.razorpay_order_id,
           razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature
+          razorpay_signature:  response.razorpay_signature
         })
       })
       .then(res => res.json())
@@ -535,30 +484,24 @@
         if (data.status === "success") {
           window.location.href = data.redirect_url;
         } else {
-          payBtn.disabled = false;
+          payBtn.disabled  = false;
           payBtn.innerText = "Pay ₹{{ amount_display|floatformat:0 }}";
           showError(data.message || "Payment verification failed. Please contact support.");
         }
       })
       .catch(() => {
-        payBtn.disabled = false;
+        payBtn.disabled  = false;
         payBtn.innerText = "Pay ₹{{ amount_display|floatformat:0 }}";
         showError("Something went wrong. Please contact support.");
       });
     },
     "modal": {
-      "ondismiss": function () {
-        // user closed the popup without paying — order remains PENDING
-      }
+      "ondismiss": function () {}
     }
   };
 
   const rzp = new Razorpay(options);
-
-  payBtn.addEventListener("click", function () {
-    hideError();
-    rzp.open();
-  });
+  payBtn.addEventListener("click", function () { hideError(); rzp.open(); });
 </script>
 
 </body>

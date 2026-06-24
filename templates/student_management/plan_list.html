@@ -11,20 +11,9 @@
     border-radius: 14px;
     overflow: hidden;
 }
-.plans-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.plans-table thead tr { background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-.plans-table th {
-    font-size: 11px; font-weight: 600; letter-spacing: .06em;
-    text-transform: uppercase; color: #6b7280;
-    padding: 11px 16px; text-align: left;
-}
-.plans-table td {
-    padding: 13px 16px; font-size: 13px; color: #111827;
-    border-bottom: 1px solid #f3f4f6; vertical-align: middle;
-}
-.plans-table tbody tr:last-child td { border-bottom: none; }
-.plans-table tbody tr:hover { background: #fafafa; }
 
+/* Column widths only — no font or layout overrides */
+.plans-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .col-no     { width: 6%; }
 .col-plan   { width: 30%; }
 .col-price  { width: 18%; }
@@ -50,13 +39,10 @@
     cursor: pointer; transition: all .15s; text-decoration: none;
 }
 .act-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-/* blue = view */
 .act-view  { border-color: #bfdbfe; background: #eff6ff; color: #2563eb; }
 .act-view:hover  { background: #dbeafe; color: #1d4ed8; }
-/* amber = edit */
 .act-edit  { border-color: #fde68a; background: #fffbeb; color: #d97706; }
 .act-edit:hover  { background: #fef3c7; color: #b45309; }
-/* red = delete */
 .act-delete { border-color: #fecaca; background: #fef2f2; color: #dc2626; }
 .act-delete:hover { background: #fee2e2; color: #b91c1c; }
 
@@ -148,8 +134,9 @@
 
     {% if plans %}
     <div class="plans-table-card">
-        <table class="plans-table">
-            <thead>
+        {# Use Bootstrap table classes — layout & font inherit from base #}
+        <table class="table table-hover mb-0 plans-table">
+            <thead class="table-light">
                 <tr>
                     <th class="col-no">#</th>
                     <th class="col-plan"><i class="fas fa-id-badge me-1"></i> Plan</th>
@@ -162,17 +149,15 @@
             <tbody>
                 {% for plan in plans %}
                 <tr>
-                    <td style="color:#9ca3af; font-size:12px;">{{ forloop.counter }}</td>
+                    <td class="text-muted small">{{ forloop.counter }}</td>
                     <td>
-                        <div style="font-weight:600; font-size:14px;">{{ plan.name }}</div>
-                        <div style="font-size:11px; color:#9ca3af; margin-top:1px;">ID #{{ plan.pk }}</div>
+                        <div class="fw-semibold">{{ plan.name }}</div>
+                        <div class="text-muted" style="font-size:11px;">ID #{{ plan.pk }}</div>
                     </td>
+                    <td class="fw-semibold">₹{{ plan.price }}</td>
                     <td>
-                        <div style="font-weight:600;">₹{{ plan.price }}</div>
-                    </td>
-                    <td>
-                        <span style="font-weight:600;">{{ plan.duration_days }}</span>
-                        <span style="font-size:11px; color:#9ca3af;"> days</span>
+                        <span class="fw-semibold">{{ plan.duration_days }}</span>
+                        <span class="text-muted small"> days</span>
                     </td>
                     <td>
                         {% if plan.is_active %}
@@ -188,7 +173,6 @@
                     <td>
                         <div class="d-flex align-items-center justify-content-end gap-1">
 
-                            <!-- VIEW → opens modal with subjects/submodules/exams -->
                             <button class="act-btn act-view"
                                     title="View Details"
                                     data-bs-toggle="modal"
@@ -196,14 +180,12 @@
                                 <i class="fas fa-eye"></i>
                             </button>
 
-                            <!-- EDIT → goes to update page directly -->
-                            <a href="{% url 'student_management:plan_update' plan.pk %}"
-                               class="act-btn act-edit"
-                               title="Edit Plan">
-                                <i class="fas fa-pen"></i>
-                            </a>
+                            <a href="{% url 'student_management:plan_update' plan.name %}"
+   class="act-btn act-edit"
+   title="Edit Plan">
+    <i class="fas fa-pen"></i>
+</a>
 
-                            <!-- DELETE → opens confirm modal -->
                             <button class="act-btn act-delete"
                                     title="Delete Plan"
                                     data-bs-toggle="modal"
@@ -333,9 +315,9 @@
             </div>
 
             <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-2">
-                <a href="{% url 'student_management:plan_update' plan.pk %}" class="btn btn-warning btn-sm">
-                    <i class="fas fa-pen me-1"></i> Edit Plan
-                </a>
+                <a href="{% url 'student_management:plan_update' plan.name %}" class="btn btn-warning btn-sm">
+    <i class="fas fa-pen me-1"></i> Edit Plan
+</a>
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i> Close
                 </button>

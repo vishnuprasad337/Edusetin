@@ -9,6 +9,7 @@ class Student(models.Model):
     full_name = models.CharField(
         max_length=255
     )
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
     is_active = models.BooleanField(
         default=True
     )
@@ -148,18 +149,19 @@ class AttemptResponse(models.Model):
             f"→ {self.selected_answer or '—'} ({status})"
         )
 
-    
+from django.utils.text import slugify
+
 class QuizAttempt(models.Model):
     """One practice quiz session for a student."""
- 
+
     STATUS_IN_PROGRESS = "in_progress"
     STATUS_SUBMITTED   = "submitted"
- 
+
     STATUS_CHOICES = [
         (STATUS_IN_PROGRESS, "In Progress"),
         (STATUS_SUBMITTED,   "Submitted"),
     ]
- 
+
     student  = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
@@ -179,30 +181,46 @@ class QuizAttempt(models.Model):
         blank=True,
         related_name="quiz_attempts",
     )
- 
-    status       = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_IN_PROGRESS)
-    started_at   = models.DateTimeField(auto_now_add=True)
-    submitted_at = models.DateTimeField(null=True, blank=True)
- 
-    # Scoring (cached on submit)
-    total_questions = models.PositiveIntegerField(default=0)
-    correct_count   = models.PositiveIntegerField(default=0)
-    wrong_count     = models.PositiveIntegerField(default=0)
-    skipped_count   = models.PositiveIntegerField(default=0)
-    marks_earned    = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    total_marks     = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    percentage      = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    time_taken_seconds = models.PositiveIntegerField(default=0)
-    
 
- 
+    status             = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_IN_PROGRESS)
+    started_at         = models.DateTimeField(auto_now_add=True)
+    submitted_at       = models.DateTimeField(null=True, blank=True)
+
+    # Scoring (cached on submit)
+    total_questions    = models.PositiveIntegerField(default=0)
+    correct_count      = models.PositiveIntegerField(default=0)
+    wrong_count        = models.PositiveIntegerField(default=0)
+    skipped_count      = models.PositiveIntegerField(default=0)
+    marks_earned       = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    total_marks        = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    percentage         = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    time_taken_seconds = models.PositiveIntegerField(default=0)
+    slug               = models.SlugField(max_length=160, blank=True, unique=False)
+
     class Meta:
         ordering = ["-started_at"]
- 
+
     def __str__(self):
         scope = self.submodule or self.subject or "All"
         return f"{self.student} | {scope} | {self.get_status_display()}"
- 
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # After save we have a pk — build a unique slug and update directly
+        # to avoid infinite recursion from calling save() again
+        if not self.slug or not self.slug.endswith(f"-{self.pk}"):
+            base = self._build_base_slug()
+            new_slug = f"{base}-{self.pk}"
+            QuizAttempt.objects.filter(pk=self.pk).update(slug=new_slug)
+            self.slug = new_slug
+
+    def _build_base_slug(self):
+        if self.submodule_id and self.submodule:
+            return slugify(self.submodule.name)
+        if self.subject_id and self.subject:
+            return slugify(self.subject.name)
+        return "quiz"
+
     @property
     def grade(self):
         p = float(self.percentage)
@@ -210,7 +228,7 @@ class QuizAttempt(models.Model):
         if p >= 60: return "Good"
         if p >= 40: return "Average"
         return "Needs Improvement"
- 
+
     @property
     def grade_color(self):
         p = float(self.percentage)
@@ -218,7 +236,11 @@ class QuizAttempt(models.Model):
         if p >= 60: return "cyan"
         if p >= 40: return "orange"
         return "red"
-    
+
+    @property
+    def quiz_slug(self):
+        """Convenience property — returns the stored slug, falling back to building one."""
+        return self.slug or f"{self._build_base_slug()}-{self.pk}"
 
  
  

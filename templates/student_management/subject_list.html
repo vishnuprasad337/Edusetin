@@ -45,10 +45,10 @@
                     <td class="text-center">
                         <div class="d-flex justify-content-center align-items-center gap-1 flex-nowrap">
                             <!-- Edit -->
-                            <a href="{% url 'student_management:subject_edit' subject.id %}"
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
+                            <a href="{% url 'student_management:subject_edit' subject.name %}"
+   class="btn btn-sm btn-outline-primary">
+    <i class="fas fa-edit"></i> Edit
+</a>
 
                             <!-- Activate / Deactivate -->
                             {% if subject.is_active %}

@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
   <link rel="icon" type="image/x-icon" href="{% static 'student_portal/assets/img/edu.png' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Work+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --blue:       #1565C0;
@@ -33,10 +33,30 @@
       --shadow-md:  0 8px 32px rgba(21,101,192,.18);
       --shadow-lg:  0 20px 60px rgba(21,101,192,.22);
       --tr:         0.28s cubic-bezier(.4,0,.2,1);
+      --font-display: 'Work Sans', 'Inter', sans-serif;
+      --font-body:    'Inter', 'Work Sans', sans-serif;
+      --fs-hero:    clamp(3rem, 6vw, 5.2rem);
+      --fs-h1:      clamp(2.4rem, 4.5vw, 4rem);
+      --fs-h2:      clamp(2rem, 3.5vw, 3rem);
+      --fs-h3:      clamp(1.4rem, 2vw, 1.75rem);
+      --fs-body:    1.0625rem;
+      --fs-sm:      0.9375rem;
+      --fs-xs:      0.8125rem;
+      --fs-lbl:     0.6875rem;
+      --lh-display: 1.05;
+      --lh-body:    1.72;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; font-size: 16px; color: var(--text); background: #fff; overflow-x: hidden; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      color: var(--text);
+      background: #fff;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
     a { text-decoration: none; color: inherit; }
     ul { list-style: none; }
     img { max-width: 100%; display: block; }
@@ -44,153 +64,135 @@
     /* ── PRELOADER ── */
     #preloader {
       position: fixed; width: 100%; height: 100%;
-      left: 0; top: 0; background-color: #fff;
+      left: 0; top: 0; background: #fff;
       z-index: 99999; display: flex;
       justify-content: center; align-items: center;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.5s ease;
     }
-    .loader { display: flex; align-items: center; justify-content: center; }
+    .loader { display: flex; align-items: center; gap: 8px; }
     .loader > div {
-      display: inline-flex; width: 25px; height: 25px; margin: 0 5px;
-      border-radius: 50%; background: #1565C0;
-      animation: bounce 1.48s ease-in-out infinite both;
+      width: 12px; height: 12px; border-radius: 50%; background: #1565C0;
+      animation: bounce 1.2s ease-in-out infinite both;
     }
-    .loader > div:nth-child(1) { animation-delay: -0.32s; }
-    .loader > div:nth-child(2) { animation-delay: -0.16s; }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40%           { transform: scale(1); }
-    }
-    [data-theme="dark"] #preloader { background-color: #080f20; }
+    .loader > div:nth-child(1){animation-delay:-0.32s}
+    .loader > div:nth-child(2){animation-delay:-0.16s}
+    @keyframes bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
 
     /* ── TOP BAR ── */
-    .top-bar { background: #0a2a6e; color: rgba(255,255,255,0.88); font-size: 12px; }
-    .top-bar-inner { max-width: 100%; padding: 6px 56px; display: flex; align-items: center; justify-content: space-between; }
-    .top-bar-left { display: flex; gap: 22px; align-items: center; }
+    .top-bar { background: #07214f; color: rgba(255,255,255,.82); font-size: 12.5px; font-weight: 500; font-family: var(--font-body); }
+    .top-bar-inner { max-width: 100%; padding: 7px 56px; display: flex; align-items: center; justify-content: space-between; }
+    .top-bar-left { display: flex; gap: 24px; align-items: center; }
     .top-bar-left span { display: flex; align-items: center; gap: 6px; }
-    .top-bar-right { display: flex; gap: 12px; align-items: center; }
-    .top-bar-right a { color: rgba(255,255,255,0.70); transition: color 0.2s; }
+    .top-bar-right { display: flex; gap: 14px; align-items: center; }
+    .top-bar-right a { color: rgba(255,255,255,.65); transition: color .2s; }
     .top-bar-right a:hover { color: #fff; }
 
-    /* ── MAIN NAVBAR ── */
+    /* ── NAVBAR ── */
     .navbar {
       position: sticky; top: 0; z-index: 9000;
-      background: #fff;
-      border-bottom: 2px solid #1447b3;
+      background: #fff; border-bottom: 2.5px solid #1447b3;
       box-shadow: 0 2px 16px rgba(10,42,110,.10);
-      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      transition: box-shadow .3s ease, border-color .3s ease;
     }
     .navbar.scrolled { box-shadow: 0 4px 32px rgba(10,42,110,.18); border-bottom-color: transparent; }
-    .nav-inner {
-      max-width: 100%; margin: 0;
-      padding: 0 48px 0 0;
-      height: 78px;
-      display: flex; align-items: center; gap: 8px;
-    }
-
+    .nav-inner { max-width: 100%; margin: 0; padding: 0 56px 0 0; height: 88px; display: flex; align-items: center; }
     .nav-brand {
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      background: #1447b3;
-      height: 78px;
-      padding: 0 72px 0 32px;
-      clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%);
-      margin-right: 20px;
-      min-width: 280px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      background: #1447b3; height: 88px; min-width: 340px; padding: 0 85px 0 38px;
+      margin-right: 50px; clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%);
     }
-    .nav-brand img {
-      height: auto !important;
-      width: 180px !important;
-      max-width: none !important;
-      object-fit: contain;
-      filter: brightness(0) invert(1);
-      display: block;
-      flex-shrink: 0;
-    }
-
-    .nav-links { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+    .nav-brand img { width: 210px !important; height: auto !important; max-width: none !important; object-fit: contain; display: block; flex-shrink: 0; filter: brightness(0) invert(1); }
+    .nav-links { flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px; margin-left: 0; }
     .nav-links a {
-      display: inline-flex; align-items: center;
-      padding: 8px 16px;
-      font-size: 13px; font-weight: 700;
-      color: #111827; letter-spacing: 0.04em;
-      text-transform: uppercase; border-radius: 6px;
-      transition: background 0.18s, color 0.18s;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 18px; font-size: 15px; font-weight: 700; font-family: var(--font-display);
+      color: #111827; letter-spacing: .06em; text-transform: uppercase;
+      border-radius: 8px; transition: background .18s, color .18s;
     }
     .nav-links a:hover, .nav-links a.active { background: #e8effe; color: #1447b3; }
-
-    .nav-cta { display: flex; align-items: center; gap: 10px; margin-left: 18px; }
-    .btn-login {
-      padding: 9px 20px; border-radius: 7px;
-      border: 2px solid #1447b3; color: #1447b3;
-      font-size: 13px; font-weight: 700;
-      transition: all 0.18s; white-space: nowrap;
-      display: inline-flex; align-items: center;
-    }
+    .nav-cta { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
+    .btn-login { padding: 11px 24px; border-radius: 8px; border: 2px solid #1447b3; color: #1447b3; font-size: 15px; font-weight: 700; font-family: var(--font-display); transition: all .18s; white-space: nowrap; display: inline-flex; align-items: center; }
     .btn-login:hover { background: #1447b3; color: #fff; }
-    .btn-start {
-      padding: 9px 22px; border-radius: 7px;
-      background: #1447b3; color: #fff;
-      font-size: 13px; font-weight: 700;
-      border: 2px solid #1447b3;
-      display: inline-flex; align-items: center; gap: 7px;
-      transition: all 0.18s; white-space: nowrap;
-    }
+    .btn-start { padding: 11px 26px; border-radius: 8px; background: #1447b3; color: #fff; font-size: 15px; font-weight: 700; font-family: var(--font-display); border: 2px solid #1447b3; display: inline-flex; align-items: center; gap: 8px; transition: all .18s; white-space: nowrap; }
     .btn-start:hover { background: #0a2a6e; border-color: #0a2a6e; transform: translateY(-1px); }
-
-    .hamburger {
-      display: none; background: none; border: none; cursor: pointer;
-      padding: 8px; flex-direction: column; gap: 5px; border-radius: 8px; margin-left: auto;
-    }
-    .hamburger span { display: block; width: 22px; height: 2px; background: #111827; border-radius: 2px; transition: all 0.2s; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; flex-direction: column; gap: 5px; border-radius: 8px; margin-left: auto; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: #111827; border-radius: 2px; transition: all .2s; }
     .mobile-menu { display: none; background: #fff; border-top: 1px solid #e5e7eb; padding: 14px 20px 24px; flex-direction: column; gap: 4px; }
     .mobile-menu.open { display: flex; }
-    .mobile-menu a { padding: 11px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #111827; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.03em; display: block; }
+    .mobile-menu a { padding: 11px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: var(--font-display); color: #111827; transition: all .2s; text-transform: uppercase; letter-spacing: .05em; display: block; }
     .mobile-menu a:hover { background: #e8effe; color: #1447b3; }
 
-    /* ══ SCROLL REVEAL ══ */
-    .sr { opacity: 0; will-change: transform, opacity; transition: opacity 0.75s cubic-bezier(.22,1,.36,1), transform 0.75s cubic-bezier(.22,1,.36,1); }
-    .sr { transform: translateY(50px) scale(0.97); }
-    .sr-left  { transform: translateX(-70px) rotateY(10deg) scale(0.95); transform-origin: left center; }
-    .sr-right { transform: translateX(70px) rotateY(-10deg) scale(0.95); transform-origin: right center; }
-    .sr-up    { transform: translateY(60px) rotateX(6deg) scale(0.96); transform-origin: center bottom; }
+    /* ── SCROLL REVEAL ── */
+    .sr { opacity: 0; will-change: transform, opacity; transition: opacity .75s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.22,1,.36,1); transform: translateY(50px) scale(.97); }
+    .sr-left  { transform: translateX(-70px) scale(.95); }
+    .sr-right { transform: translateX(70px) scale(.95); }
+    .sr-up    { transform: translateY(60px) scale(.96); }
     .sr-fade  { transform: translateY(20px); }
-    .sr.visible { opacity: 1; transform: translateY(0) translateX(0) rotateY(0) rotateX(0) scale(1); }
-    .d1 { transition-delay: 0.08s; } .d2 { transition-delay: 0.16s; } .d3 { transition-delay: 0.24s; }
-    .d4 { transition-delay: 0.32s; } .d5 { transition-delay: 0.40s; } .d6 { transition-delay: 0.48s; }
-    .d7 { transition-delay: 0.56s; } .d8 { transition-delay: 0.64s; }
+    .sr.visible { opacity: 1; transform: none; }
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+    .d4{transition-delay:.32s}.d5{transition-delay:.40s}.d6{transition-delay:.48s}
+    .d7{transition-delay:.56s}.d8{transition-delay:.64s}
 
     /* ── HERO ── */
     .hero { position: relative; height: 90vh; min-height: 580px; overflow: hidden; }
     .hero-slides { position: relative; width: 100%; height: 100%; }
     .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.1s ease; pointer-events: none; display: flex; align-items: center; }
     .hero-slide.active { opacity: 1; pointer-events: auto; }
-    .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center top; transform: scale(1.06); transition: transform 7s cubic-bezier(.25,.46,.45,.94); will-change: transform; }
+    .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center top; transform: scale(1.06); transition: transform 7s cubic-bezier(.25,.46,.45,.94); }
     .hero-slide.active .hero-bg { transform: scale(1); }
-    .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, rgba(10,20,40,.84) 0%, rgba(10,20,40,.62) 45%, rgba(20,71,179,.24) 100%); }
+    .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, rgba(10,20,40,.85) 0%, rgba(10,20,40,.62) 45%, rgba(20,71,179,.22) 100%); }
     .slide-1 .hero-bg { background-image: url('https://images.unsplash.com/photo-1513258496099-48168024aec0?w=2000&q=95&auto=format&fit=crop'); }
     .slide-2 .hero-bg { background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=2000&q=95&auto=format&fit=crop'); }
     .slide-3 .hero-bg { background-image: url('https://images.unsplash.com/photo-1588072432836-e10032774350?w=2000&q=95&auto=format&fit=crop'); }
     .slide-4 .hero-bg { background-image: url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=2000&q=95&auto=format&fit=crop'); }
     .hero-content-wrap { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 0 48px; width: 100%; }
-    .hero-content { max-width: 660px; }
-    .hero-eyebrow { display: inline-flex; align-items: center; gap: 9px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(10px); padding: 6px 18px; border-radius: 30px; color: #90CAF9; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s; }
+    .hero-content { max-width: 720px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(10px); padding: 6px 18px; border-radius: 30px;
+      color: #90CAF9; font-size: var(--fs-xs); font-weight: 700;
+      font-family: var(--font-display);
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 22px;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .6s ease .2s, transform .6s ease .2s;
+    }
     .hero-slide.active .hero-eyebrow { opacity: 1; transform: translateY(0); }
-    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; animation: pulse-live 1.6s infinite; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4CAF50; animation: pulse-live 1.6s infinite; }
     @keyframes pulse-live { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
-    .hero-content h1 { font-family: 'Sora', sans-serif; font-size: clamp(2.1rem, 4.2vw, 3.5rem); font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -1px; margin-bottom: 18px; opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease 0.35s, transform 0.7s ease 0.35s; }
+    .hero-content h1 {
+      font-family: var(--font-display); font-size: var(--fs-hero); font-weight: 800;
+      color: #fff; line-height: var(--lh-display); letter-spacing: -2px; margin-bottom: 22px;
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s ease .35s, transform .7s ease .35s;
+    }
     .hero-slide.active h1 { opacity: 1; transform: translateY(0); }
     .hero-content h1 span { color: #64B5F6; }
-    .hero-content p { font-size: 1.05rem; line-height: 1.72; color: rgba(255,255,255,.82); margin-bottom: 36px; max-width: 540px; opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease 0.5s, transform 0.7s ease 0.5s; }
+    .hero-content p {
+      font-family: var(--font-body); font-size: 1.125rem; line-height: var(--lh-body);
+      color: rgba(255,255,255,.80); margin-bottom: 38px; max-width: 560px;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .7s ease .5s, transform .7s ease .5s;
+    }
     .hero-slide.active p { opacity: 1; transform: translateY(0); }
-    .hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease 0.65s, transform 0.6s ease 0.65s; }
+    .hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; opacity: 0; transform: translateY(16px); transition: opacity .6s ease .65s, transform .6s ease .65s; }
     .hero-slide.active .hero-actions { opacity: 1; transform: translateY(0); }
-    .btn-hero-primary { padding: 13px 30px; border-radius: var(--radius-md); background: var(--blue); color: #fff; font-size: 15px; font-weight: 700; border: none; display: inline-flex; align-items: center; gap: 9px; transition: all var(--tr); cursor: pointer; }
+    .btn-hero-primary {
+      padding: 15px 34px; border-radius: var(--radius-md); background: var(--blue); color: #fff;
+      font-size: var(--fs-sm); font-weight: 700; font-family: var(--font-display); letter-spacing: .02em;
+      border: none; display: inline-flex; align-items: center; gap: 9px;
+      transition: all var(--tr); cursor: pointer;
+    }
     .btn-hero-primary:hover { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(21,101,192,.4); }
-    .btn-hero-ghost { padding: 13px 30px; border-radius: var(--radius-md); background: rgba(255,255,255,.12); color: #fff; font-size: 15px; font-weight: 700; border: 1px solid rgba(255,255,255,.30); backdrop-filter: blur(8px); display: inline-flex; align-items: center; gap: 9px; transition: all var(--tr); }
+    .btn-hero-ghost {
+      padding: 15px 34px; border-radius: var(--radius-md); background: rgba(255,255,255,.12);
+      color: #fff; font-size: var(--fs-sm); font-weight: 700; font-family: var(--font-display); letter-spacing: .02em;
+      border: 1.5px solid rgba(255,255,255,.32); backdrop-filter: blur(8px);
+      display: inline-flex; align-items: center; gap: 9px; transition: all var(--tr);
+    }
     .btn-hero-ghost:hover { background: rgba(255,255,255,.22); transform: translateY(-2px); }
     .hero-dots { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 8px; }
-    .hero-dot { width: 9px; height: 9px; border-radius: 10px; background: rgba(255,255,255,.35); border: none; cursor: pointer; padding: 0; transition: all 0.4s ease; }
+    .hero-dot { width: 9px; height: 9px; border-radius: 10px; background: rgba(255,255,255,.35); border: none; cursor: pointer; padding: 0; transition: all .4s ease; }
     .hero-dot.active { background: #fff; width: 28px; }
     .hero-arrows { position: absolute; bottom: 24px; right: 44px; z-index: 10; display: flex; gap: 8px; }
     .arrow-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.12); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.22); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all var(--tr); }
@@ -198,68 +200,158 @@
 
     /* ── SECTION COMMONS ── */
     .section { padding: 96px 0; }
-    .section-sm { padding: 56px 0; }
     .container { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
-    .lbl { display: inline-block; font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
-    .section-h { font-family: 'Sora', sans-serif; font-size: clamp(1.6rem, 2.6vw, 2.4rem); font-weight: 800; color: var(--text); line-height: 1.18; letter-spacing: -.4px; margin-bottom: 14px; }
+    .lbl {
+      display: inline-block; font-size: var(--fs-lbl); font-weight: 800;
+      font-family: var(--font-display); color: var(--blue);
+      letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .section-h { font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 800; color: var(--text); line-height: 1.12; letter-spacing: -1px; margin-bottom: 14px; }
     .section-h span { color: var(--blue); }
-    .section-desc { font-size: 1rem; line-height: 1.72; color: var(--grey-600); max-width: 560px; }
+    .section-desc { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--grey-600); max-width: 560px; font-family: var(--font-body); }
     .section-head { margin-bottom: 56px; }
     .section-head.center { text-align: center; }
     .section-head.center .section-desc { margin: 0 auto; }
 
-    /* ── ABOUT SECTION ── */
-    .about-section {
-      background: linear-gradient(135deg, var(--navy) 0%, #0d2144 60%, #0a2a6e 100%);
-      position: relative; overflow: hidden;
-    }
-    .about-section::before {
-      content: ''; position: absolute; top: -120px; right: -80px;
-      width: 500px; height: 500px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(21,101,192,.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .about-section::after {
-      content: ''; position: absolute; bottom: -80px; left: -60px;
-      width: 320px; height: 320px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(100,181,246,.10) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .about-inner {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 72px; align-items: center; position: relative; z-index: 1;
-    }
-    .about-text .lbl { color: #64B5F6; }
-    .about-text .section-h { color: #fff; font-size: clamp(1.55rem, 2.4vw, 2.2rem); }
-    .about-text .section-h span { color: #64B5F6; }
-    .about-text p { font-size: 1rem; line-height: 1.74; color: rgba(255,255,255,.68); margin-bottom: 36px; max-width: 460px; }
-    .about-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,.10); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
-    .about-stat { background: rgba(255,255,255,.04); padding: 22px 18px; text-align: center; transition: background 0.28s ease; }
-    .about-stat:hover { background: rgba(21,101,192,.22); }
-    .about-stat-val { font-family: 'Sora', sans-serif; font-size: 1.9rem; font-weight: 800; color: #64B5F6; line-height: 1; margin-bottom: 5px; }
-    .about-stat-lbl { font-size: 11px; color: rgba(255,255,255,.50); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; }
-    .about-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .about-feat-card { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); border-radius: 16px; padding: 22px 20px; display: flex; flex-direction: column; gap: 12px; transition: all 0.32s ease; cursor: default; position: relative; overflow: hidden; }
-    .about-feat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--blue), #64B5F6); opacity: 0; transition: opacity 0.3s ease; }
-    .about-feat-card:hover { background: rgba(21,101,192,.16); border-color: rgba(100,181,246,.30); transform: translateY(-3px); }
-    .about-feat-card:hover::before { opacity: 1; }
-    .about-feat-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(21,101,192,.35); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .about-feat-icon svg { width: 20px; height: 20px; stroke: #90CAF9; fill: none; stroke-width: 1.8; }
-    .about-feat-title { font-size: 13.5px; font-weight: 700; color: #fff; margin-bottom: 3px; }
-    .about-feat-desc { font-size: 12px; color: rgba(255,255,255,.52); line-height: 1.55; }
+    /* ── ABOUT ── */
 
-    /* ── WHY CHOOSE ── */
-    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    .why-card { background: #fff; border: 1px solid var(--grey-200); border-radius: var(--radius-lg); padding: 30px 26px; transition: all 0.35s cubic-bezier(.22,1,.36,1); position: relative; overflow: hidden; }
-    .why-card::before { content:''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--blue), var(--blue-light)); opacity: 0; transition: opacity 0.3s ease; }
+/* ── ABOUT ── */
+.about-section {
+  background: linear-gradient(135deg, var(--navy) 0%, #0d2144 60%, #0a2a6e 100%);
+  position: relative;
+  overflow: hidden;
+}
+.about-section::before {
+  content: '';
+  position: absolute;
+  top: -120px; right: -80px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(21,101,192,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+ 
+.about-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+ 
+.about-left {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+ 
+.about-text .lbl { color: #64B5F6; }
+.about-text .section-h { color: #fff; }
+.about-text .section-h span { color: #64B5F6; }
+.about-text p {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: rgba(255,255,255,.68);
+  max-width: 460px;
+}
+ 
+.about-bottom-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+ 
+.about-right-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+ 
+/* ── Card — larger padding, bigger text ── */
+.about-feat-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 20px;
+  padding: 30px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all .32s ease;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.about-feat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), #64B5F6);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.about-feat-card:hover {
+  background: rgba(21,101,192,.16);
+  border-color: rgba(100,181,246,.30);
+  transform: translateY(-4px);
+}
+.about-feat-card:hover::before { opacity: 1; }
+ 
+.about-feat-icon {
+  width: 52px; height: 52px;
+  border-radius: 13px;
+  background: rgba(21,101,192,.35);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.about-feat-icon svg {
+  width: 24px; height: 24px;
+  stroke: #90CAF9; fill: none; stroke-width: 1.8;
+}
+ 
+.about-feat-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: #fff;
+  margin-bottom: 5px;
+  line-height: 1.3;
+}
+ 
+.about-feat-desc {
+  font-size: 13.5px;
+  color: rgba(255,255,255,.55);
+  line-height: 1.65;
+}
+ 
+/* ── Responsive ── */
+@media(max-width:1100px){
+  .about-inner { gap: 36px; }
+}
+@media(max-width:900px){
+  .about-inner { grid-template-columns: 1fr; gap: 36px; }
+  .about-bottom-cards { grid-template-columns: 1fr 1fr; }
+  .about-right-grid { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:600px){
+  .about-bottom-cards { grid-template-columns: 1fr; }
+  .about-right-grid { grid-template-columns: 1fr; }
+  .about-feat-card { padding: 24px 20px; }
+}
+
+    /* ── WHY ── */
+    .why-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+    .why-card { background: #fff; border: 1px solid var(--grey-200); border-radius: var(--radius-lg); padding: 30px 26px; transition: all .35s cubic-bezier(.22,1,.36,1); position: relative; overflow: hidden; }
+    .why-card::before { content:''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--blue), var(--blue-light)); opacity: 0; transition: opacity .3s ease; }
     .why-card:hover { transform: translateY(-7px); box-shadow: var(--shadow-lg); border-color: transparent; }
     .why-card:hover::before { opacity: 1; }
-    .why-icon { width: 50px; height: 50px; border-radius: 12px; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; transition: background 0.28s ease; }
-    .why-icon svg { width: 24px; height: 24px; stroke: var(--blue); fill: none; stroke-width: 1.8; transition: stroke 0.28s ease; }
+    .why-icon { width: 50px; height: 50px; border-radius: 12px; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; transition: background .28s ease; }
+    .why-icon svg { width: 24px; height: 24px; stroke: var(--blue); fill: none; stroke-width: 1.8; transition: stroke .28s ease; }
     .why-card:hover .why-icon { background: var(--blue); }
     .why-card:hover .why-icon svg { stroke: #fff; }
-    .why-card h3 { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 9px; }
-    .why-card p { font-size: 13.5px; line-height: 1.66; color: var(--grey-600); }
+    .why-card h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 9px; letter-spacing: -.2px; }
+    .why-card p { font-size: var(--fs-xs); line-height: 1.72; color: var(--grey-600); }
 
     /* ── EVERYTHING ── */
     .everything { background: var(--navy); }
@@ -268,309 +360,654 @@
     .check-row { display: flex; align-items: flex-start; gap: 9px; }
     .check-tick { width: 20px; height: 20px; border-radius: 50%; background: var(--blue); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
     .check-tick svg { width: 10px; height: 10px; stroke: #fff; fill: none; stroke-width: 3; }
-    .check-row span { font-size: 13.5px; color: rgba(255,255,255,.80); font-weight: 500; line-height: 1.45; }
-    .dash-mock { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.13); border-radius: var(--radius-lg); padding: 26px; backdrop-filter: blur(10px); }
+    .check-row span { font-size: var(--fs-xs); color: rgba(255,255,255,.80); font-weight: 500; line-height: 1.45; font-family: var(--font-body); }
+    .dash-mock { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.13); border-radius: var(--radius-lg); padding: 26px; }
     .mock-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .mock-dots { display: flex; gap: 5px; }
     .mock-dot { width: 9px; height: 9px; border-radius: 50%; }
-    .mock-dot:nth-child(1){background:#FF5F57} .mock-dot:nth-child(2){background:#FFBD2E} .mock-dot:nth-child(3){background:#28C840}
-    .mock-title { font-size: 11px; color: rgba(255,255,255,.40); font-weight: 600; letter-spacing: .5px; }
+    .mock-dot:nth-child(1){background:#FF5F57}.mock-dot:nth-child(2){background:#FFBD2E}.mock-dot:nth-child(3){background:#28C840}
+    .mock-title { font-size: 11px; color: rgba(255,255,255,.40); font-weight: 600; letter-spacing: .5px; font-family: var(--font-display); }
     .mock-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .mock-stat { background: rgba(255,255,255,.08); border-radius: 10px; padding: 12px; text-align: center; }
-    .mock-stat-val { font-family: 'Sora', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; }
+    .mock-stat-val { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: #fff; }
     .mock-stat-lbl { font-size: 10px; color: rgba(255,255,255,.40); margin-top: 2px; text-transform: uppercase; letter-spacing: .6px; }
     .mock-bars { display: flex; flex-direction: column; gap: 10px; }
-    .mock-bar-lbl { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,.55); margin-bottom: 5px; }
+    .mock-bar-lbl { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,.55); margin-bottom: 5px; font-family: var(--font-body); }
     .mock-bar-bg { height: 6px; background: rgba(255,255,255,.10); border-radius: 6px; overflow: hidden; }
     .mock-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--blue), var(--blue-light)); width: 0; transition: width 1.4s cubic-bezier(.22,1,.36,1); }
 
-    /* ── FEATURES SECTION ── */
-    .features { background: var(--grey-50); }
-    .feat-tabs-wrap { display: flex; gap: 0; border-radius: 14px; background: #fff; border: 1px solid var(--grey-200); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 48px; flex-wrap: wrap; }
-    .feat-tab { flex: 1; min-width: 110px; padding: 14px 8px; font-size: 12.5px; font-weight: 700; color: var(--grey-600); background: none; border: none; cursor: pointer; position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; transition: all 0.28s ease; letter-spacing: 0.02em; border-right: 1px solid var(--grey-200); }
-    .feat-tab:last-child { border-right: none; }
-    .feat-tab::after { content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 3px; border-radius: 3px 3px 0 0; background: var(--blue); opacity: 0; transition: opacity 0.28s ease; }
-    .feat-tab.active { color: var(--blue); background: var(--blue-pale); }
-    .feat-tab.active::after { opacity: 1; }
-    .feat-tab:hover:not(.active) { color: var(--blue); background: #f0f6ff; }
-    .feat-tab-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--grey-100); display: flex; align-items: center; justify-content: center; transition: background 0.28s ease; }
-    .feat-tab-icon svg { width: 18px; height: 18px; stroke: var(--grey-400); fill: none; stroke-width: 1.8; transition: stroke 0.28s ease; }
-    .feat-tab.active .feat-tab-icon { background: var(--blue); }
-    .feat-tab.active .feat-tab-icon svg { stroke: #fff; }
-    .feat-tab-lbl { font-size: 11.5px; }
-    .feat-panels-wrap { position: relative; min-height: 420px; }
-    .feat-panel { position: absolute; inset: 0; opacity: 0; pointer-events: none; transform: translateX(40px) scale(0.98); transition: opacity 0.45s cubic-bezier(.22,1,.36,1), transform 0.45s cubic-bezier(.22,1,.36,1); }
-    .feat-panel.active { position: relative; opacity: 1; pointer-events: auto; transform: none; }
-    .feat-panel.exit { position: absolute; opacity: 0; transform: translateX(-40px) scale(0.98); pointer-events: none; }
-    .feat-panel-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-    .feat-text h3 { font-family: 'Sora', sans-serif; font-size: 1.7rem; font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -.3px; }
-    .feat-text p { font-size: 14.5px; line-height: 1.72; color: var(--grey-600); margin-bottom: 24px; }
-    .feat-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-    .feat-list-item { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; color: var(--text); }
-    .feat-list-item .fl-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; }
-    .feat-list-item .fl-icon svg { width: 11px; height: 11px; stroke: var(--blue); fill: none; stroke-width: 3; }
-    .feat-visual { background: #fff; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid var(--grey-200); }
-    .feat-vis-head { background: var(--blue); padding: 15px 20px; display: flex; align-items: center; gap: 9px; }
-    .feat-vis-head svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
-    .feat-vis-head span { color: #fff; font-size: 13px; font-weight: 700; flex: 1; }
-    .feat-vis-body { padding: 22px; }
-    .dash-vis-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-    .dv-stat { background: var(--blue-pale); border-radius: 10px; padding: 13px; text-align: center; cursor: pointer; transition: all 0.28s ease; border: 2px solid transparent; }
-    .dv-stat:hover { border-color: var(--blue); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .dv-stat-val { font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--blue); }
-    .dv-stat-lbl { font-size: 10px; color: var(--grey-400); margin-top: 2px; text-transform: uppercase; letter-spacing: .6px; }
-    .dv-bars { display: flex; flex-direction: column; gap: 11px; }
-    .dv-bar-lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--grey-600); margin-bottom: 5px; font-weight: 600; }
-    .dv-bar-bg { height: 7px; background: var(--grey-200); border-radius: 6px; overflow: hidden; cursor: pointer; }
-    .dv-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--blue), var(--blue-light)); width: 0; transition: width 1.4s cubic-bezier(.22,1,.36,1); }
-    .topic-picker { display: flex; flex-direction: column; gap: 9px; }
-    .topic-item { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 11px; border: 1.5px solid var(--grey-200); cursor: pointer; transition: all 0.25s ease; background: #fff; }
-    .topic-item:hover, .topic-item.active { border-color: var(--blue); background: var(--blue-pale); box-shadow: var(--shadow-sm); }
-    .topic-item-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .topic-item.active .topic-item-icon { background: var(--blue); }
-    .topic-item-icon svg { width: 18px; height: 18px; stroke: var(--blue); fill: none; stroke-width: 1.8; }
-    .topic-item.active .topic-item-icon svg { stroke: #fff; }
-    .topic-item-info { flex: 1; }
-    .topic-item-name { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 1px; }
-    .topic-item-meta { font-size: 11px; color: var(--grey-400); }
-    .topic-badge { padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; }
-    .badge-blue { background: var(--blue-pale); color: var(--blue); }
-    .badge-green { background: #dcfce7; color: #166534; }
-    .badge-amber { background: #fef3c7; color: #92400e; }
-    .mock-q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .mock-q-num { font-size: 11px; font-weight: 700; color: var(--grey-400); text-transform: uppercase; letter-spacing: .5px; }
-    .mock-timer { background: var(--blue); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
-    .timer-blink { width: 5px; height: 5px; border-radius: 50%; background: #ff6b6b; animation: blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-    .mock-q-text { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 15px; line-height: 1.55; }
-    .mock-q-opts { display: flex; flex-direction: column; gap: 8px; }
-    .mock-q-opt { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 9px; border: 1.5px solid var(--grey-200); cursor: pointer; transition: all 0.22s ease; background: #fff; }
-    .mock-q-opt:hover { border-color: var(--blue); background: var(--blue-pale); }
-    .mock-q-opt.selected { border-color: var(--blue); background: var(--blue-pale); }
-    .mock-q-opt.correct { border-color: #16a34a; background: #dcfce7; }
-    .mock-q-opt.wrong { border-color: #dc2626; background: #fee2e2; }
-    .opt-circle { width: 26px; height: 26px; border-radius: 50%; background: var(--grey-100); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text); flex-shrink: 0; transition: all 0.22s; }
-    .mock-q-opt.selected .opt-circle { background: var(--blue); color: #fff; }
-    .mock-q-opt.correct .opt-circle { background: #16a34a; color: #fff; }
-    .mock-q-opt.wrong .opt-circle { background: #dc2626; color: #fff; }
-    .opt-label { font-size: 13px; color: var(--text); font-weight: 500; }
-    .mock-q-actions { display: flex; gap: 8px; margin-top: 13px; }
-    .mock-check-btn { flex: 1; padding: 10px; border-radius: 9px; background: var(--blue); color: #fff; font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; transition: all 0.22s; }
-    .mock-check-btn:hover { background: var(--blue-dark); }
-    .mock-next-btn { padding: 10px 18px; border-radius: 9px; background: var(--grey-100); color: var(--text); font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; transition: all 0.22s; }
-    .mock-next-btn:hover { background: var(--grey-200); }
-    .mock-result-msg { margin-top: 8px; font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 8px; display: none; }
-    .mock-result-msg.correct { background: #dcfce7; color: #166534; display: block; }
-    .mock-result-msg.wrong { background: #fee2e2; color: #991b1b; display: block; }
-    .papers-list { display: flex; flex-direction: column; gap: 9px; }
-    .paper-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 11px; border: 1.5px solid var(--grey-200); cursor: pointer; transition: all 0.25s ease; background: #fff; }
-    .paper-row:hover { border-color: var(--blue); background: var(--blue-pale); transform: translateX(4px); }
-    .paper-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .paper-icon svg { width: 18px; height: 18px; stroke: var(--blue); fill: none; stroke-width: 1.8; }
-    .paper-info { flex: 1; }
-    .paper-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 1px; }
-    .paper-meta { font-size: 11px; color: var(--grey-400); }
-    .history-list { display: flex; flex-direction: column; gap: 9px; }
-    .history-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 11px; border: 1.5px solid var(--grey-200); background: #fff; transition: all 0.25s ease; }
-    .history-row:hover { border-color: var(--blue-light); box-shadow: var(--shadow-sm); }
-    .history-score-ring { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 800; flex-shrink: 0; }
-    .history-score-ring.high { background: #dcfce7; color: #166534; border: 2px solid #16a34a; }
-    .history-score-ring.mid  { background: #fef3c7; color: #92400e; border: 2px solid #f59e0b; }
-    .history-score-ring.low  { background: var(--blue-pale); color: var(--blue); border: 2px solid var(--blue); }
-    .history-info { flex: 1; }
-    .history-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 1px; }
-    .history-meta { font-size: 11px; color: var(--grey-400); }
-    .history-trend { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
-    .history-trend.up { background: #dcfce7; color: #166534; }
-    .history-trend.same { background: var(--grey-100); color: var(--grey-600); }
-    .plans-mini { display: flex; flex-direction: column; gap: 9px; }
-    .plan-mini-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 13px; border: 2px solid var(--grey-200); cursor: pointer; transition: all 0.28s ease; background: #fff; position: relative; }
-    .plan-mini-card:hover { border-color: var(--blue); box-shadow: var(--shadow-sm); transform: translateX(4px); }
-    .plan-mini-card.featured { border-color: var(--blue); background: var(--blue-pale); }
-    .plan-mini-price { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--blue); width: 54px; flex-shrink: 0; }
-    .plan-mini-info { flex: 1; }
-    .plan-mini-name { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 1px; }
-    .plan-mini-desc { font-size: 11px; color: var(--grey-400); }
-    .plan-mini-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--blue); color: #fff; position: absolute; top: 9px; right: 13px; }
+    /* ═══════════════════════════════════════════════════════
+       PLATFORM FEATURES — IMAGE 1 STYLE: Full-width stack cards
+       Large number, huge bold title, desc, two pill buttons, right image
+    ═══════════════════════════════════════════════════════ */
+   .features {
+  background: #000;
+  position: relative;
+}
+ 
+.feat-header-wrap {
+  padding: 96px 0 56px;
+  background: #000;
+  position: relative;
+  z-index: 2;
+}
+.feat-header-wrap .lbl        { color: #64B5F6; }
+.feat-header-wrap .section-h  { color: #fff; }
+.feat-header-wrap .section-h span { color: #64B5F6; }
+.feat-header-wrap .section-desc   { color: rgba(255,255,255,.55); }
+ 
+.feat-scroll-track { position: relative; }
+ 
+.feat-sticky-viewport {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+ 
+.feat-stack {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+ 
+.feat-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  padding: 0;
+  transform: translateY(100vh);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity   0.50s cubic-bezier(0.22, 1, 0.36, 1),
+    filter    0.50s ease;
+  will-change: transform, opacity;
+}
+ 
+.feat-card.fc-active {
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
+  filter: brightness(1) !important;
+  pointer-events: auto;
+  z-index: 20 !important;
+}
+ 
+.feat-card.fc-behind {
+  pointer-events: none;
+}
+ 
+.fc-card-surface {
+  background: #000;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0 6%;
+  align-items: center;
+  padding: 0 8% 0 8%;
+}
+ 
+.fc-num {
+  position: absolute;
+  top: 32px;
+  left: 8%;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.35);
+  letter-spacing: 2px;
+  line-height: 1;
+  user-select: none;
+}
+ 
+.fc-body {
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.fc-cat-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,.35);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .4s ease .1s, transform .4s ease .1s;
+}
+.feat-card.fc-active .fc-cat-label { opacity: 1; transform: translateY(0); }
+ 
+.fc-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 4.5vw, 4.2rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 0.95;
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .55s ease .12s, transform .55s ease .12s;
+}
+.feat-card.fc-active .fc-title { opacity: 1; transform: translateY(0); }
+ 
+.fc-desc {
+  font-size: 1rem;
+  line-height: 1.70;
+  color: rgba(255,255,255,.50);
+  max-width: 520px;
+  margin-bottom: 36px;
+  font-family: var(--font-body);
+  font-weight: 400;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .5s ease .22s, transform .5s ease .22s;
+}
+.feat-card.fc-active .fc-desc { opacity: 1; transform: translateY(0); }
+ 
+.fc-btns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .45s ease .30s, transform .45s ease .30s;
+}
+.feat-card.fc-active .fc-btns { opacity: 1; transform: translateY(0); }
+ 
+.fc-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 30px;
+  border-radius: 50px;
+  background: #1447b3;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 2px solid #1447b3;
+  transition: all .22s;
+  cursor: pointer;
+}
+.fc-btn-primary:hover { background: #0a2a6e; border-color: #0a2a6e; transform: translateY(-2px); }
+.fc-btn-primary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+ 
+.fc-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 30px;
+  border-radius: 50px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.80);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 2px solid rgba(255,255,255,.15);
+  transition: all .22s;
+  cursor: pointer;
+}
+.fc-btn-secondary:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.30); transform: translateY(-2px); }
+.fc-btn-secondary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+ 
+.fc-visual {
+  width: 100%;
+  height: clamp(260px, 45vh, 420px);
+  border-radius: 6px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  position: relative;
+  overflow: hidden;
+  transform: translateX(40px) scale(.94);
+  opacity: 0;
+  transition: opacity .6s cubic-bezier(.22,1,.36,1) .15s, transform .6s cubic-bezier(.22,1,.36,1) .15s;
+}
+.feat-card.fc-active .fc-visual {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  border-color: rgba(100,181,246,.15);
+}
+ 
+.fc-visual-inner {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  background: linear-gradient(135deg, rgba(20,71,179,.25) 0%, rgba(0,0,0,.80) 100%);
+  position: relative;
+}
+ 
+.fc-visual-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(100,181,246,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100,181,246,.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+ 
+.fc-visual-icon {
+  width: 72px; height: 72px; border-radius: 16px;
+  background: rgba(20,71,179,.35);
+  border: 1px solid rgba(100,181,246,.25);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+  transition: transform .6s cubic-bezier(.22,1,.36,1) .25s, background .35s;
+}
+.feat-card.fc-active .fc-visual-icon { transform: scale(1.10) translateY(-6px); background: #1447b3; }
+.fc-visual-icon svg { width: 30px; height: 30px; stroke: #90CAF9; fill: none; stroke-width: 1.6; transition: stroke .3s; }
+.feat-card.fc-active .fc-visual-icon svg { stroke: #fff; }
+ 
+.fc-visual-label {
+  font-size: 11px; font-weight: 700; font-family: var(--font-display);
+  color: rgba(100,181,246,.50); letter-spacing: 2px; text-transform: uppercase;
+  position: relative; z-index: 1;
+}
+ 
+.fc-visual-title-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 20px 22px;
+  background: linear-gradient(0deg, rgba(0,0,0,.85) 0%, transparent 100%);
+  z-index: 2;
+}
+.fc-visual-title-overlay span {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+ 
+.feat-progress-dots {
+  position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 8px; z-index: 100;
+}
+.feat-prog-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  transition: background .35s, height .35s, border-radius .35s;
+}
+.feat-prog-dot.fp-active { background: #64B5F6; height: 24px; border-radius: 3px; }
+ 
+.feat-scroll-hint {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  opacity: 0; transition: opacity .4s;
+  pointer-events: none; z-index: 50;
+}
+.feat-scroll-hint.visible { opacity: 1; }
+.feat-scroll-hint span { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.30); font-family: var(--font-display); }
+.feat-scroll-hint-arrow { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; animation: bounce-arrow 1.8s ease-in-out infinite; }
+.feat-scroll-hint-arrow svg { width: 14px; height: 14px; stroke: rgba(255,255,255,.35); fill: none; stroke-width: 2; }
+@keyframes bounce-arrow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+ 
+/* ── Responsive ── */
+@media(max-width:1100px){
+  .fc-card-surface {
+    grid-template-columns: 1fr 340px;
+    gap: 0 4%;
+    padding: 0 6% 0 6%;
+  }
+}
+ 
+@media(max-width:900px){
+  .fc-card-surface {
+    grid-template-columns: 1fr;
+    gap: 28px 0;
+    padding: 80px 6% 40px;
+    align-content: center;
+  }
+  .fc-visual { height: 200px; }
+  .fc-title { font-size: 2.6rem; letter-spacing: -1px; }
+  .fc-num { left: 6%; }
+}
+ 
+@media(max-width:768px){
+  .fc-card-surface {
+    padding: 72px 5% 32px;
+    gap: 20px 0;
+  }
+  .fc-title { font-size: 2rem; letter-spacing: -0.5px; }
+  .fc-num { left: 5%; }
+  .fc-visual { height: 180px; }
+}
+ 
+@media(max-width:480px){
+  .fc-card-surface { padding: 64px 4% 28px; }
+  .fc-title { font-size: 1.7rem; }
+  .fc-num { left: 4%; }
+}
+ 
+@media(prefers-reduced-motion:reduce){
+  .feat-card { transition: none !important; }
+  .feat-card.fc-active { transform: translateY(0) !important; opacity: 1 !important; filter: none !important; }
+}
 
-    /* ── HOW IT WORKS ── */
-    .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; position: relative; }
-    .how-grid::before { content:''; position: absolute; top: 34px; left: calc(12.5% + 16px); right: calc(12.5% + 16px); height: 2px; background: linear-gradient(90deg, var(--blue-pale), var(--blue), var(--blue-pale)); z-index: 0; }
-    .how-step { text-align: center; position: relative; z-index: 1; }
-    .how-num { width: 68px; height: 68px; border-radius: 50%; background: var(--blue); color: #fff; font-family: 'Sora', sans-serif; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 28px rgba(21,101,192,.35); position: relative; transition: transform 0.35s ease, box-shadow 0.35s ease; }
-    .how-num:hover { transform: scale(1.1); box-shadow: 0 14px 40px rgba(21,101,192,.45); }
-    .how-num::after { content:''; position: absolute; inset: -6px; border-radius: 50%; border: 2px dashed rgba(21,101,192,.28); animation: spin-slow 12s linear infinite; }
-    @keyframes spin-slow { to { transform: rotate(360deg); } }
-    .how-step h3 { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-    .how-step p { font-size: 13.5px; color: var(--grey-600); line-height: 1.62; }
+    /* ── HOW IT WORKS — VERTICAL TIMELINE ── */
+    .how-section { background: #fff; }
+    .how-timeline-wrap { position: relative; max-width: 680px; margin: 0 auto; }
+    .how-timeline-line { position: absolute; left: 34px; top: 0; bottom: 0; width: 2px; background: var(--grey-200); z-index: 0; }
+    .how-timeline-line-fill { position: absolute; left: 0; top: 0; width: 100%; background: linear-gradient(180deg, var(--blue), var(--blue-light)); transition: height 0s; border-radius: 2px; }
+    .how-step { display: flex; align-items: flex-start; gap: 24px; position: relative; z-index: 1; margin-bottom: 0; padding: 0 0 44px; }
+    .how-step:last-child { padding-bottom: 0; }
+    .how-num-wrap { flex-shrink: 0; position: relative; }
+    .how-num {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: var(--grey-100); border: 3px solid var(--grey-200);
+      color: var(--grey-400);
+      font-family: var(--font-display); font-size: 1.45rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .5s cubic-bezier(.22,1,.36,1); position: relative; z-index: 2;
+    }
+    .how-step.reached .how-num { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 6px 24px rgba(21,101,192,.35); transform: scale(1.05); }
+    .how-step-body { padding-top: 14px; }
+    .how-step h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--grey-400); margin-bottom: 7px; transition: color .4s ease; }
+    .how-step.reached h3 { color: var(--text); }
+    .how-step p { font-size: var(--fs-sm); color: var(--grey-400); line-height: 1.7; transition: color .4s ease; font-family: var(--font-body); }
+    .how-step.reached p { color: var(--grey-600); }
 
     /* ── EXAM EXPERIENCE ── */
     .exam-exp { background: var(--navy); }
     .exam-exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
     .exam-feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
-    .exam-feat-item { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: var(--radius-md); padding: 14px 13px; display: flex; align-items: center; gap: 10px; transition: all var(--tr); }
+    .exam-feat-item { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: var(--radius-md); padding: 13px 12px; display: flex; align-items: center; gap: 10px; transition: all var(--tr); }
     .exam-feat-item:hover { background: rgba(21,101,192,.20); border-color: var(--blue); transform: translateY(-2px); }
-    .ef-icon { width: 34px; height: 34px; border-radius: 8px; background: rgba(21,101,192,.35); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .ef-icon svg { width: 16px; height: 16px; stroke: #90CAF9; fill: none; stroke-width: 2; }
-    .ef-lbl { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.80); }
+    .ef-icon { width: 32px; height: 32px; border-radius: 7px; background: rgba(21,101,192,.35); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ef-icon svg { width: 15px; height: 15px; stroke: #90CAF9; fill: none; stroke-width: 2; }
+    .ef-lbl { font-size: var(--fs-xs); font-weight: 600; font-family: var(--font-body); color: rgba(255,255,255,.80); }
     .exam-ui { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-lg); overflow: hidden; }
     .exam-ui-head { background: var(--blue); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .exam-ui-head h4 { color: #fff; font-size: 13.5px; font-weight: 700; }
-    .timer-pill { background: rgba(255,255,255,.18); padding: 4px 12px; border-radius: 20px; color: #fff; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .exam-ui-head h4 { color: #fff; font-size: 13.5px; font-weight: 700; font-family: var(--font-display); }
+    .timer-pill { background: rgba(255,255,255,.18); padding: 4px 12px; border-radius: 20px; color: #fff; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; font-family: var(--font-display); }
     .exam-ui-body { padding: 22px; }
-    .q-num { font-size: 11px; color: rgba(255,255,255,.40); font-weight: 600; margin-bottom: 8px; letter-spacing: .5px; }
-    .q-text { font-size: 14.5px; color: #fff; font-weight: 600; margin-bottom: 18px; line-height: 1.5; }
-    .q-options { display: flex; flex-direction: column; gap: 9px; }
-    .q-option { display: flex; align-items: center; gap: 11px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); border-radius: 9px; padding: 11px 14px; cursor: pointer; transition: all var(--tr); }
+    .q-num { font-size: 11px; color: rgba(255,255,255,.40); font-weight: 600; margin-bottom: 8px; letter-spacing: .5px; font-family: var(--font-display); }
+    .q-text { font-size: 14.5px; color: #fff; font-weight: 600; margin-bottom: 16px; line-height: 1.5; font-family: var(--font-body); }
+    .q-options { display: flex; flex-direction: column; gap: 8px; }
+    .q-option { display: flex; align-items: center; gap: 11px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); border-radius: 9px; padding: 10px 13px; cursor: pointer; transition: all var(--tr); }
     .q-option.selected { background: rgba(21,101,192,.28); border-color: var(--blue); }
     .q-option:hover { background: rgba(255,255,255,.09); }
-    .opt-key { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .opt-key { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; font-family: var(--font-display); color: #fff; flex-shrink: 0; }
     .q-option.selected .opt-key { background: var(--blue); }
-    .opt-text { font-size: 13px; color: rgba(255,255,255,.80); }
-    .exam-ui-foot { border-top: 1px solid rgba(255,255,255,.10); padding: 13px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .exam-prog-txt { font-size: 11.5px; color: rgba(255,255,255,.40); }
+    .opt-text { font-size: 13px; color: rgba(255,255,255,.80); font-family: var(--font-body); }
+    .exam-ui-foot { border-top: 1px solid rgba(255,255,255,.10); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .exam-prog-txt { font-size: 11.5px; color: rgba(255,255,255,.40); font-family: var(--font-body); }
     .exam-nav { display: flex; gap: 8px; }
-    .exam-nav-btn { padding: 7px 15px; border-radius: 7px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .exam-nav-btn { padding: 7px 15px; border-radius: 7px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; font-family: var(--font-display); }
     .exam-nav-btn.prev { background: rgba(255,255,255,.10); color: rgba(255,255,255,.70); }
     .exam-nav-btn.next { background: var(--blue); color: #fff; }
 
     /* ── PRICING ── */
-    .pricing { background: #fff; }
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .price-card { background: #fff; border: 1px solid var(--grey-200); border-radius: var(--radius-lg); padding: 36px 30px; position: relative; overflow: hidden; transition: all 0.35s cubic-bezier(.22,1,.36,1); }
-    .price-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
-    .price-card.featured { background: var(--blue); border-color: var(--blue); transform: translateY(-10px); box-shadow: var(--shadow-lg); }
-    .price-popular { position: absolute; top: 18px; right: 18px; background: #fbbf24; color: #92400e; padding: 3px 11px; border-radius: 20px; font-size: 10.5px; font-weight: 700; }
-    .price-plan { font-size: 11.5px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; }
-    .price-card.featured .price-plan { color: rgba(255,255,255,.70); }
-    .price-amount { font-family: 'Sora', sans-serif; font-size: 2.9rem; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 7px; }
-    .price-card.featured .price-amount { color: #fff; }
-    .price-amount sup { font-size: 1.2rem; vertical-align: super; margin-right: 2px; }
-    .price-amount sub { font-size: .95rem; font-weight: 500; opacity: .60; }
-    .price-desc { font-size: 13px; color: var(--grey-600); margin-bottom: 24px; }
-    .price-card.featured .price-desc { color: rgba(255,255,255,.65); }
-    .price-divider { height: 1px; background: var(--grey-200); margin-bottom: 22px; }
-    .price-card.featured .price-divider { background: rgba(255,255,255,.18); }
-    .price-feats { display: flex; flex-direction: column; gap: 11px; margin-bottom: 28px; }
-    .price-feat { display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: var(--text); }
-    .price-card.featured .price-feat { color: rgba(255,255,255,.90); }
-    .price-check { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; }
-    .price-card.featured .price-check { background: rgba(255,255,255,.20); }
-    .price-check svg { width: 10px; height: 10px; stroke: var(--blue); fill: none; stroke-width: 3; }
-    .price-card.featured .price-check svg { stroke: #fff; }
-    .btn-price { display: block; text-align: center; padding: 12px 22px; border-radius: var(--radius-md); font-size: 14px; font-weight: 700; border: 2px solid var(--blue); color: var(--blue); background: transparent; transition: all var(--tr); cursor: pointer; }
-    .btn-price:hover { background: var(--blue); color: #fff; }
-    .btn-price.white-inv { background: #fff; color: var(--blue); border-color: #fff; }
-    .btn-price.white-inv:hover { background: var(--blue-pale); border-color: var(--blue-pale); }
+    /* ── PRICING — all cards same style, no featured highlight ── */
+.pricing { background: #fff; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+ 
+.price-card {
+  background: #fff;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-lg);
+  padding: 36px 30px;
+  position: relative;
+  overflow: hidden;
+  transition: all .35s cubic-bezier(.22,1,.36,1);
+}
+.price-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+ 
+/* remove all .price-card.featured overrides */
+.price-card.featured {
+  background: #fff;
+  border-color: var(--grey-200);
+  transform: none;
+  box-shadow: none;
+}
+.price-card.featured:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+ 
+.price-popular { display: none; }
+ 
+.price-plan { font-size: var(--fs-lbl); font-weight: 700; font-family: var(--font-display); color: var(--blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.price-card.featured .price-plan { color: var(--blue); }
+ 
+.price-amount { font-family: var(--font-display); font-size: 3rem; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 7px; letter-spacing: -1px; }
+.price-card.featured .price-amount { color: var(--text); }
+ 
+.price-amount sup { font-size: 1.2rem; vertical-align: super; margin-right: 2px; }
+.price-amount sub { font-size: .95rem; font-weight: 500; opacity: .60; }
+ 
+.price-desc { font-size: var(--fs-sm); color: var(--grey-600); margin-bottom: 24px; font-family: var(--font-body); }
+.price-card.featured .price-desc { color: var(--grey-600); }
+ 
+.price-divider { height: 1px; background: var(--grey-200); margin-bottom: 22px; }
+.price-card.featured .price-divider { background: var(--grey-200); }
+ 
+.price-feats { display: flex; flex-direction: column; gap: 11px; margin-bottom: 28px; }
+.price-feat { display: flex; align-items: center; gap: 9px; font-size: var(--fs-sm); color: var(--text); font-family: var(--font-body); }
+.price-card.featured .price-feat { color: var(--text); }
+ 
+.price-check { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; }
+.price-card.featured .price-check { background: var(--blue-pale); }
+.price-check svg { width: 10px; height: 10px; stroke: var(--blue); fill: none; stroke-width: 3; }
+.price-card.featured .price-check svg { stroke: var(--blue); }
+ 
+.btn-price { display: block; text-align: center; padding: 12px 22px; border-radius: var(--radius-md); font-size: var(--fs-sm); font-weight: 700; font-family: var(--font-display); border: 2px solid var(--blue); color: var(--blue); background: transparent; transition: all var(--tr); cursor: pointer; }
+.btn-price:hover { background: var(--blue); color: #fff; }
+.btn-price.white-inv { background: transparent; color: var(--blue); border-color: var(--blue); }
+.btn-price.white-inv:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+ 
+.no-plans-msg { text-align: center; padding: 60px 20px; color: var(--grey-600); }
+.no-plans-msg svg { width: 48px; height: 48px; stroke: var(--grey-400); fill: none; stroke-width: 1.5; margin: 0 auto 16px; }
+.no-plans-msg h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--grey-800); margin-bottom: 8px; }
 
-    /* ── NO PLANS STATE ── */
-    .no-plans-msg { text-align: center; padding: 60px 20px; color: var(--grey-600); }
-    .no-plans-msg svg { width: 48px; height: 48px; stroke: var(--grey-400); fill: none; stroke-width: 1.5; margin: 0 auto 16px; }
-    .no-plans-msg h3 { font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--grey-800); margin-bottom: 8px; }
-    .no-plans-msg p { font-size: 14px; }
+    /* ══════════════════════════════════════════════
+       FAQ — IMAGE 2 STYLE: numbered, divider lines, + icon
+       Black bg, Work Sans font, clean minimal
+    ══════════════════════════════════════════════ */
+    .faq {
+      background: #000;
+      padding: 96px 0;
+    }
+    .faq .container {}
+    .faq .section-head.center .lbl { color: #64B5F6; }
+    .faq .section-head.center .section-h { color: #fff; }
 
-    /* ── FAQ ── */
-    .faq { background: var(--grey-50); }
-    .faq-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
-    .faq-item { background: #fff; border: 1px solid var(--grey-200); border-radius: var(--radius-md); overflow: hidden; transition: box-shadow var(--tr); }
-    .faq-item:hover { box-shadow: var(--shadow-sm); }
-    .faq-q { width: 100%; padding: 19px 26px; display: flex; align-items: center; justify-content: space-between; gap: 14px; background: none; border: none; font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer; text-align: left; transition: color var(--tr); }
-    .faq-q:hover, .faq-q.active { color: var(--blue); }
-    .faq-arr { width: 26px; height: 26px; border-radius: 50%; background: var(--blue-pale); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; color: var(--blue); transition: all 0.3s ease; line-height: 1; }
-    .faq-q.active .faq-arr { background: var(--blue); color: #fff; transform: rotate(45deg); }
-    .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(.22,1,.36,1); }
-    .faq-a-inner { padding: 0 26px 20px; font-size: 14px; line-height: 1.72; color: var(--grey-600); }
-    .faq-a.open { max-height: 300px; }
+    .faq-list {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Each FAQ item — no card, just a row with divider */
+    .faq-item {
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      position: relative;
+    }
+    .faq-item:first-child {
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* The question row */
+    .faq-q {
+      width: 100%;
+      padding: 36px 0;
+      display: grid;
+      grid-template-columns: 80px 1fr 48px;
+      align-items: center;
+      gap: 0 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: opacity var(--tr);
+    }
+    .faq-q:hover { opacity: 0.85; }
+
+    /* The number — like "01" in Image 2 */
+    .faq-num {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.35);
+      letter-spacing: 1px;
+      line-height: 1;
+      transition: color .3s ease;
+    }
+    .faq-q.active .faq-num,
+    .faq-q:hover .faq-num { color: rgba(255,255,255,.70); }
+
+    /* The question text — large, Work Sans */
+    .faq-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2vw, 1.45rem);
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+    }
+
+    /* The + icon — right aligned */
+    .faq-plus {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.55);
+      font-size: 24px;
+      font-weight: 300;
+      line-height: 1;
+      font-family: var(--font-body);
+      transition: transform .35s cubic-bezier(.22,1,.36,1), color .25s;
+      flex-shrink: 0;
+      justify-self: end;
+    }
+    .faq-q.active .faq-plus {
+      transform: rotate(45deg);
+      color: #fff;
+    }
+
+    /* Answer panel */
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .45s cubic-bezier(.22,1,.36,1);
+    }
+    .faq-a.open { max-height: 320px; }
+
+    .faq-a-inner {
+      padding: 0 0 36px 104px; /* align under the question text */
+      font-size: 1rem;
+      line-height: 1.76;
+      color: rgba(255,255,255,.50);
+      font-family: var(--font-body);
+      font-weight: 400;
+      max-width: 640px;
+    }
 
     /* ── CTA ── */
     .cta-section { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 55%, var(--blue-dark) 100%); position: relative; overflow: hidden; }
     .cta-section::before { content:''; position: absolute; top: -80px; right: -80px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(21,101,192,.30) 0%, transparent 70%); }
-    .cta-section::after { content:''; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(100,181,246,.12) 0%, transparent 70%); }
     .cta-inner { text-align: center; position: relative; z-index: 1; }
-    .cta-inner h2 { font-family: 'Sora', sans-serif; font-size: clamp(1.7rem, 3vw, 2.6rem); font-weight: 800; color: #fff; margin-bottom: 16px; letter-spacing: -.4px; }
-    .cta-inner p { font-size: 1rem; color: rgba(255,255,255,.68); margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .cta-inner h2 { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 800; color: #fff; margin-bottom: 16px; letter-spacing: -1px; line-height: 1.1; }
+    .cta-inner p { font-size: var(--fs-body); color: rgba(255,255,255,.68); margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; font-family: var(--font-body); }
     .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
     /* ── FOOTER ── */
     .footer { background: var(--navy); border-top: 1px solid rgba(255,255,255,.07); padding: 70px 0 0; }
     .footer-grid { display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 56px; }
-    .footer-logo-wrap { display: inline-flex; align-items: center; background: #1447b3; border-radius: 10px; padding: 10px 20px; margin-bottom: 20px; }
-    .footer-logo-wrap img { height: auto; width: 140px; object-fit: contain; filter: brightness(0) invert(1); display: block; }
-    .footer-brand p { font-size: 13.5px; color: rgba(255,255,255,.50); line-height: 1.72; max-width: 280px; margin-bottom: 20px; }
-    .footer-contact { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.55); margin-bottom: 9px; }
+    .footer-logo-wrap { display: inline-flex; align-items: center; background: transparent; padding: 0; margin-bottom: 20px; border: none; border-radius: 0; box-shadow: none; }
+    .footer-logo-wrap img { height: auto; width: 140px; object-fit: contain; display: block; filter: brightness(0) invert(1); }
+    .footer-brand p { font-size: var(--fs-xs); color: rgba(255,255,255,.50); line-height: 1.74; max-width: 280px; margin-bottom: 20px; font-family: var(--font-body); }
+    .footer-contact { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.55); margin-bottom: 9px; font-family: var(--font-body); }
     .footer-contact a { color: rgba(255,255,255,.55); transition: color var(--tr); }
     .footer-contact a:hover { color: var(--blue-light); }
     .footer-contact svg { width: 14px; height: 14px; stroke: var(--blue-light); fill: none; stroke-width: 2; flex-shrink: 0; }
-    .footer-col h4 { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: 1.6px; margin-bottom: 20px; }
+    .footer-col h4 { font-size: var(--fs-lbl); font-weight: 700; font-family: var(--font-display); color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: 1.8px; margin-bottom: 20px; }
     .footer-col ul li { margin-bottom: 10px; }
-    .footer-col ul li a { font-size: 13.5px; color: rgba(255,255,255,.58); transition: color var(--tr); display: inline-block; }
+    .footer-col ul li a { font-size: var(--fs-xs); color: rgba(255,255,255,.58); transition: color var(--tr); display: inline-block; font-family: var(--font-body); }
     .footer-col ul li a:hover { color: #fff; padding-left: 4px; }
     .footer-socials { display: flex; gap: 10px; margin-top: 20px; }
-    .footer-social-link { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.55); transition: all 0.25s ease; }
+    .footer-social-link { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.55); transition: all .25s ease; }
     .footer-social-link:hover { background: var(--blue); border-color: var(--blue); color: #fff; transform: translateY(-2px); }
     .footer-social-link svg { width: 15px; height: 15px; fill: currentColor; }
     .footer-bottom { border-top: 1px solid rgba(255,255,255,.07); padding: 20px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-    .footer-bottom p { font-size: 12.5px; color: rgba(255,255,255,.35); }
+    .footer-bottom p { font-size: 12.5px; color: rgba(255,255,255,.35); font-family: var(--font-body); }
     .footer-bottom a { color: rgba(255,255,255,.35); transition: color var(--tr); }
     .footer-bottom a:hover { color: #fff; }
 
     #backTop { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px; border-radius: 50%; background: var(--blue); color: #fff; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 18px; z-index: 8000; box-shadow: var(--shadow-md); transition: all var(--tr); }
     #backTop.show { display: flex; }
-    #backTop:hover { background: var(--blue-dark); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    #backTop:hover { background: var(--blue-dark); transform: translateY(-4px); }
 
     /* ── RESPONSIVE ── */
-    @media(max-width:1200px) {
-      .nav-brand { min-width: 230px; padding: 0 56px 0 26px; }
-      .nav-brand img { width: 150px !important; }
+    @media(max-width:1100px){
+      .why-grid{grid-template-columns:repeat(2,1fr)}
+      .footer-grid{grid-template-columns:1fr 1fr}
+      .about-inner{gap:44px}
     }
-    @media(max-width:1100px) {
-      .why-grid { grid-template-columns: repeat(2,1fr); }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
-      .about-inner { gap: 44px; }
+    @media(max-width:1024px){
+      .nav-links,.nav-cta{display:none}
+      .hamburger{display:flex}
+      .nav-inner{padding:0 20px 0 0;height:72px}
+      .nav-brand{padding:0 48px 0 20px;min-width:220px;height:72px}
+      .nav-brand img{width:140px!important}
     }
-    @media(max-width:1024px) {
-      .nav-links { display: none; }
-      .nav-cta { display: none; }
-      .hamburger { display: flex; }
-      .nav-inner { padding: 0 20px 0 0; height: 72px; }
-      .nav-brand { padding: 0 48px 0 20px; min-width: 220px; height: 72px; }
-      .nav-brand img { width: 140px !important; }
+    @media(max-width:900px){
+      .everything-grid,.exam-exp-grid,.about-inner{grid-template-columns:1fr;gap:40px}
+      .pricing-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto}
+      .price-card.featured{transform:none}
+      .about-features-grid{grid-template-columns:1fr}
+      .faq-q { grid-template-columns: 56px 1fr 40px; gap: 0 16px; padding: 28px 0; }
+      .faq-a-inner { padding: 0 0 28px 72px; }
+      .faq-num { font-size: 1rem; }
     }
-    @media(max-width:900px) {
-      .everything-grid, .exam-exp-grid, .about-inner { grid-template-columns: 1fr; gap: 40px; }
-      .feat-panel-inner { grid-template-columns: 1fr; gap: 32px; }
-      .how-grid { grid-template-columns: repeat(2,1fr); }
-      .how-grid::before { display: none; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
-      .price-card.featured { transform: none; }
-      .about-features-grid { grid-template-columns: 1fr; }
+    @media(max-width:768px){
+      .section{padding:68px 0}
+      .hero{height:86vh}
+      .hero-arrows{display:none}
+      .why-grid{grid-template-columns:1fr}
+      .check-grid{grid-template-columns:1fr}
+      .exam-feat-grid{grid-template-columns:1fr}
+      .footer-grid{grid-template-columns:1fr;gap:32px}
+      .container{padding:0 18px}
+      .top-bar-inner{padding:6px 18px;flex-direction:column;gap:5px;text-align:center}
+      .faq-q { grid-template-columns: 44px 1fr 36px; gap: 0 12px; padding: 24px 0; }
+      .faq-text { font-size: 1rem; }
+      .faq-a-inner { padding: 0 0 24px 56px; font-size: 0.9375rem; }
     }
-    @media(max-width:768px) {
-      .section { padding: 68px 0; }
-      .hero { height: 86vh; }
-      .hero-arrows { display: none; }
-      .why-grid { grid-template-columns: 1fr; }
-      .check-grid { grid-template-columns: 1fr; }
-      .exam-feat-grid { grid-template-columns: 1fr; }
-      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
-      .how-grid { grid-template-columns: 1fr; }
-      .container { padding: 0 18px; }
-      .top-bar-inner { padding: 6px 18px; flex-direction: column; gap: 5px; text-align: center; }
-      .feat-tabs-wrap { flex-direction: column; }
-      .feat-tab { border-right: none; border-bottom: 1px solid var(--grey-200); flex-direction: row; justify-content: flex-start; padding: 12px 18px; }
-      .feat-tab:last-child { border-bottom: none; }
-      .feat-tab::after { bottom: auto; left: 0; top: 0; width: 3px; height: 100%; border-radius: 0 3px 3px 0; right: auto; }
-      .about-stats { grid-template-columns: 1fr; }
+    @media(max-width:640px){
+      .nav-inner{height:68px}
+      .nav-brand{height:68px;min-width:180px;padding:0 36px 0 14px}
+      .nav-brand img{width:120px!important}
+      .hero-content-wrap{padding:0 18px}
+      .faq-q { grid-template-columns: 36px 1fr 32px; gap: 0 10px; }
+      .faq-a-inner { padding-left: 46px; }
     }
-    @media(max-width:640px) {
-      .nav-inner { height: 68px; }
-      .nav-brand { height: 68px; min-width: 180px; padding: 0 36px 0 14px; }
-      .nav-brand img { width: 120px !important; }
-      .hero-content-wrap { padding: 0 18px; }
-    }
-    @media(max-width:480px) {
-      .hero-content h1 { font-size: 1.8rem; }
-      .hero-actions { flex-direction: column; align-items: flex-start; }
+    @media(max-width:480px){
+      .hero-content h1{font-size:1.9rem;letter-spacing:-1px}
+      .hero-actions{flex-direction:column;align-items:flex-start}
     }
   </style>
 </head>
@@ -578,66 +1015,48 @@
 
 <!-- PRELOADER -->
 <div id="preloader">
-  <div class="vynzora-loader-inner">
-    <div class="loader">
-      <div></div><div></div><div></div>
-    </div>
-  </div>
+  <div class="loader"><div></div><div></div><div></div></div>
 </div>
-<!-- TOP INFO BAR -->
+
+<!-- TOP BAR -->
 <div class="top-bar">
   <div class="top-bar-inner">
     <div class="top-bar-left">
-      <span>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
-        support@edusetin.com
-      </span>
-      <span>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Working Hours: 09:00 AM – 06:00 PM
-      </span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>support@edusetin.com</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Working Hours: 09:00 AM – 06:00 PM</span>
     </div>
     <div class="top-bar-right">
-      <a href="#" aria-label="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.461 3.476 1.338 4.988L2 22l5.166-1.312A9.956 9.956 0 0 0 12.004 22c5.514 0 9.997-4.483 9.997-9.997s-4.483-9.997-9.997-9.997z"/></svg></a>
+      <a href="#" aria-label="WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.962-1.304A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg></a>
       <a href="#" aria-label="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="#" aria-label="X/Twitter"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2 2.25h6.945l4.265 5.633L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
       <a href="#" aria-label="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg></a>
-      <a href="#" aria-label="LinkedIn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg></a>
     </div>
   </div>
 </div>
 
-<!-- MAIN NAVBAR -->
+<!-- NAVBAR -->
 <nav class="navbar" id="mainNav">
   <div class="nav-inner">
     <a class="nav-brand" href="{% url 'student_portal:home' %}">
       <img src="{% static 'student_portal/assets/img/edu.png' %}" alt="EdusetIn">
     </a>
     <div class="nav-links">
-      <a href="{% url 'student_portal:home' %}" class="active" id="nav-home">Home</a>
-      <a href="#about" id="nav-about">About</a>
-      <a href="#feat-section" id="nav-features">Features</a>
-      <a href="#pricing" id="nav-pricing">Pricing</a>
-      <a href="#faq" id="nav-faq">FAQ</a>
-      <a href="#contact" id="nav-contact">Contact</a>
+      <a href="{% url 'student_portal:home' %}" class="active">Home</a>
+      <a href="#about">About</a>
+      <a href="#feat-section">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
     </div>
     <div class="nav-cta">
       {% if user.is_authenticated %}
         <a href="{% url 'student_portal:dashboard' %}" class="btn-login">Dashboard</a>
-        <a href="{% url 'student_portal:logout' %}" class="btn-start">
-          Sign Out
-        </a>
+        <a href="{% url 'student_portal:logout' %}" class="btn-start">Sign Out</a>
       {% else %}
         <a href="{% url 'student_portal:login' %}" class="btn-login">Sign In</a>
-        <a href="{% url 'student_portal:register' %}" class="btn-start">
-          Start Free
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
+        <a href="{% url 'student_portal:register' %}" class="btn-start">Start Free <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
       {% endif %}
     </div>
-    <button class="hamburger" id="hamburger" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </button>
+    <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
   </div>
   <div class="mobile-menu" id="mobileMenu">
     <a href="{% url 'student_portal:home' %}">Home</a>
@@ -652,13 +1071,13 @@
         <a href="{% url 'student_portal:logout' %}" class="btn-start" style="justify-content:center;">Sign Out</a>
       {% else %}
         <a href="{% url 'student_portal:login' %}" class="btn-login" style="text-align:center;">Sign In</a>
-        <a href="{% url 'student_portal:register' %}" class="btn-start" style="justify-content:center;">Start Free <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <a href="{% url 'student_portal:register' %}" class="btn-start" style="justify-content:center;">Start Free</a>
       {% endif %}
     </div>
   </div>
 </nav>
 
-<!-- HERO SECTION -->
+<!-- HERO -->
 <section id="home" class="hero">
   <div class="hero-slides">
     <div class="hero-slide active slide-1">
@@ -667,7 +1086,7 @@
         <div class="hero-content">
           <div class="hero-eyebrow"><div class="live-dot"></div>IMAT Preparation Platform</div>
           <h1>Master the IMAT with <span>Smart Preparation</span></h1>
-          <p>Prepare for the International Medical Admission Test (IMAT) using a comprehensive online preparation platform. Practice topic-wise questions, take full-length mock exams, solve previous year papers, and monitor your progress — all from a single dashboard.</p>
+          <p>Prepare for the International Medical Admission Test using a comprehensive online platform. Practice topic-wise questions, take full-length mock exams, solve previous year papers, and monitor your progress — all in one dashboard.</p>
           <div class="hero-actions">
             <a href="{% url 'student_portal:register' %}" class="btn-hero-primary">Start Preparing <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
             <a href="#feat-section" class="btn-hero-ghost">Explore Features</a>
@@ -695,7 +1114,7 @@
         <div class="hero-content">
           <div class="hero-eyebrow"><div class="live-dot"></div>Question Bank</div>
           <h1>Practice More. <span>Improve Faster.</span></h1>
-          <p>Access organized question banks covering Biology, Chemistry, Physics, Mathematics, Reading Skills, and Logical Reasoning. Practice by topic, subject, or difficulty level to strengthen every concept.</p>
+          <p>Access organized question banks covering Biology, Chemistry, Physics, Mathematics, Reading Skills, and Logical Reasoning. Practice by topic or subject to strengthen every concept.</p>
           <div class="hero-actions">
             <a href="{% url 'student_portal:register' %}" class="btn-hero-primary">Explore Practice</a>
             <a href="#feat-section" class="btn-hero-ghost">View Features</a>
@@ -709,7 +1128,7 @@
         <div class="hero-content">
           <div class="hero-eyebrow"><div class="live-dot"></div>Performance Dashboard</div>
           <h1>Track Your <span>Progress</span> with Every Test</h1>
-          <p>Stay focused on your goals with detailed performance reports, readiness scores, subject-wise progress, and complete exam history. Identify improvement areas and prepare with confidence.</p>
+          <p>Stay focused with detailed performance reports, readiness scores, subject-wise progress, and complete exam history. Identify improvement areas and prepare with confidence.</p>
           <div class="hero-actions">
             <a href="#pricing" class="btn-hero-primary">View Plans</a>
             <a href="{% url 'student_portal:register' %}" class="btn-hero-ghost">Free Trial</a>
@@ -730,47 +1149,56 @@
   </div>
 </section>
 
-<!-- ABOUT SECTION -->
+
+<!-- ABOUT -->
 <section class="section about-section" id="about">
   <div class="container">
     <div class="about-inner">
-      <div class="about-text">
-        <span class="lbl sr sr-fade">About Edusetin</span>
-        <h2 class="section-h sr sr-up d1">Trusted by Future <span>Medical Students</span></h2>
-        <p class="sr sr-up d2">Edusetin is built for students who aspire to study medicine in Italy. Our platform provides structured practice, realistic mock exams, and comprehensive progress tracking to help you prepare effectively for the IMAT.</p>
-        
+
+      <!-- LEFT: text + 2 bottom cards -->
+      <div class="about-left">
+        <div class="about-text">
+          <span class="lbl sr sr-fade">About Edusetin</span>
+          <h2 class="section-h sr sr-up d1">Trusted by Future <span>Medical Students</span></h2>
+          <p class="sr sr-up d2">Edusetin is built for students who aspire to study medicine in Italy. Our platform provides structured practice, realistic mock exams, and comprehensive progress tracking to help you prepare effectively for the IMAT.</p>
+        </div>
+        <div class="about-bottom-cards sr sr-up d3">
+          <div class="about-feat-card">
+            <div class="about-feat-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div><div class="about-feat-title">Topic-wise Practice</div><div class="about-feat-desc">Organized questions by subject — Biology, Chemistry, Physics, Mathematics, Reading Skills, and Logical Reasoning.</div></div>
+          </div>
+          <div class="about-feat-card">
+            <div class="about-feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div><div class="about-feat-title">Full-Length Mock Tests</div><div class="about-feat-desc">IMAT-pattern mock exams with live timer, negative marking, and automatic submission.</div></div>
+          </div>
+        </div>
       </div>
-      <div class="about-features-grid">
+
+      <!-- RIGHT: 4 cards in 2x2 grid -->
+      <div class="about-right-grid">
         <div class="about-feat-card sr sr-right d1">
-          <div class="about-feat-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-          <div><div class="about-feat-title">Topic-wise Practice</div><div class="about-feat-desc">Organized questions by subject — Biology, Chemistry, Physics, Mathematics, Reading Skills, and Logical Reasoning.</div></div>
-        </div>
-        <div class="about-feat-card sr sr-right d2">
-          <div class="about-feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-          <div><div class="about-feat-title">Full-Length Mock Tests</div><div class="about-feat-desc">IMAT-pattern mock exams with live timer, negative marking, and automatic submission.</div></div>
-        </div>
-        <div class="about-feat-card sr sr-right d3">
           <div class="about-feat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
           <div><div class="about-feat-title">Previous Year Papers</div><div class="about-feat-desc">Authentic IMAT papers from previous years with detailed answer explanations.</div></div>
         </div>
-        <div class="about-feat-card sr sr-right d4">
-          <div class="about-feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-          <div><div class="about-feat-title">Timed Exams</div><div class="about-feat-desc">Practice under real exam conditions with live countdown timers and automatic submission.</div></div>
-        </div>
-        <div class="about-feat-card sr sr-right d5">
+        <div class="about-feat-card sr sr-right d2">
           <div class="about-feat-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
           <div><div class="about-feat-title">Detailed Performance Reports</div><div class="about-feat-desc">Subject-wise progress, readiness scores, and exam history — all in one dashboard.</div></div>
         </div>
-        <div class="about-feat-card sr sr-right d6">
-          <div class="about-feat-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
-          <div><div class="about-feat-title">Available on Desktop, Tablet and Mobile</div><div class="about-feat-desc">Continue your preparation seamlessly across all your devices. Progress syncs automatically.</div></div>
+        <div class="about-feat-card sr sr-right d3">
+          <div class="about-feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div><div class="about-feat-title">Timed Exams</div><div class="about-feat-desc">Practice under real exam conditions with live countdown timers and automatic submission.</div></div>
+        </div>
+        <div class="about-feat-card sr sr-right d4">
+          <div class="about-feat-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+          <div><div class="about-feat-title">Available on All Devices</div><div class="about-feat-desc">Continue your preparation seamlessly across desktop, tablet and mobile. Progress syncs automatically.</div></div>
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- WHY CHOOSE EDUSETIN -->
+<!-- WHY CHOOSE -->
 <section class="section" style="background:#fff;">
   <div class="container">
     <div class="section-head">
@@ -779,36 +1207,12 @@
       <p class="section-desc sr sr-up d2">Success in the IMAT requires more than reading textbooks. It requires consistent practice, understanding the exam pattern, and learning from every attempt. Edusetin brings all the essential preparation tools together in one easy-to-use platform.</p>
     </div>
     <div class="why-grid">
-      <div class="why-card sr sr-left d1">
-        <div class="why-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-        <h3>Structured Learning</h3>
-        <p>Practice with organized questions arranged by subject and topic.</p>
-      </div>
-      <div class="why-card sr sr-up d2">
-        <div class="why-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <h3>Real Exam Simulation</h3>
-        <p>Prepare with timed mock exams that closely follow the official IMAT pattern.</p>
-      </div>
-      <div class="why-card sr sr-right d3">
-        <div class="why-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-        <h3>Previous Year Papers</h3>
-        <p>Understand the exam style and improve confidence through authentic practice.</p>
-      </div>
-      <div class="why-card sr sr-left d2">
-        <div class="why-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <h3>Performance Reports</h3>
-        <p>Review your scores and identify the subjects that need more attention.</p>
-      </div>
-      <div class="why-card sr sr-up d3">
-        <div class="why-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-        <h3>Progress Tracking</h3>
-        <p>Monitor your preparation journey with subject progress, recent scores, and readiness tracking.</p>
-      </div>
-      <div class="why-card sr sr-right d4">
-        <div class="why-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
-        <h3>Anytime, Anywhere Access</h3>
-        <p>Continue your preparation seamlessly across desktop, tablet, and mobile devices.</p>
-      </div>
+      <div class="why-card sr sr-left d1"><div class="why-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><h3>Structured Learning</h3><p>Practice with organized questions arranged by subject and topic.</p></div>
+      <div class="why-card sr sr-up d2"><div class="why-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><h3>Real Exam Simulation</h3><p>Prepare with timed mock exams that closely follow the official IMAT pattern.</p></div>
+      <div class="why-card sr sr-right d3"><div class="why-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><h3>Previous Year Papers</h3><p>Understand the exam style and improve confidence through authentic practice.</p></div>
+      <div class="why-card sr sr-left d2"><div class="why-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><h3>Performance Reports</h3><p>Review your scores and identify the subjects that need more attention.</p></div>
+      <div class="why-card sr sr-up d3"><div class="why-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3>Progress Tracking</h3><p>Monitor your preparation journey with subject progress, recent scores, and readiness tracking.</p></div>
+      <div class="why-card sr sr-right d4"><div class="why-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><h3>Anytime, Anywhere Access</h3><p>Continue your preparation seamlessly across desktop, tablet, and mobile devices.</p></div>
     </div>
   </div>
 </section>
@@ -860,258 +1264,225 @@
   </div>
 </section>
 
-<!-- PLATFORM FEATURES -->
-<section class="section features" id="feat-section">
-  <div class="container">
-    <div class="section-head center">
-      <span class="lbl sr sr-fade">Platform Features</span>
-      <h2 class="section-h sr sr-up d1">Powerful Features Designed for <span>Better Preparation</span></h2>
-    </div>
-    <div class="feat-tabs-wrap sr sr-up d2">
-      <button class="feat-tab active" data-tab="dashboard">
-        <div class="feat-tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-        <span class="feat-tab-lbl">Student Dashboard</span>
-      </button>
-      <button class="feat-tab" data-tab="practice">
-        <div class="feat-tab-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-        <span class="feat-tab-lbl">Topic-wise Practice</span>
-      </button>
-      <button class="feat-tab" data-tab="mock">
-        <div class="feat-tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <span class="feat-tab-lbl">Mock Test Center</span>
-      </button>
-      <button class="feat-tab" data-tab="papers">
-        <div class="feat-tab-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        <span class="feat-tab-lbl">Previous Year Papers</span>
-      </button>
-      <button class="feat-tab" data-tab="history">
-        <div class="feat-tab-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <span class="feat-tab-lbl">Exam History</span>
-      </button>
-      <button class="feat-tab" data-tab="plans">
-        <div class="feat-tab-icon"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-        <span class="feat-tab-lbl">Subscription Plans</span>
-      </button>
-    </div>
-    <div class="feat-panels-wrap">
-      <!-- DASHBOARD -->
-      <div class="feat-panel active" id="panel-dashboard">
-        <div class="feat-panel-inner">
-          <div class="feat-text">
-            <h3>Student Dashboard</h3>
-            <p>View your preparation status, recent scores, completed exams, and subject progress from one personalized dashboard.</p>
-            <ul class="feat-list">
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Readiness score updated after every exam</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Subject-wise progress at a glance</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Recent exam history and scores</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Quick access to all platform features</li>
-            </ul>
-            <a href="{% url 'student_portal:dashboard' %}" class="btn-start" style="font-size:13.5px;padding:10px 22px;display:inline-flex;">Go to Dashboard</a>
-          </div>
-          <div class="feat-visual">
-            <div class="feat-vis-head"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Student Dashboard</span></div>
-            <div class="feat-vis-body">
-              <div class="dash-vis-stats">
-                <div class="dv-stat"><div class="dv-stat-val">78</div><div class="dv-stat-lbl">Last Score</div></div>
-                <div class="dv-stat"><div class="dv-stat-val">24</div><div class="dv-stat-lbl">Exams Taken</div></div>
-                <div class="dv-stat"><div class="dv-stat-val">91%</div><div class="dv-stat-lbl">Readiness</div></div>
-              </div>
-              <div class="dv-bars">
-                <div><div class="dv-bar-lbl"><span>Biology</span><span>91%</span></div><div class="dv-bar-bg"><div class="dv-bar-fill" data-w="91%"></div></div></div>
-                <div><div class="dv-bar-lbl"><span>Chemistry</span><span>78%</span></div><div class="dv-bar-bg"><div class="dv-bar-fill" data-w="78%"></div></div></div>
-                <div><div class="dv-bar-lbl"><span>Physics</span><span>65%</span></div><div class="dv-bar-bg"><div class="dv-bar-fill" data-w="65%"></div></div></div>
-                <div><div class="dv-bar-lbl"><span>Mathematics</span><span>84%</span></div><div class="dv-bar-bg"><div class="dv-bar-fill" data-w="84%"></div></div></div>
-                <div><div class="dv-bar-lbl"><span>Reading Skills &amp; Logic</span><span>72%</span></div><div class="dv-bar-bg"><div class="dv-bar-fill" data-w="72%"></div></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- TOPIC-WISE PRACTICE -->
-      <div class="feat-panel" id="panel-practice">
-        <div class="feat-panel-inner">
-          <div class="feat-text">
-            <h3>Topic-wise Practice</h3>
-            <p>Strengthen your understanding by practicing questions organized by subject and topic. Choose your difficulty level and practice at your own pace with instant feedback.</p>
-            <ul class="feat-list">
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Biology, Chemistry, Physics, Mathematics</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Reading Skills and Logical Reasoning</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Multiple difficulty levels</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Instant feedback and explanations</li>
-            </ul>
-            <a href="{% url 'student_portal:quiz_setup' %}" class="btn-start" style="font-size:13.5px;padding:10px 22px;display:inline-flex;">Start Practice</a>
-          </div>
-          <div class="feat-visual">
-            <div class="feat-vis-head"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span>Topic Practice</span></div>
-            <div class="feat-vis-body">
-              <div class="topic-picker">
-                <div class="topic-item active" onclick="selectTopic(this)">
-                  <div class="topic-item-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>
-                  <div class="topic-item-info"><div class="topic-item-name">Biology</div><div class="topic-item-meta">45 Topics · 3 Difficulty Levels</div></div>
-                  <span class="topic-badge badge-blue">Active</span>
-                </div>
-                <div class="topic-item" onclick="selectTopic(this)">
-                  <div class="topic-item-icon"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg></div>
-                  <div class="topic-item-info"><div class="topic-item-name">Chemistry</div><div class="topic-item-meta">38 Topics · 3 Difficulty Levels</div></div>
-                  <span class="topic-badge badge-green">Done</span>
-                </div>
-                <div class="topic-item" onclick="selectTopic(this)">
-                  <div class="topic-item-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-                  <div class="topic-item-info"><div class="topic-item-name">Physics</div><div class="topic-item-meta">52 Topics · 3 Difficulty Levels</div></div>
-                  <span class="topic-badge badge-amber">Pending</span>
-                </div>
-                <div class="topic-item" onclick="selectTopic(this)">
-                  <div class="topic-item-icon"><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></div>
-                  <div class="topic-item-info"><div class="topic-item-name">Mathematics</div><div class="topic-item-meta">30 Topics · 3 Difficulty Levels</div></div>
-                  <span class="topic-badge badge-amber">Pending</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- MOCK TEST CENTER -->
-      <div class="feat-panel" id="panel-mock">
-        <div class="feat-panel-inner">
-          <div class="feat-text">
-            <h3>Mock Test Center</h3>
-            <p>Take realistic IMAT mock exams with timers, negative marking, and automatic submission. Practice under real exam conditions and review your answers instantly.</p>
-            <ul class="feat-list">
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Official IMAT exam pattern</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Live countdown timer</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Negative marking enabled</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Instant results and explanations</li>
-            </ul>
-            <a href="{% url 'student_portal:exam_list' %}" class="btn-start" style="font-size:13.5px;padding:10px 22px;display:inline-flex;">Take Mock Test</a>
-          </div>
-          <div class="feat-visual">
-            <div class="feat-vis-head">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>Mock Test — Try a Question</span>
-              <div class="mock-timer"><div class="timer-blink"></div><span id="feat-timer">1:23:45</span></div>
-            </div>
-            <div class="feat-vis-body">
-              <div class="mock-q-header"><span class="mock-q-num">Question 12 of 60</span></div>
-              <div class="mock-q-text" id="mock-q-text">Which organelle is primarily responsible for ATP synthesis in eukaryotic cells?</div>
-              <div class="mock-q-opts" id="mock-q-opts"></div>
-              <div class="mock-result-msg" id="mock-result"></div>
-              <div class="mock-q-actions">
-                <button class="mock-check-btn" id="mock-check-btn" onclick="checkMockAnswer()">Check Answer</button>
-                <button class="mock-next-btn" onclick="nextMockQ()">Next →</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- PREVIOUS YEAR PAPERS -->
-      <div class="feat-panel" id="panel-papers">
-        <div class="feat-panel-inner">
-          <div class="feat-text">
-            <h3>Previous Year Papers</h3>
-            <p>Practice authentic IMAT questions to become familiar with the official exam pattern. Year-wise access helps you understand how the difficulty and format have evolved.</p>
-            <ul class="feat-list">
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Authentic IMAT questions</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Year-wise access</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Detailed answer explanations</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Available in eligible plans</li>
-            </ul>
-            <a href="#pricing" class="btn-start" style="font-size:13.5px;padding:10px 22px;display:inline-flex;">View Plans</a>
-          </div>
-          <div class="feat-visual">
-            <div class="feat-vis-head"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Previous Year Papers</span></div>
-            <div class="feat-vis-body">
-              <div class="papers-list">
-                <div class="paper-row"><div class="paper-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="paper-info"><div class="paper-title">IMAT 2023 Official Paper</div><div class="paper-meta">60 Questions · 100 Minutes</div></div><span class="topic-badge badge-blue">New</span></div>
-                <div class="paper-row"><div class="paper-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="paper-info"><div class="paper-title">IMAT 2022 Official Paper</div><div class="paper-meta">60 Questions · 100 Minutes</div></div><span class="topic-badge badge-green">Done</span></div>
-                <div class="paper-row"><div class="paper-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="paper-info"><div class="paper-title">IMAT 2021 Official Paper</div><div class="paper-meta">60 Questions · 100 Minutes</div></div><span class="topic-badge badge-green">Done</span></div>
-                <div class="paper-row"><div class="paper-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="paper-info"><div class="paper-title">IMAT 2020 Official Paper</div><div class="paper-meta">60 Questions · 100 Minutes</div></div><span class="topic-badge badge-amber">Pending</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- EXAM HISTORY -->
-      <div class="feat-panel" id="panel-history">
-        <div class="feat-panel-inner">
-          <div class="feat-text">
-            <h3>Exam History</h3>
-            <p>Review previous attempts, compare scores across tests, and monitor your overall improvement over time. See your growth clearly and stay motivated throughout your preparation.</p>
-            <ul class="feat-list">
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Complete attempt history</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Score comparison over time</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Subject-wise improvement view</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Download result summaries</li>
-            </ul>
-            <a href="{% url 'student_portal:exam_history' %}" class="btn-start" style="font-size:13.5px;padding:10px 22px;display:inline-flex;">View History</a>
-          </div>
-          <div class="feat-visual">
-            <div class="feat-vis-head"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Exam History</span></div>
-            <div class="feat-vis-body">
-              <div class="history-list">
-                <div class="history-row"><div class="history-score-ring high">82</div><div class="history-info"><div class="history-title">Mock Test #8</div><div class="history-meta">June 18, 2026 · 100 min</div></div><span class="history-trend up">↑ +4</span></div>
-                <div class="history-row"><div class="history-score-ring mid">78</div><div class="history-info"><div class="history-title">Mock Test #7</div><div class="history-meta">June 12, 2026 · 100 min</div></div><span class="history-trend up">↑ +7</span></div>
-                <div class="history-row"><div class="history-score-ring low">71</div><div class="history-info"><div class="history-title">IMAT 2023 Paper</div><div class="history-meta">June 5, 2026 · 100 min</div></div><span class="history-trend same">→ 0</span></div>
-                <div class="history-row"><div class="history-score-ring mid">71</div><div class="history-info"><div class="history-title">Mock Test #6</div><div class="history-meta">May 28, 2026 · 100 min</div></div><span class="history-trend up">↑ +5</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- SUBSCRIPTION PLANS -->
-      <div class="feat-panel" id="panel-plans">
-        <div class="feat-panel-inner">
-          <div class="feat-text">
-            <h3>Subscription Plans</h3>
-            <p>Choose a plan that matches your preparation needs and unlock additional practice resources. Start free and upgrade anytime.</p>
-            <ul class="feat-list">
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Free plan to get started</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Premium: full mock tests and past papers</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Pro: unlimited access to everything</li>
-              <li class="feat-list-item"><div class="fl-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Cancel anytime</li>
-            </ul>
-            <a href="#pricing" class="btn-start" style="font-size:13.5px;padding:10px 22px;display:inline-flex;">See All Plans</a>
-          </div>
-          <div class="feat-visual">
-            <div class="feat-vis-head"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Choose Your Plan</span></div>
-            <div class="feat-vis-body">
-              <div class="plans-mini">
-                {% if plans %}
-                  {% for plan in plans %}
-                    <div class="plan-mini-card {% if forloop.counter == 2 %}featured{% endif %}">
-                      <div class="plan-mini-price">₹{{ plan.price|floatformat:0 }}</div>
-                      <div class="plan-mini-info">
-                        <div class="plan-mini-name">{{ plan.name }}</div>
-                        <div class="plan-mini-desc">{{ plan.duration_days }} days validity</div>
-                      </div>
-                      {% if forloop.counter == 2 %}<span class="plan-mini-badge">Popular</span>{% endif %}
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="plan-mini-card"><div class="plan-mini-price">Free</div><div class="plan-mini-info"><div class="plan-mini-name">Free Plan</div><div class="plan-mini-desc">Limited questions · Daily quizzes</div></div></div>
-                  <div class="plan-mini-card featured"><div class="plan-mini-price">₹999</div><div class="plan-mini-info"><div class="plan-mini-name">Premium Plan</div><div class="plan-mini-desc">Unlimited practice · Mock tests · Reports</div></div><span class="plan-mini-badge">Popular</span></div>
-                  <div class="plan-mini-card"><div class="plan-mini-price">₹1999</div><div class="plan-mini-info"><div class="plan-mini-name">Pro Plan</div><div class="plan-mini-desc">Everything + unlimited mocks</div></div></div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
+<!-- ═══════════════════════════════════════════
+     PLATFORM FEATURES — IMAGE 1 STYLE CARDS
+═══════════════════════════════════════════ -->
+<section class="features" id="feat-section">
+
+  <!-- Static header -->
+  <div class="feat-header-wrap">
+    <div class="container">
+      <div class="section-head center sr sr-up">
+        <span class="lbl">Platform Features</span>
+        <h2 class="section-h">Powerful Features Designed for <span>Better Preparation</span></h2>
+        <p class="section-desc">Every tool you need to practice smarter, track progress, and walk into the IMAT with confidence.</p>
       </div>
     </div>
   </div>
+
+  <!-- Scroll track -->
+  <div class="feat-scroll-track" id="featScrollTrack">
+    <div class="feat-sticky-viewport" id="featStickyViewport">
+      <div class="feat-progress-dots" id="featProgressDots"></div>
+      <div class="feat-scroll-hint" id="featScrollHint">
+        <span>Scroll</span>
+        <div class="feat-scroll-hint-arrow"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+      </div>
+      <div class="feat-stack" id="featStack">
+
+        <!-- CARD 01 — Student Dashboard -->
+        <div class="feat-card">
+          <div class="fc-card-surface">
+            <span class="fc-num">01.</span>
+            <div class="fc-body">
+              <div class="fc-cat-label">Analytics</div>
+              <div class="fc-title">Student<br>Dashboard</div>
+              <div class="fc-desc">View your readiness score, recent results, and subject progress from one personalized hub. Updated after every exam automatically.</div>
+              <div class="fc-btns">
+                <a href="{% url 'student_portal:dashboard' %}" class="fc-btn-primary">
+                  <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  Go to Dashboard
+                </a>
+                <a href="#about" class="fc-btn-secondary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Learn More
+                </a>
+              </div>
+            </div>
+            <div class="fc-visual">
+              <div class="fc-visual-inner">
+                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+                <div class="fc-visual-label">Analytics</div>
+              </div>
+              <div class="fc-visual-title-overlay"><span>Student<br>Dashboard</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 02 — Topic Practice -->
+        <div class="feat-card">
+          <div class="fc-card-surface">
+            <span class="fc-num">02.</span>
+            <div class="fc-body">
+              <div class="fc-cat-label">Practice</div>
+              <div class="fc-title">Topic-wise<br>Practice</div>
+              <div class="fc-desc">Strengthen each concept by practicing questions organized by subject and topic. Choose your difficulty level and get instant feedback after every attempt.</div>
+              <div class="fc-btns">
+                <a href="{% url 'student_portal:quiz_setup' %}" class="fc-btn-primary">
+                  <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  Start Practice
+                </a>
+                <a href="#features" class="fc-btn-secondary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Learn More
+                </a>
+              </div>
+            </div>
+            <div class="fc-visual">
+              <div class="fc-visual-inner">
+                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+                <div class="fc-visual-label">Question Bank</div>
+              </div>
+              <div class="fc-visual-title-overlay"><span>Topic-wise<br>Practice</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 03 — Mock Test Center -->
+        <div class="feat-card">
+          <div class="fc-card-surface">
+            <span class="fc-num">03.</span>
+            <div class="fc-body">
+              <div class="fc-cat-label">Exam</div>
+              <div class="fc-title">Mock Test<br>Center</div>
+              <div class="fc-desc">Take realistic IMAT mock exams with timers, negative marking, and automatic submission. Review answers instantly after each attempt and track score trends.</div>
+              <div class="fc-btns">
+                <a href="{% url 'student_portal:exam_list' %}" class="fc-btn-primary">
+                  <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  Take Mock Test
+                </a>
+                <a href="#exam" class="fc-btn-secondary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Learn More
+                </a>
+              </div>
+            </div>
+            <div class="fc-visual">
+              <div class="fc-visual-inner">
+                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <div class="fc-visual-label">Mock Exams</div>
+              </div>
+              <div class="fc-visual-title-overlay"><span>Mock Test<br>Center</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 04 — Previous Year Papers -->
+        <div class="feat-card">
+          <div class="fc-card-surface">
+            <span class="fc-num">04.</span>
+            <div class="fc-body">
+              <div class="fc-cat-label">Practice · Exam</div>
+              <div class="fc-title">Previous<br>Year Papers</div>
+              <div class="fc-desc">Practice authentic IMAT papers year-by-year to master the official format. Understand how difficulty and structure have evolved with detailed answer explanations.</div>
+              <div class="fc-btns">
+                <a href="#pricing" class="fc-btn-primary">
+                  <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  View Plans
+                </a>
+                <a href="#about" class="fc-btn-secondary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Learn More
+                </a>
+              </div>
+            </div>
+            <div class="fc-visual">
+              <div class="fc-visual-inner">
+                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div class="fc-visual-label">Past Papers</div>
+              </div>
+              <div class="fc-visual-title-overlay"><span>Previous<br>Year Papers</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 05 — Exam History -->
+        <div class="feat-card">
+          <div class="fc-card-surface">
+            <span class="fc-num">05.</span>
+            <div class="fc-body">
+              <div class="fc-cat-label">Analytics</div>
+              <div class="fc-title">Exam<br>History</div>
+              <div class="fc-desc">Review every attempt, compare scores across tests, and watch your improvement unfold over time. Identify patterns and stay motivated with clear visual trends.</div>
+              <div class="fc-btns">
+                <a href="{% url 'student_portal:exam_history' %}" class="fc-btn-primary">
+                  <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  View History
+                </a>
+                <a href="{% url 'student_portal:dashboard' %}" class="fc-btn-secondary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Dashboard
+                </a>
+              </div>
+            </div>
+            <div class="fc-visual">
+              <div class="fc-visual-inner">
+                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                <div class="fc-visual-label">History</div>
+              </div>
+              <div class="fc-visual-title-overlay"><span>Exam<br>History</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 06 — Performance Reports -->
+        <div class="feat-card">
+          <div class="fc-card-surface">
+            <span class="fc-num">06.</span>
+            <div class="fc-body">
+              <div class="fc-cat-label">Analytics</div>
+              <div class="fc-title">Performance<br>Reports</div>
+              <div class="fc-desc">Deep-dive analytics after every exam — subject scores, correct/incorrect breakdowns, time analysis, and a readiness score that tells you exactly how prepared you are.</div>
+              <div class="fc-btns">
+                <a href="{% url 'student_portal:dashboard' %}" class="fc-btn-primary">
+                  <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  View Dashboard
+                </a>
+                <a href="#about" class="fc-btn-secondary">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Learn More
+                </a>
+              </div>
+            </div>
+            <div class="fc-visual">
+              <div class="fc-visual-inner">
+                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                <div class="fc-visual-label">Reports</div>
+              </div>
+              <div class="fc-visual-title-overlay"><span>Performance<br>Reports</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /feat-stack -->
+    </div><!-- /feat-sticky-viewport -->
+  </div><!-- /feat-scroll-track -->
+
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="section" style="background:#fff;">
+<section class="section how-section">
   <div class="container">
     <div class="section-head center">
       <span class="lbl sr sr-fade">How It Works</span>
       <h2 class="section-h sr sr-up d1">Four Simple Steps to <span>Start Preparing</span></h2>
     </div>
-    <div class="how-grid">
-      <div class="how-step sr sr-left d1"><div class="how-num">1</div><h3>Create Your Account</h3><p>Sign up and access your personal IMAT preparation dashboard.</p></div>
-      <div class="how-step sr sr-up d2"><div class="how-num">2</div><h3>Choose Your Practice</h3><p>Select topic-wise quizzes, subject practice, or full-length mock exams.</p></div>
-      <div class="how-step sr sr-up d3"><div class="how-num">3</div><h3>Take the Test</h3><p>Practice in a timed environment designed to simulate the real IMAT examination.</p></div>
-      <div class="how-step sr sr-right d4"><div class="how-num">4</div><h3>Review and Improve</h3><p>Analyze your performance, review explanations, and continue practicing to improve your score.</p></div>
+    <div class="how-timeline-wrap sr sr-up d2">
+      <div class="how-timeline-line"><div class="how-timeline-line-fill" id="timelineFill" style="height:0;"></div></div>
+      <div class="how-step" data-step="0"><div class="how-num-wrap"><div class="how-num">1</div></div><div class="how-step-body"><h3>Create Your Account</h3><p>Sign up in seconds and access your personal IMAT preparation dashboard. No credit card required to get started.</p></div></div>
+      <div class="how-step" data-step="1"><div class="how-num-wrap"><div class="how-num">2</div></div><div class="how-step-body"><h3>Choose Your Practice</h3><p>Select topic-wise quizzes, subject-based practice sessions, or full-length mock exams — whichever suits your study plan today.</p></div></div>
+      <div class="how-step" data-step="2"><div class="how-num-wrap"><div class="how-num">3</div></div><div class="how-step-body"><h3>Take the Test</h3><p>Practice in a timed environment designed to simulate the real IMAT examination — with negative marking, auto-submission, and a live timer.</p></div></div>
+      <div class="how-step" data-step="3"><div class="how-num-wrap"><div class="how-num">4</div></div><div class="how-step-body"><h3>Review and Improve</h3><p>Analyze your performance, read detailed explanations, and keep practicing to steadily improve your score and readiness.</p></div></div>
     </div>
   </div>
 </section>
@@ -1125,7 +1496,7 @@
         <h2 class="section-h sr sr-up d1" style="color:#fff;">Practice Like It's the <span style="color:#64B5F6;">Real IMAT</span></h2>
         <p class="section-desc sr sr-up d2" style="color:rgba(255,255,255,.60);margin-bottom:0;">Experience an exam environment that closely reflects the official IMAT.</p>
         <div class="exam-feat-grid sr sr-up d3">
-          <div class="exam-feat-item"><div class="ef-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="ef-lbl">Official IMAT Exam Pattern</div></div>
+          <div class="exam-feat-item"><div class="ef-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="ef-lbl">Official IMAT Pattern</div></div>
           <div class="exam-feat-item"><div class="ef-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="ef-lbl">Live Timer</div></div>
           <div class="exam-feat-item"><div class="ef-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><div class="ef-lbl">Automatic Submission</div></div>
           <div class="exam-feat-item"><div class="ef-icon"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="ef-lbl">Negative Marking</div></div>
@@ -1138,10 +1509,7 @@
       </div>
       <div class="sr sr-right d2">
         <div class="exam-ui">
-          <div class="exam-ui-head">
-            <h4>IMAT Full Mock Test — 2024</h4>
-            <div class="timer-pill"><div class="timer-blink"></div><span id="timerDisplay">1:23:45</span></div>
-          </div>
+          <div class="exam-ui-head"><h4>IMAT Full Mock Test — 2024</h4><div class="timer-pill"><span id="timerDisplay">1:23:45</span></div></div>
           <div class="exam-ui-body">
             <div class="q-num">QUESTION 12 OF 60</div>
             <div class="q-text">Which organelle is primarily responsible for ATP synthesis in eukaryotic cells?</div>
@@ -1154,10 +1522,7 @@
           </div>
           <div class="exam-ui-foot">
             <div class="exam-prog-txt">12 answered · 48 remaining</div>
-            <div class="exam-nav">
-              <button class="exam-nav-btn prev">&#8592; Prev</button>
-              <button class="exam-nav-btn next">Next &#8594;</button>
-            </div>
+            <div class="exam-nav"><button class="exam-nav-btn prev">&#8592; Prev</button><button class="exam-nav-btn next">Next &#8594;</button></div>
           </div>
         </div>
       </div>
@@ -1165,7 +1530,7 @@
   </div>
 </section>
 
-<!-- PRICING — dynamic from DB -->
+<!-- PRICING -->
 <section class="section pricing" id="pricing">
   <div class="container">
     <div class="section-head center">
@@ -1173,58 +1538,29 @@
       <h2 class="section-h sr sr-up d1">Choose Your <span>Preparation Plan</span></h2>
       <p class="section-desc sr sr-up d2">From free daily quizzes to unlimited mock tests and previous year papers — pick the plan that matches your needs.</p>
     </div>
-
     {% if plans %}
       <div class="pricing-grid">
         {% for plan in plans %}
-          {% with idx=forloop.counter total=plans|length %}
+          {% with total=plans|length %}
           <div class="price-card {% if total >= 3 and forloop.counter == 2 %}featured{% elif total < 3 and forloop.last %}featured{% endif %} sr {% cycle 'sr-left' 'sr-up' 'sr-right' %} d{{ forloop.counter }}">
-
-            {% if total >= 3 and forloop.counter == 2 %}
-              <div class="price-popular">Most Popular</div>
-            {% elif total < 3 and forloop.last %}
-              <div class="price-popular">Best Value</div>
-            {% endif %}
-
+            {% if total >= 3 and forloop.counter == 2 %}<div class="price-popular">Most Popular</div>
+            {% elif total < 3 and forloop.last %}<div class="price-popular">Best Value</div>{% endif %}
             <div class="price-plan">{{ plan.name }}</div>
-            <div class="price-amount">
-              {% if plan.price == 0 %}
-                Free
-              {% else %}
-                <sup>₹</sup>{{ plan.price|floatformat:0 }}<sub>/{{ plan.duration_days }}d</sub>
-              {% endif %}
-            </div>
-            <div class="price-desc">
-              {% if plan.description %}
-                {{ plan.description }}
-              {% else %}
-                Valid for {{ plan.duration_days }} days.
-              {% endif %}
-            </div>
+            <div class="price-amount">{% if plan.price == 0 %}Free{% else %}<sup>₹</sup>{{ plan.price|floatformat:0 }}<sub>/{{ plan.duration_days }}d</sub>{% endif %}</div>
+            <div class="price-desc">{% if plan.description %}{{ plan.description }}{% else %}Valid for {{ plan.duration_days }} days.{% endif %}</div>
             <div class="price-divider"></div>
             <ul class="price-feats">
-              {% if plan.exams.exists %}
-                <li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>{{ plan.exams.count }} Mock Exam{{ plan.exams.count|pluralize }}</li>
-              {% endif %}
-              {% if plan.subjects.exists %}
-                <li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>{{ plan.subjects.count }} Subject{{ plan.subjects.count|pluralize }} Included</li>
-              {% endif %}
-              {% if plan.submodules.exists %}
-                <li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>{{ plan.submodules.count }} Topic{{ plan.submodules.count|pluralize }} Included</li>
-              {% endif %}
+              {% if plan.exams.exists %}<li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>{{ plan.exams.count }} Mock Exam{{ plan.exams.count|pluralize }}</li>{% endif %}
+              {% if plan.subjects.exists %}<li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>{{ plan.subjects.count }} Subject{{ plan.subjects.count|pluralize }} Included</li>{% endif %}
+              {% if plan.submodules.exists %}<li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>{{ plan.submodules.count }} Topic{{ plan.submodules.count|pluralize }} Included</li>{% endif %}
               <li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Student Dashboard</li>
               <li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Performance Reports</li>
               <li class="price-feat"><div class="price-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Progress Tracking</li>
             </ul>
-
             {% if user.is_authenticated %}
-              <a href="{% url 'student_portal:plan_checkout' plan.uuid %}" class="btn-price {% if total >= 3 and forloop.counter == 2 %}white-inv{% elif total < 3 and forloop.last %}white-inv{% endif %}">
-                {% if plan.price == 0 %}Get Started Free{% else %}Upgrade Now{% endif %}
-              </a>
+              <a href="{% url 'student_portal:plan_checkout' plan.uuid %}" class="btn-price {% if total >= 3 and forloop.counter == 2 %}white-inv{% elif total < 3 and forloop.last %}white-inv{% endif %}">{% if plan.price == 0 %}Get Started Free{% else %}Upgrade Now{% endif %}</a>
             {% else %}
-              <a href="{% url 'student_portal:register' %}" class="btn-price {% if total >= 3 and forloop.counter == 2 %}white-inv{% elif total < 3 and forloop.last %}white-inv{% endif %}">
-                {% if plan.price == 0 %}Get Started Free{% else %}Get Started{% endif %}
-              </a>
+              <a href="{% url 'student_portal:register' %}" class="btn-price {% if total >= 3 and forloop.counter == 2 %}white-inv{% elif total < 3 and forloop.last %}white-inv{% endif %}">{% if plan.price == 0 %}Get Started Free{% else %}Get Started{% endif %}</a>
             {% endif %}
           </div>
           {% endwith %}
@@ -1240,34 +1576,73 @@
   </div>
 </section>
 
-<!-- FAQ -->
-<section class="section faq" id="faq">
+<!-- ════════════════════════════════════════════
+     FAQ — IMAGE 2 STYLE: numbered, dividers, + icon
+     Black bg, Work Sans, clean and minimal
+════════════════════════════════════════════ -->
+<section class="faq" id="faq">
   <div class="container">
-    <div class="section-head center">
+    <div class="section-head center" style="margin-bottom:64px;">
       <span class="lbl sr sr-fade">FAQ</span>
-      <h2 class="section-h sr sr-up d1">Frequently Asked <span>Questions</span></h2>
+      <h2 class="section-h sr sr-up d1" style="color:#fff;">Frequently Asked <span>Questions</span></h2>
     </div>
     <div class="faq-list">
-      <div class="faq-item sr sr-left d1">
-        <button class="faq-q active" onclick="toggleFaq(this)">What is Edusetin?<div class="faq-arr">+</div></button>
-        <div class="faq-a open"><div class="faq-a-inner">Edusetin is an online IMAT exam preparation platform that provides topic-wise practice, mock tests, previous year papers, and performance tracking.</div></div>
+
+      <div class="faq-item sr sr-up d1">
+        <button class="faq-q active" onclick="toggleFaq(this)">
+          <span class="faq-num">01</span>
+          <span class="faq-text">What is Edusetin?</span>
+          <span class="faq-plus">+</span>
+        </button>
+        <div class="faq-a open">
+          <div class="faq-a-inner">Edusetin is an online IMAT exam preparation platform that provides topic-wise practice, mock tests, previous year papers, and performance tracking.</div>
+        </div>
       </div>
-      <div class="faq-item sr sr-right d1">
-        <button class="faq-q" onclick="toggleFaq(this)">Is Edusetin a coaching platform?<div class="faq-arr">+</div></button>
-        <div class="faq-a"><div class="faq-a-inner">No. Edusetin is a self-paced preparation platform focused on helping students practice and improve through structured assessments.</div></div>
+
+      <div class="faq-item sr sr-up d2">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-num">02</span>
+          <span class="faq-text">Is Edusetin a coaching platform?</span>
+          <span class="faq-plus">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">No. Edusetin is a self-paced preparation platform focused on helping students practice and improve through structured assessments.</div>
+        </div>
       </div>
-      <div class="faq-item sr sr-left d2">
-        <button class="faq-q" onclick="toggleFaq(this)">Can I practice previous year IMAT papers?<div class="faq-arr">+</div></button>
-        <div class="faq-a"><div class="faq-a-inner">Yes. Previous year papers are available with eligible subscription plans.</div></div>
+
+      <div class="faq-item sr sr-up d3">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-num">03</span>
+          <span class="faq-text">Can I practice previous year IMAT papers?</span>
+          <span class="faq-plus">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Yes. Previous year papers are available with eligible subscription plans.</div>
+        </div>
       </div>
-      <div class="faq-item sr sr-right d2">
-        <button class="faq-q" onclick="toggleFaq(this)">Are the mock tests timed?<div class="faq-arr">+</div></button>
-        <div class="faq-a"><div class="faq-a-inner">Yes. Mock exams include timers and follow the official IMAT exam structure.</div></div>
+
+      <div class="faq-item sr sr-up d4">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-num">04</span>
+          <span class="faq-text">Are the mock tests timed?</span>
+          <span class="faq-plus">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Yes. Mock exams include timers and follow the official IMAT exam structure.</div>
+        </div>
       </div>
-      <div class="faq-item sr sr-left d3">
-        <button class="faq-q" onclick="toggleFaq(this)">Can I use the platform on my mobile phone?<div class="faq-arr">+</div></button>
-        <div class="faq-a"><div class="faq-a-inner">Yes. Edusetin works seamlessly on desktop, tablet, and mobile devices.</div></div>
+
+      <div class="faq-item sr sr-up d5">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-num">05</span>
+          <span class="faq-text">Can I use the platform on my mobile phone?</span>
+          <span class="faq-plus">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Yes. Edusetin works seamlessly on desktop, tablet, and mobile devices.</div>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
@@ -1280,7 +1655,7 @@
       <h2 class="sr sr-up d1">Start Your IMAT Preparation Today</h2>
       <p class="sr sr-up d2">Practice smarter, measure your progress, and prepare with confidence using Edusetin's complete IMAT preparation platform.</p>
       <div class="cta-btns sr sr-up d3">
-        <a href="{% url 'student_portal:register' %}" class="btn-hero-primary">Create Your Free Account <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <a href="{% url 'student_portal:register' %}" class="btn-hero-primary">Create Your  Account <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
         <a href="#pricing" class="btn-hero-ghost">View Pricing</a>
       </div>
     </div>
@@ -1292,27 +1667,14 @@
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand sr sr-left">
-        <div class="footer-logo-wrap">
-          <img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin">
-        </div>
+        <div class="footer-logo-wrap"><img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin"></div>
         <p>Edusetin is an online IMAT preparation platform created to help aspiring medical students prepare effectively through structured practice, realistic mock exams, previous year papers, and performance tracking.</p>
-        <div class="footer-contact">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <a href="mailto:support@edusetin.com">support@edusetin.com</a>
-        </div>
-        <div class="footer-contact">
-          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.08 6.08l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
-          <a href="#">+91 XXXXX XXXXX</a>
-        </div>
-        <div class="footer-contact">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span>India</span>
-        </div>
+        <div class="footer-contact"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:support@edusetin.com">support@edusetin.com</a></div>
+        <div class="footer-contact"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>India</span></div>
         <div class="footer-socials">
-          <a href="#" class="footer-social-link" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.461 3.476 1.338 4.988L2 22l5.166-1.312A9.956 9.956 0 0 0 12.004 22c5.514 0 9.997-4.483 9.997-9.997s-4.483-9.997-9.997-9.997z"/></svg></a>
+          <a href="#" class="footer-social-link" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.962-1.304A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg></a>
           <a href="#" class="footer-social-link" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
           <a href="#" class="footer-social-link" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
-          <a href="#" class="footer-social-link" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg></a>
         </div>
       </div>
       <div class="footer-col sr sr-up d1">
@@ -1339,11 +1701,8 @@
       <div class="footer-col sr sr-right d3">
         <h4>Plans</h4>
         <ul>
-          {% for plan in plans %}
-            <li><a href="{% url 'student_portal:plan_list' %}">{{ plan.name }}</a></li>
-          {% empty %}
-            <li><a href="{% url 'student_portal:plan_list' %}">View Plans</a></li>
-          {% endfor %}
+          {% for plan in plans %}<li><a href="{% url 'student_portal:plan_list' %}">{{ plan.name }}</a></li>
+          {% empty %}<li><a href="{% url 'student_portal:plan_list' %}">View Plans</a></li>{% endfor %}
         </ul>
         <h4 style="margin-top:24px;">Account</h4>
         <ul>
@@ -1368,293 +1727,275 @@
 <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
 
 <script>
-(function () {
+(function(){
   'use strict';
 
-  /* PRELOADER */
-  window.addEventListener('load', function () {
-  var preloader = document.getElementById('preloader');
-  if (preloader) {
-    setTimeout(function () {
-      preloader.style.opacity = '0';
-      setTimeout(function () { preloader.style.display = 'none'; }, 600);
-    }, 1500);
-  }
-});
+  /* ── PRELOADER ── */
+  window.addEventListener('load', function(){
+    var p = document.getElementById('preloader');
+    if(p){ setTimeout(function(){ p.style.opacity='0'; setTimeout(function(){ p.style.display='none'; },500); },1200); }
+  });
 
-
-  /* NAVBAR SCROLL */
-  var navbar = document.getElementById('mainNav');
+  /* ── NAVBAR SCROLL ── */
+  var navbar  = document.getElementById('mainNav');
   var backTop = document.getElementById('backTop');
-  function onScroll() {
-    var y = window.scrollY;
-    if (navbar) navbar.classList.toggle('scrolled', y > 80);
-    if (backTop) backTop.classList.toggle('show', y > 400);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  function onScrollGlobal(){ var y=window.scrollY; if(navbar) navbar.classList.toggle('scrolled',y>80); if(backTop) backTop.classList.toggle('show',y>400); }
+  window.addEventListener('scroll', onScrollGlobal, {passive:true});
+  onScrollGlobal();
 
-  /* SMOOTH SCROLL — anchor links only */
-  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      var href = a.getAttribute('href');
-      if (!href || href === '#') return;
-      var target = document.querySelector(href);
-      if (!target) return;
+  /* ── SMOOTH SCROLL ── */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var href=a.getAttribute('href'); if(!href||href==='#') return;
+      var t=document.querySelector(href); if(!t) return;
       e.preventDefault();
-      var offset = target.getBoundingClientRect().top + window.scrollY - 90;
-      window.scrollTo({ top: offset, behavior: 'smooth' });
-      var mob = document.getElementById('mobileMenu');
-      if (mob) mob.classList.remove('open');
+      window.scrollTo({top: t.getBoundingClientRect().top+window.scrollY-90, behavior:'smooth'});
+      var mob=document.getElementById('mobileMenu'); if(mob) mob.classList.remove('open');
     });
   });
 
-  /* HAMBURGER */
-  var hamburger = document.getElementById('hamburger');
-  var mobileMenu = document.getElementById('mobileMenu');
-  if (hamburger && mobileMenu) {
-    hamburger.addEventListener('click', function () {
-      mobileMenu.classList.toggle('open');
-      hamburger.classList.toggle('is-open');
-      var bars = hamburger.querySelectorAll('span');
-      if (hamburger.classList.contains('is-open')) {
-        bars[0].style.transform = 'translateY(7px) rotate(45deg)';
-        bars[1].style.opacity = '0';
-        bars[2].style.transform = 'translateY(-7px) rotate(-45deg)';
-      } else {
-        bars[0].style.transform = ''; bars[1].style.opacity = ''; bars[2].style.transform = '';
-      }
+  /* ── HAMBURGER ── */
+  var ham=document.getElementById('hamburger'), mob=document.getElementById('mobileMenu');
+  if(ham&&mob){
+    ham.addEventListener('click', function(){
+      mob.classList.toggle('open'); ham.classList.toggle('is-open');
+      var bars=ham.querySelectorAll('span');
+      if(ham.classList.contains('is-open')){
+        bars[0].style.transform='translateY(7px) rotate(45deg)'; bars[1].style.opacity='0'; bars[2].style.transform='translateY(-7px) rotate(-45deg)';
+      } else { bars[0].style.transform=''; bars[1].style.opacity=''; bars[2].style.transform=''; }
     });
-    document.addEventListener('click', function (e) {
-      if (!navbar.contains(e.target)) {
-        mobileMenu.classList.remove('open');
-        hamburger.classList.remove('is-open');
-        hamburger.querySelectorAll('span').forEach(function (s) { s.style.transform = ''; s.style.opacity = ''; });
-      }
-    });
+    document.addEventListener('click', function(e){ if(!navbar.contains(e.target)){ mob.classList.remove('open'); ham.classList.remove('is-open'); ham.querySelectorAll('span').forEach(function(s){s.style.transform='';s.style.opacity='';}); } });
   }
 
-  /* HERO SLIDER */
-  var slides = document.querySelectorAll('.hero-slide');
-  var dots   = document.querySelectorAll('.hero-dot');
-  var cur = 0, sliderTimer;
-  function goTo(n) {
-    slides[cur].classList.remove('active'); dots[cur].classList.remove('active');
-    cur = (n + slides.length) % slides.length;
-    slides[cur].classList.add('active'); dots[cur].classList.add('active');
-  }
-  function startAuto() { clearInterval(sliderTimer); sliderTimer = setInterval(function () { goTo(cur + 1); }, 5500); }
-  dots.forEach(function (d, i) { d.addEventListener('click', function () { goTo(i); startAuto(); }); });
-  var prevBtn = document.getElementById('heroPrev');
-  var nextBtn = document.getElementById('heroNext');
-  if (prevBtn) prevBtn.addEventListener('click', function () { goTo(cur - 1); startAuto(); });
-  if (nextBtn) nextBtn.addEventListener('click', function () { goTo(cur + 1); startAuto(); });
-  var hero = document.querySelector('.hero');
-  var tx = 0;
-  if (hero) {
-    hero.addEventListener('touchstart', function (e) { tx = e.changedTouches[0].screenX; }, { passive: true });
-    hero.addEventListener('touchend', function (e) {
-      var d = tx - e.changedTouches[0].screenX;
-      if (Math.abs(d) > 40) { goTo(d > 0 ? cur + 1 : cur - 1); startAuto(); }
-    });
+  /* ── HERO SLIDER ── */
+  var slides=document.querySelectorAll('.hero-slide'), dots=document.querySelectorAll('.hero-dot');
+  var cur=0, timer;
+  function goTo(n){ slides[cur].classList.remove('active'); dots[cur].classList.remove('active'); cur=(n+slides.length)%slides.length; slides[cur].classList.add('active'); dots[cur].classList.add('active'); }
+  function startAuto(){ clearInterval(timer); timer=setInterval(function(){ goTo(cur+1); },5500); }
+  dots.forEach(function(d,i){ d.addEventListener('click', function(){ goTo(i); startAuto(); }); });
+  var ph=document.getElementById('heroPrev'), nh=document.getElementById('heroNext');
+  if(ph) ph.addEventListener('click', function(){ goTo(cur-1); startAuto(); });
+  if(nh) nh.addEventListener('click', function(){ goTo(cur+1); startAuto(); });
+  var heroEl=document.querySelector('.hero'), tx=0;
+  if(heroEl){
+    heroEl.addEventListener('touchstart', function(e){ tx=e.changedTouches[0].screenX; },{passive:true});
+    heroEl.addEventListener('touchend', function(e){ var d=tx-e.changedTouches[0].screenX; if(Math.abs(d)>40){ goTo(d>0?cur+1:cur-1); startAuto(); } });
   }
   startAuto();
 
-  /* SCROLL REVEAL */
-  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var srEls = document.querySelectorAll('.sr');
-  if (prefersReduced) {
-    srEls.forEach(function (el) { el.classList.add('visible'); });
-  } else {
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function (bar) {
-            setTimeout(function () { bar.style.width = bar.getAttribute('data-width'); }, 300);
-          });
+  /* ── SCROLL REVEAL (general .sr elements) ── */
+  var srEls=document.querySelectorAll('.sr');
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function(b){ setTimeout(function(){ b.style.width=b.getAttribute('data-width'); },300); });
+      } else {
+        entry.target.classList.remove('visible');
+        entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function(b){ b.style.width='0'; });
+      }
+    });
+  },{threshold:0.10, rootMargin:'0px 0px -40px 0px'});
+  srEls.forEach(function(el){ obs.observe(el); });
+
+  /* ── DARK BG BAR ANIMATIONS ── */
+  var barObs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function(b,i){ b.style.width='0'; setTimeout(function(){ b.style.width=b.getAttribute('data-width'); },i*130); });
+      } else {
+        entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function(b){ b.style.width='0'; });
+      }
+    });
+  },{threshold:0.3});
+  document.querySelectorAll('.dash-mock').forEach(function(m){ barObs.observe(m); });
+
+  /* ── ACTIVE NAV ON SCROLL ── */
+  var sections=document.querySelectorAll('section[id], footer[id]');
+  var navLinks=document.querySelectorAll('.nav-links a[href^="#"], .mobile-menu a[href^="#"]');
+  var secObs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){ var id=entry.target.getAttribute('id'); navLinks.forEach(function(l){ l.classList.remove('active'); if(l.getAttribute('href')==='#'+id) l.classList.add('active'); }); }
+    });
+  },{rootMargin:'-35% 0px -60% 0px'});
+  sections.forEach(function(s){ secObs.observe(s); });
+
+  /* ════════════════════════════════════════════════
+     PLATFORM FEATURES — 3D STACK SCROLL
+  ════════════════════════════════════════════════ */
+  (function(){
+    'use strict';
+
+    var track      = document.getElementById('featScrollTrack');
+    var dotsWrap   = document.getElementById('featProgressDots');
+    var hint       = document.getElementById('featScrollHint');
+    var allCards   = Array.from(document.querySelectorAll('#featStack .feat-card'));
+
+    if(!track || !allCards.length) return;
+
+    var SCROLL_PER_CARD  = 0.85;
+    var STACK_SCALE      = 0.045;
+    var STACK_Y          = 20;
+    var MAX_BEHIND       = 3;
+
+    var visibleCards = allCards.slice();
+    var activeIdx    = -1;
+
+    function buildDots(){
+      dotsWrap.innerHTML = '';
+      visibleCards.forEach(function(_, i){
+        var d = document.createElement('div');
+        d.className = 'feat-prog-dot';
+        dotsWrap.appendChild(d);
+      });
+    }
+
+    function setTrackHeight(){
+      var vh = window.innerHeight;
+      var n  = visibleCards.length;
+      track.style.height = ((n * SCROLL_PER_CARD + 1) * vh) + 'px';
+    }
+
+    function applyStack(idx){
+      var n = visibleCards.length;
+
+      visibleCards.forEach(function(card, i){
+        card.classList.remove('fc-active', 'fc-behind');
+        card.style.transform  = 'translateY(100vh)';
+        card.style.opacity    = '0';
+        card.style.filter     = '';
+        card.style.zIndex     = String(i + 1);
+        card.style.transition = 'transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.50s cubic-bezier(0.22,1,0.36,1), filter 0.50s ease';
+        card.style.pointerEvents = 'none';
+
+        if(i === idx){
+          card.classList.add('fc-active');
+          card.style.zIndex        = String(n + 10);
+          card.style.pointerEvents = 'auto';
+        } else if(i < idx){
+          var depth = idx - i;
+          if(depth > MAX_BEHIND){
+            card.style.opacity   = '0';
+            card.style.transform = 'translateY(0) scale(' + (1 - STACK_SCALE * MAX_BEHIND) + ')';
+            card.style.zIndex    = String(i + 1);
+            return;
+          }
+          card.classList.add('fc-behind');
+          var scale      = 1 - (STACK_SCALE * depth);
+          var translateY = -(STACK_Y * depth);
+          var brightness = Math.max(0.25, 0.80 - (depth - 1) * 0.22);
+          var opacity    = Math.max(0, 1 - (depth - 1) * 0.28);
+
+          card.style.zIndex    = String(n - depth + 1);
+          card.style.transform = 'translateY(' + translateY + 'px) scale(' + scale + ')';
+          card.style.opacity   = String(opacity);
+          card.style.filter    = 'brightness(' + brightness + ')';
+          card.style.pointerEvents = 'none';
         } else {
-          entry.target.classList.remove('visible');
-          entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function (bar) { bar.style.width = '0'; });
+          card.style.transform = 'translateY(100vh)';
+          card.style.opacity   = '0';
+          card.style.zIndex    = String(i + 1);
         }
       });
-    }, { threshold: 0.10, rootMargin: '0px 0px -40px 0px' });
-    srEls.forEach(function (el) { observer.observe(el); });
-  }
 
-  /* ANIMATE FEATURE PANEL BARS */
-  function animatePanelBars(panel) {
-    if (!panel) return;
-    panel.querySelectorAll('.dv-bar-fill[data-w]').forEach(function (bar, i) {
-      bar.style.width = '0';
-      setTimeout(function () { bar.style.width = bar.getAttribute('data-w'); }, i * 130 + 100);
-    });
-  }
+      var dotEls = dotsWrap.querySelectorAll('.feat-prog-dot');
+      dotEls.forEach(function(d, i){ d.classList.toggle('fp-active', i === idx); });
 
-  /* DARK BG BARS */
-  var barObs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function (bar, i) {
-          bar.style.width = '0';
-          setTimeout(function () { bar.style.width = bar.getAttribute('data-width'); }, i * 130);
-        });
-      } else {
-        entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function (bar) { bar.style.width = '0'; });
+      if(hint) hint.classList.toggle('visible', idx === 0);
+    }
+
+    function onFeatScroll(){
+      var rect  = track.getBoundingClientRect();
+      var vh    = window.innerHeight;
+      var n     = visibleCards.length;
+      var scrolledIn = -rect.top;
+
+      if(scrolledIn < 0){
+        if(activeIdx !== -1){ activeIdx = -1; applyStack(-1); }
+        return;
       }
-    });
-  }, { threshold: 0.3 });
-  document.querySelectorAll('.dash-mock').forEach(function (m) { barObs.observe(m); });
 
-  /* ACTIVE NAV on scroll */
-  var sections  = document.querySelectorAll('section[id], footer[id]');
-  var navLinks  = document.querySelectorAll('.nav-links a[href^="#"], .mobile-menu a[href^="#"]');
-  var secObs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        var id = entry.target.getAttribute('id');
-        navLinks.forEach(function (link) {
-          link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + id) link.classList.add('active');
-        });
+      var scrollPerCard = SCROLL_PER_CARD * vh;
+      var rawIdx = Math.floor(scrolledIn / scrollPerCard);
+      var idx    = Math.min(Math.max(rawIdx, 0), n - 1);
+
+      if(scrolledIn > n * scrollPerCard){ idx = n - 1; }
+
+      if(idx !== activeIdx){
+        activeIdx = idx;
+        applyStack(idx);
       }
-    });
-  }, { rootMargin: '-35% 0px -60% 0px' });
-  sections.forEach(function (s) { secObs.observe(s); });
+    }
 
-  /* FEATURE TABS */
-  var featTabs = document.querySelectorAll('.feat-tab');
-  var currentPanel = document.getElementById('panel-dashboard');
-  featTabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      var newId    = 'panel-' + tab.dataset.tab;
-      var newPanel = document.getElementById(newId);
-      if (!newPanel || newPanel === currentPanel) return;
-      currentPanel.classList.add('exit');
-      currentPanel.classList.remove('active');
-      setTimeout(function () { currentPanel.classList.remove('exit'); }, 450);
-      currentPanel = newPanel;
-      newPanel.classList.add('active');
-      animatePanelBars(newPanel);
-      featTabs.forEach(function (t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-    });
-  });
-  setTimeout(function () { animatePanelBars(document.getElementById('panel-dashboard')); }, 600);
+    buildDots();
+    setTrackHeight();
+    applyStack(0);
+    activeIdx = 0;
 
-  /* FAQ */
-  window.toggleFaq = function (btn) {
-    var ans    = btn.nextElementSibling;
+    window.addEventListener('scroll',  onFeatScroll, { passive: true });
+    window.addEventListener('resize',  function(){ setTrackHeight(); onFeatScroll(); });
+    onFeatScroll();
+
+  })();
+
+  /* ── TIMELINE ANIMATION ── */
+  var howSteps=document.querySelectorAll('.how-step');
+  var fillEl=document.getElementById('timelineFill');
+  var howWrap=document.querySelector('.how-timeline-wrap');
+  function updateTimeline(){
+    if(!howWrap||!fillEl) return;
+    var wrapRect=howWrap.getBoundingClientRect();
+    var wrapH=howWrap.offsetHeight;
+    var viewH=window.innerHeight;
+    var scrolled=viewH*0.7 - wrapRect.top;
+    var pct=Math.max(0,Math.min(1, scrolled/wrapH));
+    fillEl.style.height=(pct*100)+'%';
+    howSteps.forEach(function(step){
+      var rect=step.getBoundingClientRect();
+      var numCenter=rect.top + step.querySelector('.how-num').offsetHeight/2;
+      if(numCenter < viewH*0.72){ step.classList.add('reached'); }
+      else { step.classList.remove('reached'); }
+    });
+  }
+  window.addEventListener('scroll', updateTimeline, {passive:true});
+  updateTimeline();
+
+  /* ── FAQ — Image 2 style ── */
+  window.toggleFaq = function(btn){
+    var ans = btn.nextElementSibling;
     var isOpen = btn.classList.contains('active');
-    document.querySelectorAll('.faq-q').forEach(function (q) {
+    // Close all
+    document.querySelectorAll('.faq-q').forEach(function(q){
       q.classList.remove('active');
       var a = q.nextElementSibling;
-      if (a) a.classList.remove('open');
+      if(a) a.classList.remove('open');
     });
-    if (!isOpen) { btn.classList.add('active'); ans.classList.add('open'); }
+    // Open this one if it was closed
+    if(!isOpen){
+      btn.classList.add('active');
+      ans.classList.add('open');
+    }
   };
 
-  /* EXAM OPTION SELECT */
-  window.selectOpt = function (el) {
-    el.closest('.q-options').querySelectorAll('.q-option').forEach(function (o) { o.classList.remove('selected'); });
+  /* ── EXAM OPTION SELECT ── */
+  window.selectOpt=function(el){
+    el.closest('.q-options').querySelectorAll('.q-option').forEach(function(o){ o.classList.remove('selected'); });
     el.classList.add('selected');
   };
 
-  /* TOPIC PICKER */
-  window.selectTopic = function (el) {
-    el.closest('.topic-picker').querySelectorAll('.topic-item').forEach(function (t) { t.classList.remove('active'); });
-    el.classList.add('active');
-  };
+  /* ── COUNTDOWN TIMER ── */
+  var timerEl=document.getElementById('timerDisplay');
+  var secs=5025;
+  setInterval(function(){
+    if(secs<=0) return; secs--;
+    var h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
+    var str=(h>0?h+':':'')+ String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(timerEl){ timerEl.textContent=str; if(secs<300) timerEl.style.color='#ff6b6b'; }
+  },1000);
 
-  /* MOCK Q INTERACTIVE */
-  var mockQuestions = [
-    { q: 'Which organelle is primarily responsible for ATP synthesis in eukaryotic cells?', opts: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi Apparatus'], correct: 1, explain: 'Mitochondria are the powerhouses of the cell — they generate ATP via oxidative phosphorylation.' },
-    { q: 'Which of the following is the correct molecular formula for glucose?', opts: ['C₆H₁₂O₅', 'C₆H₁₂O₆', 'C₅H₁₀O₅', 'C₆H₁₀O₆'], correct: 1, explain: 'Glucose has the molecular formula C₆H₁₂O₆ — 6 carbons, 12 hydrogens, and 6 oxygens.' },
-    { q: "What does Newton's Second Law of Motion state?", opts: ['F = mv', 'F = ma', 'p = mv', 'F = m/a'], correct: 1, explain: "F = ma: Force equals mass times acceleration. This is Newton's Second Law." }
-  ];
-  var currentMockQ = 0;
-  var mockAnswered  = false;
-
-  function renderMockQ() {
-    var q = mockQuestions[currentMockQ];
-    document.getElementById('mock-q-text').textContent = q.q;
-    var optsEl = document.getElementById('mock-q-opts');
-    optsEl.innerHTML = '';
-    q.opts.forEach(function (opt, i) {
-      var div = document.createElement('div');
-      div.className = 'mock-q-opt';
-      div.onclick = function () {
-        if (mockAnswered) return;
-        optsEl.querySelectorAll('.mock-q-opt').forEach(function (o) { o.classList.remove('selected'); });
-        div.classList.add('selected');
-        div._isCorrect = (i === q.correct);
-      };
-      div.innerHTML = '<div class="opt-circle">' + String.fromCharCode(65 + i) + '</div><div class="opt-label">' + opt + '</div>';
-      optsEl.appendChild(div);
-    });
-    var res = document.getElementById('mock-result');
-    res.className = 'mock-result-msg';
-    res.textContent = '';
-    res.style.display = 'none';
-    mockAnswered = false;
-    var cb = document.getElementById('mock-check-btn');
-    cb.style.opacity = '1'; cb.disabled = false;
-  }
-
-  window.checkMockAnswer = function () {
-    if (mockAnswered) return;
-    var selected = document.querySelector('#mock-q-opts .mock-q-opt.selected');
-    if (!selected) return;
-    mockAnswered = true;
-    var res = document.getElementById('mock-result');
-    var q   = mockQuestions[currentMockQ];
-    if (selected._isCorrect) {
-      selected.classList.add('correct');
-      res.className = 'mock-result-msg correct';
-      res.textContent = '✓ Correct! ' + q.explain;
-    } else {
-      selected.classList.add('wrong');
-      var opts = document.querySelectorAll('#mock-q-opts .mock-q-opt');
-      if (opts[q.correct]) opts[q.correct].classList.add('correct');
-      res.className = 'mock-result-msg wrong';
-      res.textContent = '✗ Not quite. ' + q.explain;
-    }
-    res.style.display = 'block';
-    var cb = document.getElementById('mock-check-btn');
-    cb.disabled = true; cb.style.opacity = '0.5';
-  };
-
-  window.nextMockQ = function () {
-    currentMockQ = (currentMockQ + 1) % mockQuestions.length;
-    renderMockQ();
-  };
-
-  renderMockQ();
-
-  /* COUNTDOWN TIMER */
-  var timerEl     = document.getElementById('timerDisplay');
-  var featTimerEl = document.getElementById('feat-timer');
-  var secs = 5025;
-  setInterval(function () {
-    if (secs <= 0) return;
-    secs--;
-    var h   = Math.floor(secs / 3600);
-    var m   = Math.floor((secs % 3600) / 60);
-    var s   = secs % 60;
-    var str = (h > 0 ? h + ':' : '') + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    if (timerEl)     { timerEl.textContent = str;     if (secs < 300) timerEl.style.color = '#ff6b6b'; }
-    if (featTimerEl) { featTimerEl.textContent = str; }
-  }, 1000);
-
-  /* RESIZE */
-  window.addEventListener('resize', function () {
-    if (window.innerWidth >= 1024) {
-      if (mobileMenu) mobileMenu.classList.remove('open');
-      if (hamburger)  {
-        hamburger.classList.remove('is-open');
-        hamburger.querySelectorAll('span').forEach(function (s) { s.style.transform = ''; s.style.opacity = ''; });
-      }
-    }
+  /* ── RESIZE ── */
+  window.addEventListener('resize', function(){
+    if(window.innerWidth>=1024){ if(mob) mob.classList.remove('open'); if(ham){ ham.classList.remove('is-open'); ham.querySelectorAll('span').forEach(function(s){s.style.transform='';s.style.opacity='';}); } }
   });
 
 })();

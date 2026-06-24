@@ -53,11 +53,15 @@ def _clear_registration_session(request):
 @never_cache
 def student_register(request):
     if request.user.is_authenticated:
-        # Only redirect to dashboard if user actually has a Student profile
         if hasattr(request.user, 'student'):
             return redirect('student_portal:dashboard')
-        # Non-student authenticated user (e.g. admin) — log them out silently
         logout(request)
+
+    # ── Save checkout URL if coming from landing page Pay button ────
+    next_url = request.GET.get('next', '').strip()
+    if next_url and '/checkout/' in next_url:
+        request.session['post_auth_redirect'] = next_url
+    # ───────────────────────────────────────────────────────────────
 
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST)
@@ -65,25 +69,23 @@ def student_register(request):
             full_name = form.cleaned_data['full_name']
             email     = form.cleaned_data['email']
             password  = form.cleaned_data['password']
+            phone_number = form.cleaned_data.get('phone_number', '')
 
-            # ── Generate OTP ────────────────────────────────────────────
             otp = _generate_otp()
 
-            # ── Store registration state in session (no DB writes) ───────
             request.session['registration_data'] = {
                 'full_name': full_name,
                 'email':     email,
-                'password':  password,   # stored only for the ~10-min OTP window
+                'password':  password,
+                'phone_number': phone_number,   
             }
             request.session['otp']            = otp
             request.session['otp_created_at'] = timezone.now().isoformat()
             request.session['otp_attempts']   = 0
 
-            # ── Send OTP email ───────────────────────────────────────────
             try:
                 _send_otp_email(email, otp)
             except Exception:
-                # If email fails, clean up session and show error
                 _clear_registration_session(request)
                 messages.error(
                     request,
@@ -157,10 +159,12 @@ def verify_otp(request):
             email     = reg_data['email']
             password  = reg_data['password']
             full_name = reg_data['full_name']
+            phone_number = reg_data.get('phone_number', '') 
 
             # Double-check email uniqueness (edge-case: someone registered
             # with same email in the 10-min window between sessions)
             if User.objects.filter(email=email).exists():
+                login(request, user)   
                 _clear_registration_session(request)
                 messages.error(
                     request,
@@ -173,7 +177,7 @@ def verify_otp(request):
                 email=email,
                 password=password,
             )
-            Student.objects.create(user=user, full_name=full_name)
+            Student.objects.create(user=user, full_name=full_name,phone_number=phone_number)
 
             _clear_registration_session(request)
 
@@ -588,7 +592,7 @@ def student_dashboard(request):
     )
 
     # ── Suggested quizzes ────────────────────────────────────────────────────
-    show_suggested_quizzes = total_available_exams <= SPARSE_EXAM_THRESHOLD
+    show_suggested_quizzes = True
     suggested_quizzes = []
 
     if show_suggested_quizzes:
@@ -810,31 +814,72 @@ def plan_checkout(request, plan_uuid):
     student = getattr(request.user, 'student', None)
 
     if student is None:
-        messages.error(request, "Your account doesn't have a student profile. Please log in with a student account or register.")
+        messages.error(request, "No student profile found.")
         return redirect('student_portal:register')
 
-    amount_paise = int(plan.price * 100)
+    # ── FREE PLAN: activate immediately, skip Razorpay ───────────────
+    if plan.price == 0:
+        # Don't create duplicate free activations
+        already_active = student.payments.filter(
+            plan=plan,
+            status=Payment.STATUS_SUCCESS,
+            expires_at__gt=timezone.now(),
+        ).exists()
 
-    razorpay_order = razorpay_client.order.create({
-        'amount': amount_paise,
-        'currency': 'INR',
-        'payment_capture': 1,
-    })
+        if not already_active:
+            now = timezone.now()
+            Payment.objects.create(
+                student=student,
+                plan=plan,
+                amount=0,
+                status=Payment.STATUS_SUCCESS,
+                paid_at=now,
+                expires_at=now + timedelta(days=plan.duration_days),
+            )
+        return redirect('student_portal:dashboard')
 
-    payment = Payment.objects.create(
-        student=student,
+    # ── PAID PLAN: reuse existing pending order if page is refreshed ──
+    existing_payment = student.payments.filter(
         plan=plan,
-        amount=plan.price,
         status=Payment.STATUS_PENDING,
-        razorpay_order_id=razorpay_order['id'],
-    )
+        razorpay_order_id__isnull=False,
+    ).order_by('-created_at').first()
+
+    if existing_payment:
+        # Verify the Razorpay order is still valid (not expired)
+        try:
+            rzp_order = razorpay_client.order.fetch(existing_payment.razorpay_order_id)
+            if rzp_order.get('status') == 'created':
+                payment = existing_payment
+                razorpay_order_id = existing_payment.razorpay_order_id
+                amount_paise = int(plan.price * 100)
+            else:
+                raise Exception("Order no longer valid")
+        except Exception:
+            existing_payment = None
+
+    if not existing_payment:
+        amount_paise = int(plan.price * 100)
+        razorpay_order = razorpay_client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'payment_capture': 1,
+        })
+        razorpay_order_id = razorpay_order['id']
+        payment = Payment.objects.create(
+            student=student,
+            plan=plan,
+            amount=plan.price,
+            status=Payment.STATUS_PENDING,
+            razorpay_order_id=razorpay_order_id,
+        )
 
     context = {
         'plan': plan,
         'payment': payment,
-        'razorpay_order_id': razorpay_order['id'],
+        'razorpay_order_id': razorpay_order_id,
         'razorpay_key_id': settings.RAZORPAY_KEY_ID,
-        'amount_paise': amount_paise,
+        'amount_paise': int(plan.price * 100),
         'amount_display': plan.price,
         'student_name': student.full_name,
         'student_email': request.user.email,
@@ -845,53 +890,68 @@ def plan_checkout(request, plan_uuid):
     }
     return render(request, 'student_portal/plan_checkout.html', context)
 
+
 @login_required(login_url='student_portal:register')
 def razorpay_payment_callback(request):
-    """
-    Called by Razorpay JS checkout after payment completes.
-    Verifies signature, then marks Payment as success and activates subscription.
-    """
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=400)
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
-    razorpay_order_id = data.get('razorpay_order_id')
+    razorpay_order_id   = data.get('razorpay_order_id')
     razorpay_payment_id = data.get('razorpay_payment_id')
-    razorpay_signature = data.get('razorpay_signature')
+    razorpay_signature  = data.get('razorpay_signature')
 
     if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
         return JsonResponse({'status': 'error', 'message': 'Missing payment details'}, status=400)
 
     payment = get_object_or_404(Payment, razorpay_order_id=razorpay_order_id)
 
-    # Verify only payments belonging to the logged-in student
     if payment.student != getattr(request.user, 'student', None):
         return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
 
-    params_dict = {
-        'razorpay_order_id': razorpay_order_id,
-        'razorpay_payment_id': razorpay_payment_id,
-        'razorpay_signature': razorpay_signature,
-    }
+    # ── Already processed — idempotency guard ────────────────────────
+    if payment.status == Payment.STATUS_SUCCESS:
+        return JsonResponse({
+            'status': 'success',
+            'redirect_url': reverse('student_portal:dashboard'),
+        })
 
+    # ── Verify Razorpay signature ────────────────────────────────────
     try:
-        razorpay_client.utility.verify_payment_signature(params_dict)
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id':   razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature':  razorpay_signature,
+        })
     except razorpay.errors.SignatureVerificationError:
         payment.status = Payment.STATUS_FAILED
-        payment.save()
-        return JsonResponse({'status': 'error', 'message': 'Signature verification failed'}, status=400)
+        payment.save(update_fields=['status'])
+        return JsonResponse({'status': 'error', 'message': 'Payment verification failed'}, status=400)
 
-    # Signature valid → mark success and activate plan
+    # ── Signature valid: mark SUCCESS with expiry ────────────────────
+    # This single save IS the activation — dashboard reads Payment table
+    now = timezone.now()
     payment.razorpay_payment_id = razorpay_payment_id
-    payment.razorpay_signature = razorpay_signature
-    payment.status = Payment.STATUS_SUCCESS
-    payment.paid_at = timezone.now()
-    payment.expires_at = timezone.now() + timedelta(days=payment.plan.duration_days)
-    payment.save()
+    payment.razorpay_signature  = razorpay_signature
+    payment.status              = Payment.STATUS_SUCCESS
+    payment.paid_at             = now
+    payment.expires_at          = now + timedelta(days=payment.plan.duration_days)
+    payment.save(update_fields=[
+        'razorpay_payment_id',
+        'razorpay_signature',
+        'status',
+        'paid_at',
+        'expires_at',
+    ])
 
-    return JsonResponse({'status': 'success', 'redirect_url': reverse('student_portal:dashboard')})
-
+    return JsonResponse({
+        'status': 'success',
+        'redirect_url': reverse('student_portal:dashboard'),
+    })
 from django.views.decorators.cache import never_cache
 def _get_student_or_redirect(request):
     
@@ -1660,7 +1720,7 @@ def quiz_submit(request, attempt_id):
     attempt = get_object_or_404(QuizAttempt, id=attempt_id, student=student)
 
     if attempt.status != QuizAttempt.STATUS_IN_PROGRESS:
-        return redirect('student_portal:quiz_result', attempt_id=attempt.id)
+        return redirect('student_portal:quiz_result', slug=attempt.slug)  # ← fixed
 
     question_ids = request.POST.getlist('question_ids')
     questions    = Question.objects.filter(id__in=question_ids)
@@ -1668,7 +1728,7 @@ def quiz_submit(request, attempt_id):
 
     correct = wrong = skipped = 0
     MARKS_PER_Q = 1.0
-    NEG_MARKS   = 0.25   
+    NEG_MARKS   = 0.25
 
     for question in questions:
         user_answer    = request.POST.get(f'q_{question.id}', '').strip().upper()
@@ -1709,13 +1769,12 @@ def quiz_submit(request, attempt_id):
     attempt.total_marks     = total_marks
     attempt.percentage      = percentage
 
-    # Persist time taken if the model has this field
     if hasattr(attempt, 'time_taken_seconds'):
         attempt.time_taken_seconds = time_taken
 
-    attempt.save()
+    attempt.save()  # ← this triggers slug generation in model's save()
 
-    return redirect('student_portal:quiz_result', attempt_id=attempt.id)
+    return redirect('student_portal:quiz_result', slug=attempt.slug)  # ← fixed
  
  
 
@@ -1725,14 +1784,14 @@ def quiz_submit(request, attempt_id):
 # ─────────────────────────────────────────────
 @never_cache
 @login_required(login_url='student_portal:login')
-def quiz_result(request, attempt_id):
+def quiz_result(request, slug):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
 
     attempt = get_object_or_404(
         QuizAttempt.objects.select_related('subject', 'submodule'),
-        id=attempt_id,
+        slug=slug, 
         student=student,
     )
 

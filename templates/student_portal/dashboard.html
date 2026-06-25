@@ -232,7 +232,13 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
   .ds-exam-grid { max-width: calc(2 * 260px + 1 * 20px + 80px); padding-right: 80px; }
 }
 @media(max-width:480px){
-  .ds-exam-grid { max-width: 100%; padding-right: 60px; }
+  .ds-exam-card { flex: 0 0 calc(100vw - 48px); }
+  .ds-exam-grid {
+    max-width: 100%;
+    padding-right: 24px;
+    scroll-snap-type: x mandatory;
+  }
+  .ds-exam-scroll-wrap::after { width: 40px; }
 }
 
 /* Thumb */
@@ -521,30 +527,66 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
   .ds-fc-front::after{display:none}
 }
 @media(max-width:768px){
-  .ds-hero { flex-wrap:wrap; padding:22px 24px; margin-bottom:22px; min-height:auto; }
+  .ds-hero { flex-wrap:wrap; padding:14px 16px; margin-bottom:16px; min-height:auto; border-radius:14px; gap:12px; }
   .ds-hero-title { font-size:1.55rem; gap:8px; }
   .ds-hero-title i { font-size:1.4rem !important; }
   .ds-hero-sub { font-size:.95rem; gap:6px; }
   .ds-plan-pill { font-size:.85rem; padding:4px 14px; }
   .ds-valid-txt { font-size:.9rem; }
   .ds-expiry-chip { font-size:.82rem; padding:4px 12px; }
-  .ds-hbtn { padding:11px 22px; font-size:.95rem; }
-  .ds-hero-btns { gap:8px; }
+  .ds-hbtn { padding:9px 16px; font-size:.88rem; flex:1; justify-content:center; }
+  .ds-hero-btns { gap:8px; margin-left:0; width:100%; }
   .ds-page-hd { flex-direction:column; }
   .ds-page-title { font-size:2rem; }
   .ds-page-sub { font-size:1rem; }
 }
 
 @media(max-width:480px){
-  .ds-hero { padding:18px 16px; margin-bottom:18px; }
-  .ds-hero-title { font-size:1.25rem; }
-  .ds-hero-title i { font-size:1.1rem !important; }
-  .ds-hero-sub { font-size:.85rem; }
-  .ds-hbtn { padding:10px 18px; font-size:.88rem; }
-  .ds-plan-pill { font-size:.78rem; padding:3px 11px; }
-  .ds-expiry-chip { font-size:.78rem; }
-  .ds-page-title { font-size:1.7rem; }
-  .ds-page-sub { font-size:.95rem; }
+  .ds-hero { padding:12px 14px; margin-bottom:12px; border-radius:12px; }
+  .ds-hero-title { font-size:1.1rem; gap:6px; }
+  .ds-hero-title i { font-size:1rem !important; }
+  .ds-hero-sub { font-size:.82rem; flex-wrap:wrap; }
+  .ds-plan-pill { font-size:.75rem; padding:3px 10px; }
+  .ds-expiry-chip { font-size:.75rem; padding:3px 10px; }
+  .ds-hbtn { padding:8px 14px; font-size:.82rem; }
+}
+
+/* ── KPI CARDS — MOBILE ── */
+@media (max-width: 480px) {
+  .ds-stat {
+    padding: 16px 16px 0;
+  }
+  .ds-stat-top {
+    margin-bottom: 12px;
+  }
+  .ds-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 19px;
+  }
+  .ds-stat-icon i {
+    font-size: 19px;
+  }
+  .ds-stat-trend {
+    font-size: .75rem;
+    padding: 3px 9px;
+  }
+  .ds-stat-trend i {
+    font-size: 11px;
+  }
+  .ds-stat-val {
+    font-size: 2rem;
+    margin-bottom: 4px;
+  }
+  .ds-stat-lbl {
+    font-size: .82rem;
+    margin-bottom: 12px;
+  }
+  .ds-sparkline {
+    height: 36px;
+    gap: 3px;
+  }
 }
 </style>
 
@@ -1113,7 +1155,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
               {% elif attempt.percentage >= 40 %}<span class="ds-badge average"><i class="ti ti-book" aria-hidden="true"></i> Average</span>
               {% else %}<span class="ds-badge poor"><i class="ti ti-barbell" aria-hidden="true"></i> Practice</span>{% endif %}
             </td>
-            <td><a href="{% url 'student_portal:exam_result' slug=attempt.slug %}" class="ds-tbl-action">Review</a></td>
+            <td><a href="{% url 'student_portal:exam_result' attempt_slug=attempt.slug %}" class="ds-tbl-action">Review</a></td>
           </tr>
           {% empty %}
           <tr><td colspan="6" style="text-align:center;padding:40px;color:#94a3b8;font-size:1.1rem;font-family:var(--f-head);">No attempts yet. <a href="{% url 'student_portal:exam_list' %}" style="color:var(--blue);font-weight:500;">Take your first exam</a></td></tr>

@@ -296,6 +296,10 @@ class Exam(models.Model):
         if not self.pyq_years:
             return []
         return sorted(int(y.strip()) for y in self.pyq_years.split(',') if y.strip())
+    @property
+    def uid(self):
+        from django.utils.text import slugify
+        return f"{slugify(self.custom_name or self.title)}-{self.id}"
 
 from django.core.validators import MinValueValidator
 

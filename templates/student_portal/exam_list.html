@@ -755,7 +755,7 @@ body.rp-modal-locked {
 
         <!-- Eye button: opens detail modal by exam ID -->
         <button type="button" class="rp-ec-fab"
-                onclick="rpOpenModal('{{ exam.id }}')"
+                onclick="rpOpenModal('{{ exam.uid}}')"
                 title="View details" aria-label="View exam details">
           <i class="ti ti-eye" aria-hidden="true"></i>
         </button>
@@ -815,11 +815,11 @@ body.rp-modal-locked {
             <span class="rp-ec-marks-lbl">Total Marks</span>
           </div>
           {% if exam.in_progress_attempt %}
-          <button type="button" class="rp-ec-cta resume" onclick="rpOpenModal('{{ exam.id }}')">
+          <button type="button" class="rp-ec-cta resume" onclick="rpOpenModal('{{ exam.uid }}')">
             <i class="ti ti-player-play"></i> Resume
           </button>
           {% else %}
-          <button type="button" class="rp-ec-cta" onclick="rpOpenModal('{{ exam.id }}')">
+          <button type="button" class="rp-ec-cta" onclick="rpOpenModal('{{exam.uid }}')">
             <i class="ti ti-player-play"></i> Start Exam
           </button>
           {% endif %}
@@ -850,7 +850,7 @@ body.rp-modal-locked {
 {% for exam in exams %}
 
 <!-- DETAIL MODAL for exam {{ exam.id }} -->
-<div class="rp-exam-modal" id="rpModal{{ exam.id }}" role="dialog" aria-modal="true" aria-label="{{ exam.custom_name|default:exam.title }}">
+<div class="rp-exam-modal" id="rpModal{{ exam.uid }}" role="dialog" aria-modal="true" aria-label="{{ exam.custom_name|default:exam.title }}">
   <div class="rp-modal-dialog">
     <div class="rp-modal-content">
 
@@ -861,7 +861,7 @@ body.rp-modal-locked {
             <span class="rp-modal-title-icon">📖</span>
             <span>{{ exam.custom_name|default:exam.title }}</span>
           </div>
-          <button type="button" class="rp-modal-close-btn" onclick="rpCloseModal('{{ exam.id }}')" aria-label="Close">
+          <button type="button" class="rp-modal-close-btn" onclick="rpCloseModal('{{ exam.uid }}')" aria-label="Close">
             <i class="ti ti-x"></i>
           </button>
         </div>
@@ -961,15 +961,16 @@ body.rp-modal-locked {
       </div><!-- /rp-modal-body -->
 
       <div class="rp-modal-ft">
-        <button type="button" class="rp-btn rp-btn-ghost" onclick="rpCloseModal('{{ exam.id }}')">Close</button>
+        <button type="button" class="rp-btn rp-btn-ghost" onclick="rpCloseModal('{{exam.uid }}')">Close</button>
         {% if exam.in_progress_attempt %}
         <button type="button" class="rp-btn rp-btn-teal"
-                onclick="rpCloseModal('{{ exam.id }}'); rpConfirm('{{ exam.custom_name|default:exam.title|escapejs }}','{% url "student_portal:exam_start" exam.id %}?resume={{ exam.in_progress_attempt.id }}',true)">
+        onclick="rpCloseModal('{{ exam.uid }}'); rpConfirm('{{ exam.custom_name|default:exam.title|escapejs }}','{% url "student_portal:exam_start" exam_uid=exam.uid %}?resume={{ exam.in_progress_attempt.id }}',true)">
+
           <i class="icon-play"></i> Resume Exam
         </button>
         {% else %}
         <button type="button" class="rp-btn rp-btn-primary"
-                onclick="rpCloseModal('{{ exam.id }}'); rpConfirm('{{ exam.custom_name|default:exam.title|escapejs }}','{% url "student_portal:exam_start" exam.id %}',false)">
+        onclick="rpCloseModal('{{ exam.uid }}'); rpConfirm('{{ exam.custom_name|default:exam.title|escapejs }}','{% url "student_portal:exam_start" exam_uid=exam.uid %}',false)">
           <i class="icon-play"></i> Start Exam
         </button>
         {% endif %}

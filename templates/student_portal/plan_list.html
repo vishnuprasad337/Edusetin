@@ -293,15 +293,31 @@
     [data-theme="dark"] .plan-name { color: #e2e8f0; }
     [data-theme="dark"] .plan-price { color: #e2e8f0; }
     [data-theme="dark"] .trust-pill { background: #0d1a3a; border-color: #1a2a5e; color: #90CAF9; }
+.brand-logo-img {
+  height: 220px;
+}
 
-    @media (max-width: 767px) {
-      .h-menu-toggle { display: flex; }
-      :root { --page-pad: 16px; }
-    }
+@media (max-width: 767px) {
+  .brand-logo-img {
+    height: 250px;
+  }
+}
     @media (max-width: 500px) {
       .plan-card-body { padding: 20px 18px; }
       .plan-price { font-size: 28px; }
     }
+    @media (max-width: 500px) {
+  .plan-card-body { padding: 20px 18px; }
+  .plan-price { font-size: 28px; }
+
+  /* smaller preloader dots on mobile */
+  .loader > div {
+    width: 16px;
+    height: 16px;
+    margin: 0 3px;
+  }
+}
+    
   </style>
 </head>
 <body>
@@ -327,8 +343,9 @@
       
         
         <img src="{% static 'student_portal/assets/img/edu.png' %}"
-             alt="Edusetin"
-             style="height:220px;width:auto;object-fit:contain;">
+     alt="Edusetin"
+     class="brand-logo-img"
+     style="width:auto;object-fit:contain;">
       </a>
     </div>
 

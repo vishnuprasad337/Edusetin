@@ -13,7 +13,7 @@ from .forms import StudentRegistrationForm, StudentLoginForm
 from .models import Student,ExamAttempt, AttemptResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
-
+from student_management.models import Exam
 # ─────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────
@@ -1109,18 +1109,27 @@ def exam_list_student(request):
 # ─────────────────────────────────────────────
 # EXAM PREVIEW
 # ─────────────────────────────────────────────
- 
+def get_exam_from_uid(exam_uid):
+   
+    exam_id = exam_uid.rsplit('-', 1)[-1]
+    return get_object_or_404(Exam, id=exam_id)
 @never_cache
 @login_required(login_url='student_portal:login')
-def exam_preview(request, exam_id):
+def exam_preview(request, exam_uid):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
- 
+
+    # extract id from end of slug  e.g. "neet-mock-test-42" → 42
+    try:
+        exam_id = int(exam_uid.rsplit('-', 1)[-1])
+    except (ValueError, IndexError):
+        raise Http404
+
     if not _has_exam_access(student, exam_id):
         messages.error(request, "You don't have access to this exam.")
         return redirect('student_portal:exam_list')
- 
+
     from student_management.models import Exam
     exam = get_object_or_404(
         Exam.objects.select_related('exam_type').prefetch_related(
@@ -1129,17 +1138,21 @@ def exam_preview(request, exam_id):
         id=exam_id,
         is_active=True,
     )
- 
+
+    # Canonical URL check — redirect if slug doesn't match exam title
+    if exam_uid != exam.uid:
+        return redirect('student_portal:exam_preview', exam_uid=exam.uid, permanent=True)
+
     question_count = exam.selected_questions.filter(is_active=True).count()
     total_marks    = question_count * float(exam.marks_per_question)
- 
+
     last_attempt = (
         ExamAttempt.objects.filter(student=student, exam=exam)
         .exclude(status=ExamAttempt.STATUS_IN_PROGRESS)
         .order_by('-started_at')
         .first()
     )
- 
+
     in_progress = (
         ExamAttempt.objects.filter(
             student=student,
@@ -1149,7 +1162,7 @@ def exam_preview(request, exam_id):
         .order_by('-started_at')
         .first()
     )
- 
+
     return render(request, 'student_portal/exam_preview.html', {
         'exam':           exam,
         'question_count': question_count,
@@ -1157,26 +1170,36 @@ def exam_preview(request, exam_id):
         'last_attempt':   last_attempt,
         'in_progress':    in_progress,
     })
- 
- 
+
+
 # ─────────────────────────────────────────────
 # EXAM START
 # ─────────────────────────────────────────────
- 
+from django.http import Http404
 @never_cache
 @login_required(login_url='student_portal:login')
-def exam_start(request, exam_id):
+def exam_start(request, exam_uid):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
- 
+
+    # extract id from slug
+    try:
+        exam_id = int(exam_uid.rsplit('-', 1)[-1])
+    except (ValueError, IndexError):
+        raise Http404
+
     if not _has_exam_access(student, exam_id):
         messages.error(request, "You don't have access to this exam.")
         return redirect('student_portal:exam_list')
- 
+
     from student_management.models import Exam
     exam = get_object_or_404(Exam, id=exam_id, is_active=True)
- 
+
+    # Canonical URL check
+    if exam_uid != exam.uid:
+        return redirect('student_portal:exam_start', exam_uid=exam.uid, permanent=True)
+
     resume_id = request.GET.get('resume')
     if resume_id:
         attempt = get_object_or_404(
@@ -1185,25 +1208,22 @@ def exam_start(request, exam_id):
             student=student,
             exam=exam,
         )
- 
-        # ── BACK-BUTTON GUARD ──────────────────────────────────────────
-        # If this attempt is already submitted/timed-out, the student is
-        # trying to go back after submission. Redirect them to the result.
+
+        # ── BACK-BUTTON GUARD ─────────────────────────────────────────
         if attempt.status != ExamAttempt.STATUS_IN_PROGRESS:
             messages.warning(request, "This attempt has already been submitted.")
-            return redirect('student_portal:exam_result', attempt_id=attempt.id)
- 
+            return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
+
         elapsed   = (timezone.now() - attempt.started_at).total_seconds()
         time_left = max(0, exam.duration_minutes * 60 - int(elapsed))
- 
-        # If time already ran out on the server side, auto-submit now
+
         if time_left == 0:
             attempt.status       = ExamAttempt.STATUS_TIMED_OUT
             attempt.submitted_at = timezone.now()
             attempt.save(update_fields=['status', 'submitted_at'])
             messages.warning(request, "Your exam time has expired.")
-            return redirect('student_portal:exam_result', attempt_id=attempt.id)
- 
+            return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
+
     else:
         # Expire any stale in-progress attempts
         ExamAttempt.objects.filter(
@@ -1211,16 +1231,16 @@ def exam_start(request, exam_id):
             exam=exam,
             status=ExamAttempt.STATUS_IN_PROGRESS,
         ).update(status=ExamAttempt.STATUS_TIMED_OUT)
- 
+
         attempt   = ExamAttempt.objects.create(student=student, exam=exam)
         time_left = exam.duration_minutes * 60
- 
+
     questions = list(
         exam.selected_questions.filter(is_active=True)
         .select_related('subject')
         .prefetch_related('media_files')
     )
- 
+
     existing_responses = {}
     if resume_id:
         for resp in AttemptResponse.objects.filter(attempt=attempt):
@@ -1228,7 +1248,7 @@ def exam_start(request, exam_id):
                 'selected_answer': resp.selected_answer,
                 'is_marked':       resp.is_marked,
             }
- 
+
     response = render(request, 'student_portal/exam_start.html', {
         'exam':               exam,
         'attempt':            attempt,
@@ -1237,10 +1257,8 @@ def exam_start(request, exam_id):
         'duration_seconds':   time_left,
         'existing_responses': json.dumps(existing_responses),
     })
- 
-    # Prevent browser from caching this page so back button cannot restore it
+
     return _no_cache_response(response)
- 
  
 # ─────────────────────────────────────────────
 # EXAM AUTO-SAVE  (AJAX)
@@ -1317,28 +1335,34 @@ def exam_log_tab_switch(request, attempt_id):
  
 @login_required(login_url='student_portal:login')
 @require_POST
-def exam_submit(request, exam_id):
+def exam_submit(request, exam_uid):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
- 
+
+    # extract id from slug
+    try:
+        exam_id = int(exam_uid.rsplit('-', 1)[-1])
+    except (ValueError, IndexError):
+        raise Http404
+
     if not _has_exam_access(student, exam_id):
         messages.error(request, "Access denied.")
         return redirect('student_portal:exam_list')
- 
+
     from student_management.models import Exam
     exam       = get_object_or_404(Exam, id=exam_id, is_active=True)
     attempt_id = request.POST.get('attempt_id')
     attempt    = get_object_or_404(ExamAttempt, id=attempt_id, student=student, exam=exam)
- 
-    # Double-submit guard — sendBeacon or back button may fire this twice
+
+    # Double-submit guard
     if attempt.status != ExamAttempt.STATUS_IN_PROGRESS:
-        return redirect('student_portal:exam_result', slug=attempt.slug)
- 
+        return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
+
     time_taken   = int(request.POST.get('time_taken', 0))
     tab_switches = int(request.POST.get('tab_switches', 0))
     stats        = _compute_score(attempt, exam, request.POST)
- 
+
     attempt.status             = ExamAttempt.STATUS_SUBMITTED
     attempt.submitted_at       = timezone.now()
     attempt.time_taken_seconds = time_taken
@@ -1351,9 +1375,10 @@ def exam_submit(request, exam_id):
     attempt.percentage         = stats['percentage']
     attempt.tab_switch_count   = max(attempt.tab_switch_count, tab_switches)
     attempt.save()
- 
-    return redirect('student_portal:exam_result', slug=attempt.slug)
- 
+
+    return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
+
+
  
 # ─────────────────────────────────────────────
 # EXAM RESULT
@@ -1361,14 +1386,14 @@ def exam_submit(request, exam_id):
  
 @never_cache
 @login_required(login_url='student_portal:login')
-def exam_result(request, slug):
+def exam_result(request, attempt_slug):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
 
     attempt = get_object_or_404(
         ExamAttempt.objects.select_related('exam__exam_type', 'student'),
-        slug=slug,
+        slug=attempt_slug,   # model field is still 'slug'
         student=student,
     )
 
@@ -1379,7 +1404,6 @@ def exam_result(request, slug):
         .order_by('question_id')
     )
 
-    # Build enriched response list with options dict attached
     enriched_responses = []
     for resp in responses:
         q = resp.question
@@ -1408,7 +1432,6 @@ def exam_result(request, slug):
         'marks_earned':        float(attempt.marks_earned),
         'total_marks':         float(attempt.total_marks),
     })
- 
 # ─────────────────────────────────────────────
 # EXAM HISTORY
 # ─────────────────────────────────────────────

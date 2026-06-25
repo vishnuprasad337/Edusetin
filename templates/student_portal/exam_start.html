@@ -57,6 +57,50 @@
   .legend-swatch{
     width:14px; height:14px; border-radius:4px; display:inline-block; flex-shrink:0;
   }
+  /* Leave toast */
+.quiz-leave-toast {
+  position: fixed;
+  top: 20px; left: 50%;
+  transform: translateX(-50%) translateY(-16px);
+  z-index: 10000;
+  display: flex; flex-direction: column; gap: 12px;
+  background: var(--admio-card-bg,#fff);
+  border: 1px solid var(--admio-border-color,#e5e7eb);
+  border-radius: 16px;
+  padding: 16px 18px;
+  max-width: 400px; width: calc(100% - 32px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.16);
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.quiz-leave-toast.show {
+  opacity: 1; pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.quiz-leave-toast-top { display: flex; align-items: flex-start; gap: 12px; }
+.quiz-leave-toast-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(245,158,11,.12); color: #f59e0b;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.quiz-leave-toast-body  { flex: 1; min-width: 0; }
+.quiz-leave-toast-title {
+  font-weight: 800; font-size: .96rem;
+  color: var(--admio-heading-color,#111); margin-bottom: 3px;
+}
+.quiz-leave-toast-text  { font-size: .84rem; color: #9ca3af; line-height: 1.4; }
+.quiz-leave-toast-actions { display: flex; gap: 8px; }
+.quiz-leave-toast-btn {
+  flex: 1; padding: 9px 14px; border-radius: 10px; border: none;
+  font-size: .85rem; font-weight: 700; cursor: pointer;
+  transition: opacity .12s, transform .1s;
+}
+.quiz-leave-toast-btn:hover { opacity: .88; transform: translateY(-1px); }
+.quiz-leave-toast-btn.stay  {
+  background: var(--admio-border-color,#e5e7eb);
+  color: var(--admio-text-color,#374151);
+}
+.quiz-leave-toast-btn.leave { background: linear-gradient(135deg,#ef4444,#dc2626); color: #fff; }
 
   @media (max-width: 991px){
     .qp-sticky{ position: static !important; }
@@ -269,8 +313,21 @@
         </div>
     </div>
 </div>
-
-
+<!-- Leave toast -->
+<!-- Leave toast -->
+<div class="quiz-leave-toast" id="leaveToast">
+  <div class="quiz-leave-toast-top">
+    <div class="quiz-leave-toast-icon"><i class="icon-alert-triangle"></i></div>
+    <div class="quiz-leave-toast-body">
+      <div class="quiz-leave-toast-title" id="leaveToastTitle">Leave the exam?</div>
+      <div class="quiz-leave-toast-text"  id="leaveToastText">Your progress will be auto-saved, but you won't be able to resume.</div>
+    </div>
+  </div>
+  <div class="quiz-leave-toast-actions">
+    <button type="button" class="quiz-leave-toast-btn stay"  id="leaveToastStay">Stay</button>
+    <button type="button" class="quiz-leave-toast-btn leave" id="leaveToastLeave">Leave anyway</button>
+  </div>
+</div>
 <script>
 (function () {
     // ── State ─────────────────────────────────────────
@@ -279,7 +336,8 @@
     let currentIndex       = 0;
     let tabSwitches        = 0;
     let examSubmitted      = false;
-    let warnedOnce         = false;   // has the one warning been shown?
+    let warnedOnce         = false;
+    let pendingLeaveHref   = null;
 
     const existingResponses = JSON.parse('{{ existing_responses|escapejs }}' || '{}');
 
@@ -405,22 +463,15 @@
     tick();
     const timerInterval = setInterval(tick, 1000);
 
-    // ── Tab switch detection ───────────────────────────────
-    // First switch  → show one warning banner
+    // ── Tab switch detection (client-only, no server log) ─
+    // First switch  → toast warning when they return
     // Second switch → auto-submit immediately
     document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
             tabSwitches++;
             document.getElementById('tabSwitchesInput').value = tabSwitches;
 
-            // Log to server
-            fetch("{% url 'student_portal:exam_log_tab_switch' attempt.id %}", {
-                method: 'POST',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
-            }).catch(function () {});
-
             if (!warnedOnce) {
-                // First offence — warn when they return
                 warnedOnce = true;
                 document.addEventListener('visibilitychange', function showWarning() {
                     if (!document.hidden) {
@@ -429,31 +480,30 @@
                     }
                 });
             } else {
-                // Second offence — submit right away
                 submitExam('tabswitch');
             }
         }
     });
 
     function showTabWarning() {
-        const existing = document.getElementById('tabWarningBanner');
-        if (existing) existing.remove();
-        const banner = document.createElement('div');
-        banner.id = 'tabWarningBanner';
-        banner.style.cssText = `
-            position:fixed; top:70px; left:50%; transform:translateX(-50%);
-            background:#ef4444; color:#fff; padding:14px 28px; border-radius:10px;
-            font-weight:600; font-size:14px; z-index:9999;
-            box-shadow:0 4px 20px rgba(0,0,0,0.25); white-space:nowrap;
-        `;
-        banner.textContent = '⚠️ Warning: Do not switch tabs again — your exam will be submitted automatically!';
-        document.body.appendChild(banner);
-        setTimeout(function () { banner.remove(); }, 6000);
+        // Reuse the leave-toast UI with a different message
+        const toast = document.getElementById('leaveToast');
+        document.getElementById('leaveToastTitle').textContent = '⚠️ Tab switch detected!';
+        document.getElementById('leaveToastText').textContent  =
+            'Do not switch tabs again — your exam will be submitted automatically.';
+        // Hide the "Leave anyway" button — this is a warning, not a navigation prompt
+        document.getElementById('leaveToastLeave').style.display = 'none';
+        document.getElementById('leaveToastStay').textContent = 'Got it';
+        toast.classList.add('show');
+        // Auto-dismiss after 6 s
+        setTimeout(function () {
+            toast.classList.remove('show');
+            // Reset toast to its default leave-navigation state
+            resetLeaveToast();
+        }, 6000);
     }
 
     // ── Auto-submit on window close / reload ──────────────
-    // sendBeacon fires reliably even as the page unloads.
-    // We skip it only when the exam was already submitted normally.
     window.addEventListener('beforeunload', function (e) {
         if (examSubmitted) return;
 
@@ -462,7 +512,6 @@
         fd.set('tab_switches', tabSwitches);
         navigator.sendBeacon("{% url 'student_portal:exam_submit' exam.id %}", fd);
 
-        // Native "Leave page?" prompt as a last-chance safety net
         e.preventDefault();
         e.returnValue = '';
     });
@@ -512,6 +561,56 @@
         document.getElementById('summaryMarked').textContent     = marked.size;
         document.getElementById('summaryUnanswered').textContent = totalQuestions - answered.size;
     });
+
+    // ── Leave toast ───────────────────────────────────────
+    function resetLeaveToast() {
+        document.getElementById('leaveToastTitle').textContent = 'Leave the exam?';
+        document.getElementById('leaveToastText').textContent  =
+            'Your progress will be auto-saved, but you won\'t be able to resume.';
+        document.getElementById('leaveToastLeave').style.display = '';
+        document.getElementById('leaveToastStay').textContent = 'Stay';
+    }
+
+    function showLeaveToast(href) {
+        pendingLeaveHref = href;
+        resetLeaveToast();
+        document.getElementById('leaveToast').classList.add('show');
+    }
+
+    function hideLeaveToast() {
+        document.getElementById('leaveToast').classList.remove('show');
+        pendingLeaveHref = null;
+    }
+
+    document.getElementById('leaveToastStay').addEventListener('click', hideLeaveToast);
+
+    document.getElementById('leaveToastLeave').addEventListener('click', function () {
+        const href = pendingLeaveHref;
+        examSubmitted = true;   // suppress beforeunload beacon + prompt
+        hideLeaveToast();
+        if (href) window.location.href = href;
+    });
+
+    // Intercept all internal nav links
+    document.addEventListener('click', function (e) {
+        if (examSubmitted) return;
+        const link = e.target.closest('a[href]');
+        if (!link || link.target === '_blank') return;
+        const href = link.getAttribute('href');
+        if (!href
+            || href.startsWith('#')
+            || href.startsWith('javascript:')
+            || href.startsWith('mailto:')
+            || href.startsWith('tel:')) return;
+        e.preventDefault();
+        showLeaveToast(link.href);
+    });
+
+    // Escape key dismisses toast
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && pendingLeaveHref) hideLeaveToast();
+    });
+
 })();
 </script>
 

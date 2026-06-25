@@ -87,7 +87,7 @@
                             <div class="text-secondary-c text-sm">{{ attempt.submitted_at|date:"h:i A" }}</div>
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'student_portal:exam_result' slug=attempt.slug %}" class="btn-admio btn-ai btn-sm">
+                            <a href="{% url 'student_portal:exam_result' attempt_slug=attempt.slug %}" class="btn-admio btn-ai btn-sm">
                                 <i class="icon-eye"></i> Review
                             </a>
                         </td>
@@ -127,7 +127,7 @@
                                 {% else %}
                                 <span class="badge-admio badge-green badge-dot">Submitted</span>
                                 {% endif %}
-                                <a href="{% url 'student_portal:exam_result' slug=attempt.slug %}" class="btn-admio btn-ai btn-sm">
+                                <a href="{% url 'student_portal:exam_result' attempt_slug=attempt.slug %}" class="btn-admio btn-ai btn-sm">
                                     <i class="icon-eye"></i> Review
                                 </a>
                             </div>

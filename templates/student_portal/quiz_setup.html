@@ -152,8 +152,28 @@
 .qs-hero h1 { font-size:2rem; font-weight:700; margin:0 0 4px; letter-spacing:-0.02em; color:var(--qs-heading); }
 .qs-hero p  { font-size:1.1rem; opacity:0.75; margin:0; color:var(--qs-text); }
 
-.qs-stepper { display:flex; align-items:center; margin-bottom:20px; }
-.qs-step { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+/* Replace these two rules */
+.qs-stepper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.qs-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;  /* ← was flex:1, that was stealing space from the line */
+    min-width: 0;
+}
+.qs-step-line {
+    flex: 1;         /* ← line now gets all the remaining space */
+    height: 2px;
+    border-radius: 2px;
+    background: var(--qs-border);
+    transition: background 0.3s;
+    margin: 0 6px;
+    min-width: 0;    /* ← remove the 16px minimum */
+}
 .qs-step-circle {
     width:34px; height:34px; border-radius:50%;
     border:2px solid var(--qs-border); background:var(--qs-card-bg);

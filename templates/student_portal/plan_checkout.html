@@ -5,46 +5,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout — {{ plan.name }}</title>
+<link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon">
 <link rel="shortcut icon" href="{% static 'student_portal/assets/img/edu.png' %}" type="image/x-icon" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'student_portal/assets/css/vendor/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'student_portal/assets/css/admio.css' %}">
 <link rel="stylesheet" href="{% static 'student_portal/assets/css/admio-icons.css' %}">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  :root {
-    --blue: #2F6BFF;
-    --blue-dark: #1E54E0;
-    --blue-light: #5C92FF;
-    --blue-tint: #EAF1FF;
-    --green: #15A36B;
-    --green-tint: #E4F8EE;
-    --amber: #D97706;
-    --amber-tint: #FFF3DE;
-    --violet: #7C5CFC;
-    --violet-tint: #F0ECFE;
-    --ink: #0F172A;
-    --ink-soft: #51607A;
-    --ink-faint: #94A0B8;
-    --border: #E7EAF2;
-    --bg: #F6F8FC;
-    --white: #FFFFFF;
-    --page-pad: 32px;
-    --checkout-max: 1000px;
+  @font-face {
+    font-family: "lucide";
+    src: url("{% static 'student_portal/assets/css/fonts/lucide.woff2' %}") format('woff2'),
+         url("{% static 'student_portal/assets/css/fonts/lucide.woff' %}") format('woff'),
+         url("{% static 'student_portal/assets/css/fonts/lucide.ttf' %}") format('truetype');
+    font-display: swap;
   }
 
+  /* ── PRELOADER ── */
+  #preloader {
+    position: fixed; inset: 0; background: #fff;
+    z-index: 99999; display: flex;
+    justify-content: center; align-items: center;
+    transition: opacity 0.35s ease;
+  }
+  .loader { display: flex; align-items: center; justify-content: center; }
+  .loader > div {
+    display: inline-flex; width: 22px; height: 22px; margin: 0 5px;
+    border-radius: 50%; background: #1565C0;
+    animation: bounce 1.48s ease-in-out infinite both;
+  }
+  .loader > div:nth-child(1) { animation-delay: -0.32s; }
+  .loader > div:nth-child(2) { animation-delay: -0.16s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40%           { transform: scale(1); }
+  }
+  [data-theme="dark"] #preloader { background: #080f20; }
+
+  /* ── RESETS ── */
+  *, *::before, *::after { box-sizing: border-box; }
+  .admio-sidebar { display: none !important; }
+  .admio-main { margin-left: 0 !important; padding-top: 0 !important; width: 100% !important; }
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    -webkit-font-smoothing: antialiased;
+    font-size: 16px; background: #F6F8FC; color: #0F172A; margin: 0;
   }
-  a { color: inherit; text-decoration: none; }
-  button { font-family: inherit; }
 
-  /* ── NAVBAR — matches plan_list white style ── */
+  /* ════════════════════════════════════
+     NAVBAR — identical to plan_list
+  ════════════════════════════════════ */
   .h-navbar {
     position: sticky; top: 0; z-index: 9999;
     background: #fff;
@@ -55,116 +66,213 @@
     display: flex; align-items: center; gap: 18px;
     padding: 0 32px; height: 70px;
     background: #ffffff;
-  }
-  .brand-logo a {
-    display: flex; align-items: center;
-    text-decoration: none; line-height: 1;
-  }
-  .brand-logo img {
-    height: 220px; width: auto; object-fit: contain;
+    border-bottom: 1px solid #dde3f0;
+    background-image: repeating-linear-gradient(
+      0deg, transparent, transparent 19px, rgba(21,101,192,.07) 20px
+    );
   }
   .h-topbar-actions {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 6px;
     margin-left: auto; flex-shrink: 0;
   }
   .h-topbar-divider { width: 1px; height: 24px; background: #dde3f0; flex-shrink: 0; }
-
-  #themeToggle {
+  .topbar-btn {
     background: transparent; border: none; cursor: pointer;
     color: #374151; width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
     border-radius: 8px; font-size: 16px;
     transition: background .15s, color .15s;
   }
-  #themeToggle:hover { background: #e3f0fb; color: #1565C0; }
+  .topbar-btn:hover { background: #e3f0fb; color: #1565C0; }
 
+  /* Search bar */
+  .h-topbar-search {
+    flex: 1; max-width: 400px; position: relative;
+  }
+  .h-topbar-search .search-icon {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af; font-size: 15px; pointer-events: none;
+  }
+  .h-topbar-search .search-input {
+    width: 100%; padding: 8px 68px 8px 36px;
+    border: 1px solid #dde3f0; border-radius: 9px;
+    font-size: 14px; background: #f5f8ff;
+    color: #1a2a5e; outline: none;
+    font-family: inherit;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .h-topbar-search .search-input::placeholder { color: #9ca3af; }
+  .h-topbar-search .search-input:focus {
+    border-color: #1565C0;
+    box-shadow: 0 0 0 3px rgba(21,101,192,.10);
+  }
+  #searchCount {
+    position: absolute; right: 32px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px; color: #6b7280;
+    background: #e5e7eb; border-radius: 10px;
+    padding: 2px 7px; pointer-events: none;
+    display: none; white-space: nowrap;
+  }
+  .search-clear {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: #9ca3af; font-size: 15px; padding: 2px 4px;
+    display: none; align-items: center; justify-content: center;
+    border-radius: 4px; transition: color .15s;
+  }
+  .search-clear:hover { color: #1565C0; }
+  .search-highlight {
+    background: #fff176; color: #1a2a5e !important;
+    border-radius: 2px; padding: 0 1px;
+  }
+  [data-theme="dark"] .search-highlight { background: #f59e0b; color: #000 !important; }
+  .search-no-match { opacity: 0.12; transition: opacity 0.2s; }
+  #searchBanner {
+    display: none;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1565C0; color: #fff;
+    padding: 10px 22px; border-radius: 24px;
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 4px 20px rgba(21,101,192,.35);
+    z-index: 99998; white-space: nowrap;
+    animation: fadeUp .2s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateX(-50%) translateY(8px); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0); }
+  }
+  [data-theme="dark"] .h-topbar-search .search-input {
+    background: #0d1a3a; border-color: #1a2a5e; color: #90CAF9;
+  }
+  [data-theme="dark"] #searchCount { background: #1a2a5e; color: #90CAF9; }
+
+  /* Auth buttons */
+  .nav-auth-links { display: flex; align-items: center; gap: 10px; }
   .nav-link-plain {
     font-size: 14px; font-weight: 600; color: #374151;
     text-decoration: none; padding: 7px 14px; border-radius: 8px;
     transition: background .15s, color .15s;
   }
   .nav-link-plain:hover { background: #e3f0fb; color: #1565C0; }
-
   .nav-btn-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    background: #1565C0; color: #fff !important;
+    background: #1565C0; color: #fff;
     padding: 8px 18px; border-radius: 100px;
     font-weight: 700; font-size: 13.5px; text-decoration: none;
     transition: background .15s, transform .15s;
   }
   .nav-btn-pill:hover { background: #1251a3; transform: translateY(-1px); }
-  .nav-btn-pill i { font-size: 14px; }
 
-  /* Dark mode navbar */
-  [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
-  [data-theme="dark"] .h-navbar-top { background: #080f20; }
   [data-theme="dark"] .brand-logo img { filter: brightness(0) invert(1); }
-  [data-theme="dark"] body { background: #080f20; color: #e2e8f0; }
+  [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
+  [data-theme="dark"] .h-navbar-top { background: #080f20; border-color: #1a2a5e; }
 
-  /* ── BREADCRUMB ── */
+  /* ════════════════════════════════════
+     PAGE VARIABLES
+  ════════════════════════════════════ */
+  :root {
+    --blue: #2F6BFF;
+    --blue-dark: #1E54E0;
+    --blue-tint: #EAF1FF;
+    --green: #15A36B;
+    --green-tint: #E4F8EE;
+    --ink: #0F172A;
+    --ink-soft: #51607A;
+    --ink-faint: #94A0B8;
+    --border: #E7EAF2;
+    --bg: #F6F8FC;
+    --page-max: 1000px;
+    --page-pad: 40px;
+  }
+
+  /* ════════════════════════════════════
+     BREADCRUMB
+  ════════════════════════════════════ */
   .breadcrumb-wrap {
-    max-width: var(--checkout-max); margin: 22px auto 0;
+    max-width: var(--page-max); margin: 22px auto 0;
     padding: 0 var(--page-pad);
   }
   .breadcrumb-link {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 13px; font-weight: 600; color: var(--ink-soft);
-    text-decoration: none;
+    text-decoration: none; transition: color .15s;
   }
   .breadcrumb-link:hover { color: var(--blue); }
   .breadcrumb-link svg { width: 14px; height: 14px; flex-shrink: 0; }
 
-  /* ── PAGE ── */
-  .page { max-width: var(--checkout-max); margin: 0 auto; padding: 14px var(--page-pad) 60px; }
+  /* ════════════════════════════════════
+     PAGE LAYOUT
+  ════════════════════════════════════ */
+  .page-wrap {
+    max-width: var(--page-max); margin: 0 auto;
+    padding: 14px var(--page-pad) 60px;
+  }
 
-  .page-head { margin-bottom: 22px; }
+  .page-head { margin-bottom: 28px; }
   .page-eyebrow {
     display: inline-block; font-size: 10.5px; font-weight: 700;
     color: var(--blue-dark); background: var(--blue-tint);
-    padding: 3px 10px; border-radius: 20px; letter-spacing: .03em; margin-bottom: 8px;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: .03em; margin-bottom: 8px;
   }
-  h1.page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  h1.page-title {
+    font-size: 28px; font-weight: 800;
+    color: var(--ink); letter-spacing: -0.02em; line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .page-subtitle {
+    font-size: 15px; color: var(--ink-soft); line-height: 1.6;
+  }
 
   .layout {
-    display: grid; grid-template-columns: 1.6fr 1fr;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
     gap: 22px; align-items: start;
   }
-  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
 
+  /* ════════════════════════════════════
+     PANELS
+  ════════════════════════════════════ */
   .panel {
-    position: relative; background: #fff;
-    border: 1.5px solid var(--border); border-radius: 16px;
-    padding: 24px; overflow: hidden;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 26px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(15,23,42,.04);
   }
   [data-theme="dark"] .panel { background: #0d1a3a; border-color: #1a2a5e; }
 
   .panel.plan-panel::before {
     content: ""; position: absolute;
-    top: 0; bottom: 0; left: 0; width: 4px; background: var(--blue);
+    top: 0; bottom: 0; left: 0; width: 4px;
+    background: var(--blue);
   }
 
-  /* Plan panel */
-  .plan-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  /* Plan panel header */
+  .plan-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
   .plan-icon {
-    width: 44px; height: 44px; border-radius: 11px;
+    width: 46px; height: 46px; border-radius: 12px;
     background: var(--blue-tint); color: var(--blue);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .plan-icon svg { width: 21px; height: 21px; }
-  .plan-header h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-  .plan-header .plan-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+  .plan-icon i { font-size: 22px; }
+  .plan-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+  .plan-header .plan-sub { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
 
   .desc-box {
     font-size: 13px; color: var(--ink-soft); background: var(--bg);
     border: 1px solid var(--border); border-radius: 10px;
-    padding: 12px 14px; margin-bottom: 18px; line-height: 1.5;
+    padding: 12px 14px; margin-bottom: 20px; line-height: 1.55;
   }
 
+  /* Duration / price row */
   .duration-row {
     display: flex; justify-content: space-between; align-items: center;
     border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    padding: 16px 0; margin-bottom: 18px;
+    padding: 16px 0; margin-bottom: 20px;
   }
   .duration-row .label {
     font-size: 11px; font-weight: 700; letter-spacing: .06em;
@@ -173,20 +281,23 @@
   .duration-row .value-chip {
     display: inline-flex; font-size: 12.5px; font-weight: 700;
     color: var(--blue-dark); background: var(--blue-tint);
-    padding: 4px 11px; border-radius: 20px;
+    padding: 4px 12px; border-radius: 20px;
   }
   .duration-row .price-side { text-align: right; }
-  .duration-row .price-big { font-size: 26px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
+  .duration-row .price-big {
+    font-size: 30px; font-weight: 800; color: var(--ink);
+    line-height: 1; letter-spacing: -0.02em;
+  }
   .duration-row .price-big.is-free { color: var(--blue); }
   .duration-row .price-caption { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
 
+  /* Feature sections */
   .feature-section h3 {
     font-size: 11px; font-weight: 700; color: var(--ink-faint);
-    text-transform: uppercase; letter-spacing: .06em; margin: 18px 0 10px;
+    text-transform: uppercase; letter-spacing: .06em;
+    margin: 20px 0 10px;
   }
-  .feature-section:first-of-type h3 { margin-top: 0; }
-
-  .feature-list { list-style: none; }
+  .feature-list { list-style: none; padding: 0; margin: 0; }
   .feature-list li {
     font-size: 13.5px; color: #334155; padding: 6px 0;
     display: flex; align-items: flex-start; gap: 9px; line-height: 1.4;
@@ -197,40 +308,47 @@
     background: var(--blue-tint); color: var(--blue);
     display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
-  .feature-list li .tick svg { width: 9px; height: 9px; }
+  .feature-list li .tick i { font-size: 9px; }
 
   /* Summary panel */
-  .summary-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .summary-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
   .summary-icon {
-    width: 36px; height: 36px; border-radius: 10px;
+    width: 38px; height: 38px; border-radius: 10px;
     background: var(--green-tint); color: var(--green);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .summary-icon svg { width: 17px; height: 17px; }
-  .summary-panel h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .summary-icon i { font-size: 18px; }
+  .summary-panel h2 { font-size: 16px; font-weight: 700; margin: 0; }
 
   .summary-row {
     display: flex; justify-content: space-between;
     padding: 7px 0; font-size: 13px; color: var(--ink-soft);
   }
   .summary-row .val { font-weight: 600; color: var(--ink); }
-  .summary-divider { border-top: 1px solid var(--border); margin: 12px 0; }
+  .summary-divider { border-top: 1px solid var(--border); margin: 14px 0; }
 
   .total-row {
     display: flex; justify-content: space-between;
     align-items: baseline; margin-bottom: 20px;
   }
   .total-row .label { font-size: 15px; font-weight: 700; color: var(--ink); }
-  .total-row .val { font-size: 27px; font-weight: 800; color: var(--blue); letter-spacing: -0.02em; }
-
-  .btn-primary {
-    display: block; width: 100%; padding: 13px;
-    border-radius: 10px; font-size: 14.5px; font-weight: 600;
-    background: var(--blue); color: #fff; border: none;
-    cursor: pointer; transition: background .15s, opacity .15s;
+  .total-row .val {
+    font-size: 30px; font-weight: 800; color: var(--blue);
+    letter-spacing: -0.02em;
   }
-  .btn-primary:hover { background: var(--blue-dark); }
-  .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+  /* Pay button — matches plan_list .plan-view-btn style */
+  .btn-primary {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    width: 100%; padding: 13px;
+    border-radius: 10px; font-size: 14.5px; font-weight: 600;
+    background: #1565C0; color: #fff; border: none;
+    cursor: pointer; transition: opacity .15s, transform .12s;
+    font-family: inherit;
+  }
+  .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .btn-primary i { font-size: 15px; }
 
   .error-msg {
     color: #991B1B; background: #FEF2F2; border: 1px solid #FCA5A5;
@@ -243,50 +361,96 @@
     text-align: center; display: flex; align-items: center;
     justify-content: center; gap: 6px;
   }
-  .secure-note svg { width: 13px; height: 13px; color: var(--blue); flex-shrink: 0; }
+  .secure-note i { font-size: 13px; color: var(--blue); }
 
-  @media(max-width: 767px) {
-    .h-navbar-top { padding: 0 16px; height: 58px; }
+  /* ════════════════════════════════════
+     DARK MODE
+  ════════════════════════════════════ */
+  [data-theme="dark"] body { background: #080f20; color: #e2e8f0; }
+  [data-theme="dark"] h1.page-title { color: #e2e8f0; }
+  [data-theme="dark"] .page-subtitle { color: #90CAF9; }
+
+  /* ════════════════════════════════════
+     RESPONSIVE — mirrors plan_list
+  ════════════════════════════════════ */
+  @media (max-width: 767px) {
+    .h-navbar-top { padding: 0 16px; height: 60px; }
+    .h-topbar-search { display: none !important; }
+    :root { --page-pad: 18px; }
+    h1.page-title { font-size: 22px; }
+    .layout { grid-template-columns: 1fr; }
+    .duration-row .price-big { font-size: 24px; }
+    .total-row .val { font-size: 24px; }
   }
-  @media(max-width: 500px) {
-    :root { --page-pad: 16px; }
-    .panel { padding: 20px; }
-    .duration-row .price-big { font-size: 22px; }
-    .total-row .val { font-size: 23px; }
+  @media (max-width: 480px) {
+    :root { --page-pad: 14px; }
+    h1.page-title { font-size: 19px; }
+    .panel { padding: 18px; }
+    .loader > div { width: 16px; height: 16px; margin: 0 3px; }
   }
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="loader">
+    <div></div><div></div><div></div>
+  </div>
+</div>
+
+<!-- SEARCH BANNER -->
+<div id="searchBanner"></div>
+
+<!-- ════════════ NAVBAR — same as plan_list ════════════ -->
 <nav class="h-navbar">
   <div class="h-navbar-top">
 
-    <!-- Brand -->
+    <!-- Brand logo -->
     <div class="brand-logo">
-      <a href="{% url 'student_portal:dashboard' %}">
-        <img src="{% static 'student_portal/assets/img/edu.png' %}" alt="Edusetin">
+      <a href="{% url 'student_portal:dashboard' %}"
+         style="display:flex;align-items:center;text-decoration:none;">
+        <img src="{% static 'student_portal/assets/img/edu.png' %}"
+             alt="Edusetin"
+             style="height:220px;width:auto;object-fit:contain;">
       </a>
+    </div>
+
+    <!-- Search bar -->
+    <div class="h-topbar-search">
+      <i class="icon-search search-icon"></i>
+      <input type="text"
+             class="search-input"
+             id="globalSearch"
+             placeholder="Search this page…"
+             autocomplete="off"
+             spellcheck="false">
+      <span id="searchCount"></span>
+      <button class="search-clear" id="searchClear" title="Clear" type="button">
+        <i class="icon-x"></i>
+      </button>
     </div>
 
     <!-- Right actions -->
     <div class="h-topbar-actions">
 
-      <button id="themeToggle" title="Toggle theme" type="button">
+      <button class="topbar-btn" id="themeToggle" title="Toggle theme" type="button">
         <i class="icon-moon" id="themeIcon"></i>
       </button>
 
       <div class="h-topbar-divider"></div>
 
-      {% if request.user.is_authenticated %}
-        <a href="{% url 'student_portal:dashboard' %}" class="nav-btn-pill">
-          <i class="icon-gauge"></i>
-          Dashboard
-        </a>
-      {% else %}
-        <a href="{% url 'student_portal:login' %}" class="nav-link-plain">Log in</a>
-        <a href="{% url 'student_portal:register' %}" class="nav-btn-pill">Register</a>
-      {% endif %}
+      <div class="nav-auth-links">
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'student_portal:dashboard' %}" class="nav-btn-pill">
+            <i class="icon-gauge" style="font-size:14px;"></i>
+            Dashboard
+          </a>
+        {% else %}
+          <a href="{% url 'student_portal:login' %}" class="nav-link-plain">Log in</a>
+          <a href="{% url 'student_portal:register' %}" class="nav-btn-pill">Sign up</a>
+        {% endif %}
+      </div>
 
     </div>
   </div>
@@ -295,25 +459,32 @@
 <!-- BREADCRUMB -->
 <div class="breadcrumb-wrap">
   <a href="{% url 'student_portal:plan_list' %}" class="breadcrumb-link">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
     Back to plans
   </a>
 </div>
 
-<!-- PAGE -->
-<div class="page">
+<!-- ════════════ PAGE ════════════ -->
+<div class="page-wrap">
+
   <div class="page-head">
     <span class="page-eyebrow">Secure checkout</span>
     <h1 class="page-title">Confirm your plan</h1>
+    <p class="page-subtitle">Review your plan details below. Access activates the moment payment is verified.</p>
   </div>
 
   <div class="layout">
 
     <!-- LEFT: Plan details -->
     <div class="panel plan-panel">
+
       <div class="plan-header">
         <div class="plan-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <i class="icon-gauge"></i>
         </div>
         <div>
           <h2>{{ plan.name }}</h2>
@@ -334,7 +505,9 @@
           <div class="price-big{% if plan.price == 0 %} is-free{% endif %}">
             {% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:0 }}{% endif %}
           </div>
-          {% if plan.price != 0 %}<div class="price-caption">one-time payment</div>{% endif %}
+          {% if plan.price != 0 %}
+            <div class="price-caption">one-time payment</div>
+          {% endif %}
         </div>
       </div>
 
@@ -343,7 +516,10 @@
         <h3>Subjects Included</h3>
         <ul class="feature-list">
           {% for subject in plan_subjects %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ subject.name }}</li>
+          <li>
+            <span class="tick"><i class="icon-check"></i></span>
+            {{ subject.name }}
+          </li>
           {% endfor %}
         </ul>
       </div>
@@ -354,7 +530,10 @@
         <h3>Submodules Included</h3>
         <ul class="feature-list">
           {% for submodule in plan_submodules %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ submodule.subject.name }} → {{ submodule.name }}</li>
+          <li>
+            <span class="tick"><i class="icon-check"></i></span>
+            {{ submodule.subject.name }} → {{ submodule.name }}
+          </li>
           {% endfor %}
         </ul>
       </div>
@@ -365,7 +544,10 @@
         <h3>Exams Included</h3>
         <ul class="feature-list">
           {% for exam in plan_exams %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ exam.title }}</li>
+          <li>
+            <span class="tick"><i class="icon-check"></i></span>
+            {{ exam.title }}
+          </li>
           {% endfor %}
         </ul>
       </div>
@@ -375,20 +557,22 @@
         <h3>What You Get</h3>
         <ul class="feature-list">
           {% if not has_specific_content %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>All subjects</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>All mock tests &amp; PYQs</li>
+          <li><span class="tick"><i class="icon-check"></i></span>All subjects</li>
+          <li><span class="tick"><i class="icon-check"></i></span>All mock tests &amp; PYQs</li>
           {% endif %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Detailed explanations</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Performance analytics</li>
+          <li><span class="tick"><i class="icon-check"></i></span>Detailed explanations</li>
+          <li><span class="tick"><i class="icon-check"></i></span>Performance analytics</li>
         </ul>
       </div>
+
     </div>
 
     <!-- RIGHT: Order summary -->
     <div class="panel summary-panel">
+
       <div class="summary-head">
         <div class="summary-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/><path d="m9 16 1.5 1.5L14 14"/></svg>
+          <i class="icon-file-text"></i>
         </div>
         <h2>Order Summary</h2>
       </div>
@@ -414,94 +598,244 @@
       </div>
 
       {% csrf_token %}
-      <button id="pay-btn" class="btn-primary">Pay ₹{{ amount_display|floatformat:0 }}</button>
 
-      <div id="error-box" class="error-msg"></div>
+      {% if razorpay_order_id %}
+        <button id="pay-btn" class="btn-primary">
+          Pay ₹{{ amount_display|floatformat:0 }} <i class="icon-arrow-right"></i>
+        </button>
+      {% else %}
+        <button id="pay-btn" class="btn-primary" disabled>Payment unavailable</button>
+      {% endif %}
+
+      <div id="error-box" class="error-msg">
+        {% if not razorpay_order_id %}
+          Could not create order. Please refresh the page or contact support.
+        {% endif %}
+      </div>
 
       <div class="secure-note">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <i class="icon-lock"></i>
         Payments are securely processed by Razorpay
       </div>
+
     </div>
 
   </div>
 </div>
 
+<script src="{% static 'student_portal/assets/js/vendor/bootstrap.bundle.min.js' %}"></script>
+
 <script>
-  /* ── THEME TOGGLE ── */
-  (function () {
-    var html   = document.documentElement;
-    var btn    = document.getElementById('themeToggle');
-    var icon   = document.getElementById('themeIcon');
-    var saved  = localStorage.getItem('theme') || 'light';
-    html.setAttribute('data-theme', saved);
-    icon.className = saved === 'dark' ? 'icon-sun' : 'icon-moon';
-    btn.addEventListener('click', function () {
-      var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      icon.className = next === 'dark' ? 'icon-sun' : 'icon-moon';
+/* ── PRELOADER: DOMContentLoaded + 3s safety fallback ── */
+function hidePreloader() {
+  var pre = document.getElementById('preloader');
+  if (!pre || pre.style.display === 'none') return;
+  pre.style.opacity = '0';
+  setTimeout(function () { pre.style.display = 'none'; }, 350);
+}
+document.addEventListener('DOMContentLoaded', hidePreloader);
+setTimeout(hidePreloader, 3000);
+
+/* ── THEME TOGGLE ── */
+(function () {
+  var html  = document.documentElement;
+  var btn   = document.getElementById('themeToggle');
+  var icon  = document.getElementById('themeIcon');
+  var saved = localStorage.getItem('theme') || 'light';
+  html.setAttribute('data-theme', saved);
+  icon.className = saved === 'dark' ? 'icon-sun' : 'icon-moon';
+  btn.addEventListener('click', function () {
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    icon.className = next === 'dark' ? 'icon-sun' : 'icon-moon';
+  });
+})();
+
+/* ── PAGE SEARCH ── */
+(function () {
+  var input    = document.getElementById('globalSearch');
+  var clearBtn = document.getElementById('searchClear');
+  var countEl  = document.getElementById('searchCount');
+  var banner   = document.getElementById('searchBanner');
+  if (!input) return;
+
+  var bannerTimer = null;
+  var originalMap = new Map();
+
+  function escRx(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function showBanner(msg) {
+    banner.textContent = msg; banner.style.display = 'block';
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(function () { banner.style.display = 'none'; }, 2200);
+  }
+  function walkTextNodes(el, cb) {
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (node) {
+        var tag = node.parentElement && node.parentElement.tagName;
+        if (['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','INPUT','SELECT'].indexOf(tag) > -1)
+          return NodeFilter.FILTER_REJECT;
+        if (!node.nodeValue.trim()) return NodeFilter.FILTER_SKIP;
+        return NodeFilter.FILTER_ACCEPT;
+      }
     });
-  })();
+    var n; while ((n = walker.nextNode())) cb(n);
+  }
+  function clearHighlights() {
+    originalMap.forEach(function (orig, el) { el.innerHTML = orig; });
+    originalMap.clear();
+    document.querySelectorAll('.search-no-match').forEach(function (el) {
+      el.classList.remove('search-no-match');
+    });
+  }
+  function doSearch(query) {
+    clearHighlights();
+    var content = document.querySelector('.page-wrap');
+    if (!content) return;
+    if (!query) {
+      countEl.style.display = 'none';
+      clearBtn.style.display = 'none';
+      banner.style.display = 'none';
+      return;
+    }
+    clearBtn.style.display = 'flex';
+    var rx = new RegExp('(' + escRx(query) + ')', 'gi');
+    var matchCount = 0;
+    var BLOCK_SEL = [
+      '.feature-list li','.summary-row','.duration-row',
+      '.desc-box','h1','h2','h3','.plan-sub',
+      '.page-eyebrow','.value-chip','.price-caption',
+      '.price-big','.total-row .label','.secure-note','.page-subtitle'
+    ].join(',');
+    var blocks = content.querySelectorAll(BLOCK_SEL);
+    if (!blocks.length) blocks = [content];
+    blocks.forEach(function (block) {
+      var blockMatches = 0;
+      var textNodes = [];
+      walkTextNodes(block, function (node) {
+        var ancestor = node.parentElement;
+        while (ancestor && ancestor !== block) {
+          if (ancestor.matches && ancestor.matches(BLOCK_SEL)) return;
+          ancestor = ancestor.parentElement;
+        }
+        textNodes.push(node);
+      });
+      textNodes.forEach(function (node) {
+        var val = node.nodeValue;
+        if (!rx.test(val)) { rx.lastIndex = 0; return; }
+        rx.lastIndex = 0;
+        var parent = node.parentElement;
+        if (!parent) return;
+        if (!originalMap.has(parent)) originalMap.set(parent, parent.innerHTML);
+        parent.innerHTML = parent.innerHTML.replace(rx, '<mark class="search-highlight">$1</mark>');
+        var found = (val.match(rx) || []).length;
+        blockMatches += found; matchCount += found; rx.lastIndex = 0;
+      });
+      if (blockMatches === 0) block.classList.add('search-no-match');
+    });
+    if (matchCount > 0) {
+      countEl.textContent = matchCount + ' found'; countEl.style.display = 'inline-block';
+      showBanner(matchCount + ' result' + (matchCount > 1 ? 's' : '') + ' for "' + query + '"');
+      var first = content.querySelector('.search-highlight');
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      countEl.textContent = 'No results'; countEl.style.display = 'inline-block';
+      showBanner('No results for "' + query + '"');
+    }
+  }
+  var debounceTimer;
+  input.addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    var q = input.value.trim();
+    debounceTimer = setTimeout(function () { doSearch(q); }, 220);
+  });
+  clearBtn.addEventListener('click', function () {
+    input.value = ''; input.focus();
+    clearHighlights(); countEl.style.display = 'none';
+    clearBtn.style.display = 'none'; banner.style.display = 'none';
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      input.value = ''; clearHighlights();
+      countEl.style.display = 'none'; clearBtn.style.display = 'none';
+      banner.style.display = 'none'; input.blur();
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      if (document.activeElement.tagName !== 'INPUT' &&
+          document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault(); input.focus(); input.select();
+      }
+    }
+  });
+})();
 
-  /* ── RAZORPAY ── */
-  const payBtn   = document.getElementById("pay-btn");
-  const errorBox = document.getElementById("error-box");
+/* ── RAZORPAY: lazy init on click ── */
+{% if razorpay_order_id %}
+(function () {
+  var payBtn   = document.getElementById('pay-btn');
+  var errorBox = document.getElementById('error-box');
 
-  function showError(msg) { errorBox.style.display = "block"; errorBox.innerText = msg; }
-  function hideError()    { errorBox.style.display = "none"; }
+  function showError(msg) { errorBox.style.display = 'block'; errorBox.innerText = msg; }
+  function hideError()    { errorBox.style.display = 'none'; }
 
-  const options = {
-    "key":         "{{ razorpay_key_id }}",
-    "amount":      {{ amount_paise }},      // number, not string
-    "currency":    "INR",
-    "name":        "Edusetin",
-    "description": "{{ plan.name }} Subscription",
-    "order_id":    "{{ razorpay_order_id }}",
-    "prefill": {
-      "name":  "{{ student_name }}",
-      "email": "{{ student_email }}"
-    },
-    "theme": { "color": "#2F6BFF" },
-    "handler": function (response) {
+  var options = {
+    key:         "{{ razorpay_key_id }}",
+    amount:      {{ amount_paise }},
+    currency:    "INR",
+    name:        "Edusetin",
+    description: "{{ plan.name }} Subscription",
+    order_id:    "{{ razorpay_order_id }}",
+    prefill:     { name: "{{ student_name }}", email: "{{ student_email }}" },
+    theme:       { color: "#1565C0" },
+    handler: function (response) {
       payBtn.disabled  = true;
-      payBtn.innerText = "Verifying payment...";
-
+      payBtn.innerHTML = 'Verifying payment… <i class="icon-loader"></i>';
       fetch("{% url 'student_portal:razorpay_callback' %}", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken":  "{{ csrf_token }}"
-        },
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
         body: JSON.stringify({
           razorpay_order_id:   response.razorpay_order_id,
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_signature:  response.razorpay_signature
         })
       })
-      .then(res => res.json())
-      .then(data => {
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
         if (data.status === "success") {
           window.location.href = data.redirect_url;
         } else {
           payBtn.disabled  = false;
-          payBtn.innerText = "Pay ₹{{ amount_display|floatformat:0 }}";
+          payBtn.innerHTML = 'Pay ₹{{ amount_display|floatformat:0 }} <i class="icon-arrow-right"></i>';
           showError(data.message || "Payment verification failed. Please contact support.");
         }
       })
-      .catch(() => {
+      .catch(function () {
         payBtn.disabled  = false;
-        payBtn.innerText = "Pay ₹{{ amount_display|floatformat:0 }}";
+        payBtn.innerHTML = 'Pay ₹{{ amount_display|floatformat:0 }} <i class="icon-arrow-right"></i>';
         showError("Something went wrong. Please contact support.");
       });
     },
-    "modal": {
-      "ondismiss": function () {}
-    }
+    modal: { ondismiss: function () {} }
   };
 
-  const rzp = new Razorpay(options);
-  payBtn.addEventListener("click", function () { hideError(); rzp.open(); });
+  payBtn.addEventListener('click', function () {
+    hideError();
+    if (typeof Razorpay === 'undefined') {
+      showError("Payment gateway is still loading. Please wait a moment and try again.");
+      return;
+    }
+    var rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (response) {
+      showError("Payment failed: " + (response.error.description || "Unknown error."));
+    });
+    rzp.open();
+  });
+})();
+{% else %}
+document.getElementById('error-box').style.display = 'block';
+{% endif %}
 </script>
 
 </body>

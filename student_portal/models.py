@@ -264,3 +264,10 @@ class QuizAttemptResponse(models.Model):
         status = "✓" if self.is_correct else "✗"
         return f"Quiz#{self.attempt_id} Q#{self.question_id} → {self.selected_answer or '—'} ({status})"
  
+class NotificationRead(models.Model):
+    student   = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='read_notifications')
+    notif_key = models.CharField(max_length=200)  # unique key per notification
+    read_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'notif_key')

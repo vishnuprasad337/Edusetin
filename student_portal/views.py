@@ -770,7 +770,8 @@ from django.utils import timezone
 
 from student_management.models import SubscriptionPlan, Payment
 
-
+@never_cache
+@login_required(login_url='student_portal:login')
 def plan_list_student(request):
     """
     Public page — anyone can see plans.
@@ -803,7 +804,7 @@ from student_management.models import SubscriptionPlan, Payment
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 
-
+@never_cache
 @login_required(login_url='student_portal:register')
 def plan_checkout(request, plan_uuid):
     plan = get_object_or_404(
@@ -1870,152 +1871,168 @@ def quiz_history(request):
     return render(request, 'student_portal/quiz_history.html', {'attempts': attempts})
 from django.utils.timesince import timesince
 @login_required
-
 def get_notifications(request):
-    """
-    Returns real-time notifications for the student based on:
-    - New subscription plans added in the last 30 days
-    - New exams added to their accessible plans
-    - New subjects / submodules added to their accessible plans
-    """
     student = getattr(request.user, 'student', None)
     if not student:
         return JsonResponse({'notifications': [], 'unread_count': 0})
- 
+
     from student_management.models import (
         SubscriptionPlan, Exam, Subject, SubModule, Payment
+          
     )
- 
-    now = timezone.now()
-    cutoff_30 = now - datetime.timedelta(days=30)
-    cutoff_7  = now - datetime.timedelta(days=7)
- 
+    from student_portal.models import NotificationRead
+
+    now        = timezone.now()
+    cutoff_30  = now - datetime.timedelta(days=30)
+    cutoff_7   = now - datetime.timedelta(days=7)
     notifications = []
- 
-    # ── 1. New subscription plans launched (last 30 days) ────────────────────
+
+    # Fetch all keys this student has already read
+    read_keys = set(
+        NotificationRead.objects.filter(student=student)
+        .values_list('notif_key', flat=True)
+    )
+
+    def is_unread(key):
+        return key not in read_keys
+
+    # ── 1. New plans ──────────────────────────────────────────────────────────
     new_plans = SubscriptionPlan.objects.filter(
-        is_active=True,
-        created_at__gte=cutoff_30,
+        is_active=True, created_at__gte=cutoff_30,
     ).order_by('-created_at')[:5]
- 
+
     for plan in new_plans:
+        key = f'plan_{plan.id}'
         notifications.append({
             'type':    'new_plan',
             'icon':    'icon-tag',
-            'color':   'bg-primary',
             'title':   f'New Plan: {plan.name}',
             'desc':    f'₹{plan.price} · {plan.duration_days} days validity',
             'time':    timesince(plan.created_at) + ' ago',
             'created': plan.created_at.isoformat(),
-            'unread':  True,
+            'key':     key,
+            'unread':  is_unread(key),
         })
- 
-    # ── 2. New exams added to the student's accessible plans ─────────────────
+
+    # ── 2. New exams ──────────────────────────────────────────────────────────
     active_payments = student.payments.filter(
-        status=Payment.STATUS_SUCCESS,
-        expires_at__gt=now,
+        status=Payment.STATUS_SUCCESS, expires_at__gt=now,
     ).prefetch_related('plan__exams')
- 
+
     accessible_exam_ids = set()
     for payment in active_payments:
         for exam in payment.plan.exams.filter(is_active=True):
             accessible_exam_ids.add(exam.id)
- 
+
     new_exams = Exam.objects.filter(
-        id__in=accessible_exam_ids,
-        created_at__gte=cutoff_7,
+        id__in=accessible_exam_ids, created_at__gte=cutoff_7,
     ).select_related('exam_type').order_by('-created_at')[:5]
- 
+
     for exam in new_exams:
+        key = f'exam_{exam.id}'
         q_count = exam.selected_questions.count()
         notifications.append({
             'type':    'new_exam',
             'icon':    'icon-clipboard-list',
-            'color':   'bg-success',
-            'title':   f'New Mock Test Added',
+            'title':   'New Mock Test Added',
             'desc':    f'{exam.title} · {q_count} questions · {exam.duration_minutes} min',
             'time':    timesince(exam.created_at) + ' ago',
             'created': exam.created_at.isoformat(),
-            'unread':  True,
+            'key':     key,
+            'unread':  is_unread(key),
         })
- 
-    # ── 3. New subjects added to accessible plans (last 30 days) ─────────────
+
+    # ── 3. New subjects ───────────────────────────────────────────────────────
     accessible_subject_ids = set()
     for payment in active_payments:
         for subj in payment.plan.subjects.filter(is_active=True):
             accessible_subject_ids.add(subj.id)
- 
+
     new_subjects = Subject.objects.filter(
-        id__in=accessible_subject_ids,
-        created_at__gte=cutoff_30,
+        id__in=accessible_subject_ids, created_at__gte=cutoff_30,
     ).order_by('-created_at')[:5]
- 
+
     for subj in new_subjects:
+        key = f'subject_{subj.id}'
         notifications.append({
             'type':    'new_subject',
             'icon':    'icon-book-open',
-            'color':   'bg-info',
-            'title':   f'New Subject Available',
+            'title':   'New Subject Available',
             'desc':    f'{subj.name} added to your plan',
             'time':    timesince(subj.created_at) + ' ago',
             'created': subj.created_at.isoformat(),
-            'unread':  True,
+            'key':     key,
+            'unread':  is_unread(key),
         })
- 
-    # ── 4. New submodules added to accessible subjects (last 30 days) ────────
+
+    # ── 4. New submodules ─────────────────────────────────────────────────────
     accessible_sm_ids = set()
     for payment in active_payments:
         for sm in payment.plan.submodules.filter(is_active=True):
             accessible_sm_ids.add(sm.id)
- 
+
     new_submodules = SubModule.objects.filter(
-        id__in=accessible_sm_ids,
-        created_at__gte=cutoff_30,
+        id__in=accessible_sm_ids, created_at__gte=cutoff_30,
     ).select_related('subject').order_by('-created_at')[:5]
- 
+
     for sm in new_submodules:
+        key = f'submodule_{sm.id}'
         notifications.append({
             'type':    'new_submodule',
             'icon':    'icon-layers',
-            'color':   'bg-warning',
-            'title':   f'New Topic Added',
+            'title':   'New Topic Added',
             'desc':    f'{sm.name} · {sm.subject.name}',
             'time':    timesince(sm.created_at) + ' ago',
             'created': sm.created_at.isoformat(),
-            'unread':  True,
+            'key':     key,
+            'unread':  is_unread(key),
         })
- 
-    # ── 5. Plan expiry warnings ───────────────────────────────────────────────
+
+    # ── 5. Expiry warnings ────────────────────────────────────────────────────
     expiring_soon = student.payments.filter(
         status=Payment.STATUS_SUCCESS,
         expires_at__gt=now,
         expires_at__lte=now + datetime.timedelta(days=7),
     ).select_related('plan').order_by('expires_at')
- 
+
     for payment in expiring_soon:
-        delta = payment.expires_at - now
-        days_left = delta.days
+        days_left = (payment.expires_at - now).days
+        key = f'expiry_{payment.id}'
         notifications.append({
             'type':    'expiry_warning',
             'icon':    'icon-clock',
-            'color':   'bg-danger',
-            'title':   f'Plan Expiring Soon',
+            'title':   'Plan Expiring Soon',
             'desc':    f'{payment.plan.name} expires in {days_left} day{"s" if days_left != 1 else ""}',
             'time':    timesince(payment.paid_at) + ' ago' if payment.paid_at else '',
             'created': payment.expires_at.isoformat(),
-            'unread':  days_left <= 3,
+            'key':     key,
+            'unread':  days_left <= 3 and is_unread(key),
         })
- 
-    # Sort all by created date descending
+
     notifications.sort(key=lambda x: x['created'], reverse=True)
-    notifications = notifications[:15]  # cap at 15
- 
-    unread_count = sum(1 for n in notifications if n['unread'])
- 
-    return JsonResponse({
-        'notifications': notifications,
-        'unread_count':  unread_count,
-    })
+    notifications = notifications[:15]
+    unread_count  = sum(1 for n in notifications if n['unread'])
+
+    return JsonResponse({'notifications': notifications, 'unread_count': unread_count})
+@login_required
+def mark_notifications_read(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    student = getattr(request.user, 'student', None)
+    if not student:
+        return JsonResponse({'ok': False})
+
+    import json
+    from student_portal.models import NotificationRead  # ← fixed
+
+    data = json.loads(request.body)
+    keys = data.get('keys', [])
+
+    for key in keys:
+        NotificationRead.objects.get_or_create(student=student, notif_key=key)
+
+    return JsonResponse({'ok': True})
 @never_cache
 def landing_page(request):
     from student_management.models import SubscriptionPlan

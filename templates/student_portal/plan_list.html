@@ -26,17 +26,16 @@
       font-display: swap;
     }
 
-    /* ─── PRELOADER ─── */
+    /* ── PRELOADER ── */
     #preloader {
-      position: fixed; width: 100%; height: 100%;
-      left: 0; top: 0; background-color: #fff;
+      position: fixed; inset: 0; background: #fff;
       z-index: 99999; display: flex;
       justify-content: center; align-items: center;
       transition: opacity 0.4s ease;
     }
     .loader { display: flex; align-items: center; justify-content: center; }
     .loader > div {
-      display: inline-flex; width: 25px; height: 25px; margin: 0 5px;
+      display: inline-flex; width: 22px; height: 22px; margin: 0 5px;
       border-radius: 50%; background: #1565C0;
       animation: bounce 1.48s ease-in-out infinite both;
     }
@@ -46,17 +45,20 @@
       0%, 80%, 100% { transform: scale(0); }
       40%           { transform: scale(1); }
     }
-    [data-theme="dark"] #preloader { background-color: #080f20; }
+    [data-theme="dark"] #preloader { background: #080f20; }
 
-    /* ─── RESET SIDEBAR ─── */
+    /* ── RESETS ── */
+    *, *::before, *::after { box-sizing: border-box; }
     .admio-sidebar { display: none !important; }
     .admio-main { margin-left: 0 !important; padding-top: 0 !important; width: 100% !important; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 16px; background: #F6F8FC; color: #0F172A; margin: 0;
+    }
 
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; background: #F6F8FC; }
-
-    /* ═══════════════════════════════════════════════
-       NAVBAR
-    ═══════════════════════════════════════════════ */
+    /* ════════════════════════════════════
+       NAVBAR  (matches base.html design)
+    ════════════════════════════════════ */
     .h-navbar {
       position: sticky; top: 0; z-index: 9999;
       background: #fff;
@@ -68,19 +70,10 @@
       padding: 0 32px; height: 70px;
       background: #ffffff;
       border-bottom: 1px solid #dde3f0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 19px, rgba(21,101,192,.07) 20px
+      );
     }
-    .h-navbar-brand {
-      display: flex; align-items: center; gap: 9px;
-      text-decoration: none; flex-shrink: 0;
-    }
-    .h-navbar-brand img { width: 36px; }
-    .h-navbar-brand-text {
-      font-size: 1.5rem; font-weight: 800;
-      color: #1a2a5e; letter-spacing: -0.3px;
-    }
-    .h-navbar-brand-text span { color: #1565C0; }
-    [data-theme="dark"] .brand-logo img { filter: brightness(0) invert(1); }
-
     .h-topbar-actions {
       display: flex; align-items: center; gap: 6px;
       margin-left: auto; flex-shrink: 0;
@@ -95,7 +88,71 @@
     }
     .topbar-btn:hover { background: #e3f0fb; color: #1565C0; }
 
-    /* Auth buttons in navbar */
+    /* ── SEARCH BAR ── */
+    .h-topbar-search {
+      flex: 1; max-width: 400px; position: relative;
+    }
+    .h-topbar-search .search-icon {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af; font-size: 15px; pointer-events: none;
+    }
+    .h-topbar-search .search-input {
+      width: 100%; padding: 8px 68px 8px 36px;
+      border: 1px solid #dde3f0; border-radius: 9px;
+      font-size: 14px; background: #f5f8ff;
+      color: #1a2a5e; outline: none;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .h-topbar-search .search-input::placeholder { color: #9ca3af; }
+    .h-topbar-search .search-input:focus {
+      border-color: #1565C0;
+      box-shadow: 0 0 0 3px rgba(21,101,192,.10);
+    }
+    #searchCount {
+      position: absolute; right: 32px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px; color: #6b7280;
+      background: #e5e7eb; border-radius: 10px;
+      padding: 2px 7px; pointer-events: none;
+      display: none; white-space: nowrap;
+    }
+    .search-clear {
+      position: absolute; right: 8px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: #9ca3af; font-size: 15px; padding: 2px 4px;
+      display: none; align-items: center; justify-content: center;
+      border-radius: 4px; transition: color .15s;
+    }
+    .search-clear:hover { color: #1565C0; }
+    .search-highlight {
+      background: #fff176; color: #1a2a5e !important;
+      border-radius: 2px; padding: 0 1px;
+    }
+    [data-theme="dark"] .search-highlight { background: #f59e0b; color: #000 !important; }
+    .search-no-match { opacity: 0.12; transition: opacity 0.2s; }
+    #searchBanner {
+      display: none;
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1565C0; color: #fff;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 20px rgba(21,101,192,.35);
+      z-index: 99998; white-space: nowrap;
+      animation: fadeUp .2s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity:1; transform: translateX(-50%) translateY(0); }
+    }
+    [data-theme="dark"] .h-topbar-search .search-input {
+      background: #0d1a3a; border-color: #1a2a5e; color: #90CAF9;
+    }
+    [data-theme="dark"] #searchCount { background: #1a2a5e; color: #90CAF9; }
+
+    /* Auth buttons */
     .nav-auth-links { display: flex; align-items: center; gap: 10px; }
     .nav-link-plain {
       font-size: 14px; font-weight: 600; color: #374151;
@@ -105,36 +162,23 @@
     .nav-link-plain:hover { background: #e3f0fb; color: #1565C0; }
     .nav-btn-pill {
       display: inline-flex; align-items: center; gap: 6px;
-      background: #1565C0; color: #fff !important;
+      background: #1565C0; color: #fff;
       padding: 8px 18px; border-radius: 100px;
       font-weight: 700; font-size: 13.5px; text-decoration: none;
       transition: background .15s, transform .15s;
     }
     .nav-btn-pill:hover { background: #1251a3; transform: translateY(-1px); }
 
-    /* Theme toggle */
-    #themeToggle { background: transparent; border: none; cursor: pointer;
-      color: #374151; width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 8px; font-size: 16px; transition: background .15s, color .15s; }
-    #themeToggle:hover { background: #e3f0fb; color: #1565C0; }
+    [data-theme="dark"] .brand-logo img { filter: brightness(0) invert(1); }
+    [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
+    [data-theme="dark"] .h-navbar-top { background: #080f20; border-color: #1a2a5e; }
 
-    /* Hamburger */
-    .h-menu-toggle {
-      display: none; align-items: center; justify-content: center;
-      width: 40px; height: 40px; border: none;
-      background: #e3f0fb; border-radius: 8px;
-      cursor: pointer; color: #1565C0; font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    /* ═══════════════════════════════════════════════
-       PLANS PAGE STYLES
-    ═══════════════════════════════════════════════ */
+    /* ════════════════════════════════════
+       PAGE CONTENT
+    ════════════════════════════════════ */
     :root {
       --blue: #2F6BFF;
       --blue-dark: #1E54E0;
-      --blue-light: #5C92FF;
       --blue-tint: #EAF1FF;
       --green: #15A36B;
       --green-tint: #E4F8EE;
@@ -147,70 +191,80 @@
       --ink-faint: #94A0B8;
       --border: #E7EAF2;
       --bg: #F6F8FC;
-      --page-max: 1320px;
-      --page-pad: 32px;
+      --page-max: 1280px;
+      --page-pad: 40px;
     }
 
-    /* Page heading */
-    .plans-page-head {
-      max-width: var(--page-max); margin: 32px auto 0;
-      padding: 0 var(--page-pad);
-    }
-    .plans-page-head h1 {
-      font-size: 22px; font-weight: 800; color: var(--ink);
-      letter-spacing: -0.01em; margin-bottom: 4px;
-    }
-    .plans-page-head p { font-size: 14px; color: var(--ink-soft); }
+    .page-wrap { max-width: var(--page-max); margin: 0 auto; padding: 0 var(--page-pad); }
 
-    /* Messages */
-    .messages-wrap { max-width: var(--page-max); margin: 16px auto 0; padding: 0 var(--page-pad); }
+    /* Hero header */
+    .plans-hero {
+      padding: 52px 0 36px;
+    }
+    .plans-hero h1 {
+      font-size: 38px; font-weight: 800;
+      color: var(--ink); letter-spacing: -0.025em;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .plans-hero p {
+      font-size: 17px; color: var(--ink-soft);
+      max-width: 520px; line-height: 1.65;
+    }
+
+    /* Django messages */
+    .messages-wrap { margin-bottom: 20px; }
     .msg { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 8px; font-weight: 500; }
     .msg-error   { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
     .msg-success { background: var(--green-tint); border: 1px solid #86EFAC; color: #166534; }
     .msg-info    { background: var(--blue-tint); border: 1px solid #BFD7FF; color: #1E40AF; }
 
     /* Plans grid */
-    .plans-wrap { max-width: var(--page-max); margin: 0 auto 36px; padding: 28px var(--page-pad) 0; }
-    .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: stretch; }
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 22px;
+      margin-bottom: 36px;
+    }
 
-    /* Plan card */
+    /* ── Plan card ── */
     .plan-card {
-      position: relative; background: #fff;
-      border: 1.5px solid var(--border); border-radius: 16px;
-      overflow: hidden; display: flex; flex-direction: column;
-      box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      position: relative;
+      cursor: pointer;
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
     .plan-card::before {
       content: ""; position: absolute;
-      top: 0; bottom: 0; left: 0; width: 4px; z-index: 1;
+      top: 0; left: 0; right: 0; height: 4px;
+      border-radius: 16px 16px 0 0;
     }
     .plan-card:nth-child(4n+1)::before { background: var(--blue); }
     .plan-card:nth-child(4n+2)::before { background: var(--green); }
     .plan-card:nth-child(4n+3)::before { background: var(--amber); }
     .plan-card:nth-child(4n+0)::before { background: var(--violet); }
     .plan-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px rgba(15, 23, 42, .1);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 36px rgba(15,23,42,.11);
       border-color: #C7D9FF;
     }
     .plan-card.featured {
       border-color: var(--blue);
-      background: linear-gradient(180deg, var(--blue-tint) 0%, #fff 220px);
-      box-shadow: 0 12px 28px rgba(47, 107, 255, .16);
+      background: linear-gradient(180deg, var(--blue-tint) 0%, #fff 200px);
+      box-shadow: 0 12px 28px rgba(47,107,255,.14);
     }
 
-    .plan-card-body { padding: 24px 24px 22px; display: flex; flex-direction: column; flex: 1; }
+    .plan-card-body { padding: 26px 24px 24px; display: flex; flex-direction: column; flex: 1; }
 
-    .plan-card-head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; margin-bottom: 18px;
-    }
+    .plan-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
     .plan-icon {
-      width: 38px; height: 38px; border-radius: 10px;
+      width: 42px; height: 42px; border-radius: 11px;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .plan-icon svg { width: 19px; height: 19px; }
+    .plan-icon i { font-size: 20px; }
     .plan-card:nth-child(4n+1) .plan-icon { background: var(--blue-tint); color: var(--blue); }
     .plan-card:nth-child(4n+2) .plan-icon { background: var(--green-tint); color: var(--green); }
     .plan-card:nth-child(4n+3) .plan-icon { background: var(--amber-tint); color: var(--amber); }
@@ -225,99 +279,201 @@
     .plan-card:nth-child(4n+3) .plan-duration-chip { background: var(--amber-tint); color: var(--amber); }
     .plan-card:nth-child(4n+0) .plan-duration-chip { background: var(--violet-tint); color: var(--violet); }
 
-    .plan-name { font-size: 17px; font-weight: 700; margin-bottom: 5px; letter-spacing: -0.01em; }
-    .plan-desc { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; min-height: 36px; line-height: 1.5; }
+    .plan-name { font-size: 18px; font-weight: 700; margin-bottom: 5px; color: var(--ink); }
+    .plan-desc { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; min-height: 36px; line-height: 1.55; }
 
     .plan-price-block { margin-bottom: 16px; }
-    .plan-price-row { display: flex; align-items: baseline; gap: 7px; margin-bottom: 4px; }
-    .plan-price { font-size: 32px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
+    .plan-price-row { display: flex; align-items: baseline; gap: 7px; margin-bottom: 3px; }
+    .plan-price { font-size: 34px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
     .plan-price.is-free { color: var(--blue); }
     .plan-price-unit { font-size: 13px; font-weight: 600; color: var(--ink-faint); }
     .plan-price-meta { font-size: 12.5px; color: var(--ink-soft); font-weight: 500; }
     .plan-price-meta .accent { color: var(--blue-dark); font-weight: 700; }
 
-    .plan-divider { height: 1px; background: var(--border); margin: 0 0 16px; }
+    .plan-divider { height: 1px; background: var(--border); margin: 0 0 14px; }
     .plan-includes-label {
       font-size: 11px; font-weight: 700; letter-spacing: .06em;
       text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px;
     }
-
-    .plan-features { list-style: none; flex: 1; margin-bottom: 22px; padding: 0; }
-    .plan-features li {
-      font-size: 13.5px; color: #334155; padding: 6px 0;
-      display: flex; align-items: flex-start; gap: 9px; line-height: 1.4;
+    .plan-features-preview {
+      list-style: none; padding: 0; margin-bottom: 10px;
     }
-    .plan-features li .tick {
+    .plan-features-preview li {
+      font-size: 13.5px; color: #334155; padding: 5px 0;
+      display: flex; align-items: center; gap: 9px; line-height: 1.4;
+    }
+    .tick {
       flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .plan-features li .tick svg { width: 9px; height: 9px; }
+    .tick i { font-size: 9px; }
     .plan-card:nth-child(4n+1) .tick { background: var(--blue-tint); color: var(--blue); }
     .plan-card:nth-child(4n+2) .tick { background: var(--green-tint); color: var(--green); }
     .plan-card:nth-child(4n+3) .tick { background: var(--amber-tint); color: var(--amber); }
     .plan-card:nth-child(4n+0) .tick { background: var(--violet-tint); color: var(--violet); }
 
-    .btn {
-      display: flex; align-items: center; justify-content: center;
-      gap: 7px; text-align: center; padding: 12px; border-radius: 10px;
-      font-size: 14.5px; font-weight: 600; text-decoration: none;
-      transition: background .15s, color .15s;
+    .plan-more-tag {
+      font-size: 12px; color: var(--ink-faint);
+      padding: 0 0 14px 26px;
     }
-    .btn svg { width: 15px; height: 15px; }
-    .btn-primary { background: var(--blue); color: #fff; }
-    .btn-primary:hover { background: var(--blue-dark); }
 
-    .login-hint { text-align: center; margin-top: 12px; font-size: 12.5px; color: var(--ink-faint); }
+    .plan-view-btn {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 12px; border-radius: 10px;
+      font-size: 14.5px; font-weight: 600;
+      border: none; cursor: pointer; margin-top: auto;
+      transition: opacity .15s, transform .12s;
+      text-decoration: none;
+    }
+    .plan-view-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .plan-view-btn i { font-size: 15px; }
+    .plan-card:nth-child(4n+1) .plan-view-btn { background: var(--blue); color: #fff; }
+    .plan-card:nth-child(4n+2) .plan-view-btn { background: var(--green); color: #fff; }
+    .plan-card:nth-child(4n+3) .plan-view-btn { background: var(--amber); color: #fff; }
+    .plan-card:nth-child(4n+0) .plan-view-btn { background: var(--violet); color: #fff; }
+
+    .login-hint { text-align: center; margin-top: 10px; font-size: 12.5px; color: var(--ink-faint); }
     .login-hint a { color: var(--blue); text-decoration: none; font-weight: 600; }
 
-    .empty { text-align: center; padding: 70px 0; color: var(--ink-faint); font-size: 15px; grid-column: 1 / -1; }
+    .empty-state {
+      text-align: center; padding: 70px 0;
+      color: var(--ink-faint); font-size: 15px;
+      grid-column: 1 / -1;
+    }
+    .empty-state i { font-size: 2.5rem; display: block; margin-bottom: 12px; }
 
     /* Trust strip */
     .trust-strip {
-      max-width: var(--page-max); margin: 8px auto 60px; padding: 0 var(--page-pad);
-      display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+      display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 60px;
     }
     .trust-pill {
       display: flex; align-items: center; gap: 7px;
       font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
       background: #fff; border: 1px solid var(--border);
-      padding: 8px 14px; border-radius: 100px;
+      padding: 8px 16px; border-radius: 100px;
     }
-    .trust-pill svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+    .trust-pill i { font-size: 15px; color: var(--blue); }
 
-    /* Dark mode base */
-    [data-theme="dark"] body { background: #080f20; }
-    [data-theme="dark"] .h-navbar { background: #0d1a3a; border-color: #1a2a5e; }
-    [data-theme="dark"] .h-navbar-top { background: #080f20; border-color: #1a2a5e; }
-    [data-theme="dark"] .plan-card { background: #0d1a3a; border-color: #1a2a5e; color: #90CAF9; }
-    [data-theme="dark"] .plan-name { color: #e2e8f0; }
+    /* ════════════════════════════════════
+       MODAL
+    ════════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,.48); z-index: 99999;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: #fff; border-radius: 20px;
+      max-width: 540px; width: 100%; max-height: 88vh; overflow-y: auto;
+      position: relative;
+      box-shadow: 0 28px 64px rgba(15,23,42,.2);
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(16px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-top-bar { height: 5px; border-radius: 20px 20px 0 0; }
+    .modal-close-btn {
+      position: absolute; top: 14px; right: 14px;
+      background: #f1f5f9; border: none; border-radius: 8px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 17px; color: var(--ink-soft); z-index: 10;
+      transition: background .12s;
+    }
+    .modal-close-btn:hover { background: #e2e8f0; }
+
+    .modal-body { padding: 28px 28px 26px; }
+
+    .modal-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .modal-icon {
+      width: 50px; height: 50px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .modal-icon i { font-size: 24px; }
+    .modal-plan-name { font-size: 22px; font-weight: 700; color: var(--ink); }
+    .modal-plan-sub  { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+
+    .modal-price-block {
+      background: #F6F8FC; border-radius: 12px;
+      padding: 16px 20px; margin-bottom: 22px;
+      display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
+    }
+    .modal-price { font-size: 36px; font-weight: 800; color: var(--ink); line-height: 1; }
+    .modal-price.is-free { color: var(--blue); }
+    .modal-price-unit { font-size: 13px; font-weight: 600; color: var(--ink-faint); }
+    .modal-price-day { font-size: 13px; color: var(--ink-soft); font-weight: 500; margin-left: auto; }
+
+    .modal-section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px;
+    }
+
+    .modal-features-list { list-style: none; padding: 0; margin-bottom: 22px; }
+    .modal-features-list li {
+      font-size: 14px; color: #334155; padding: 10px 0;
+      display: flex; align-items: flex-start; gap: 10px;
+      border-bottom: 1px solid #F1F5F9; line-height: 1.45;
+    }
+    .modal-features-list li:last-child { border-bottom: none; }
+    .modal-tick {
+      width: 19px; height: 19px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .modal-tick i { font-size: 10px; }
+
+    .modal-cta-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px; border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      border: none; cursor: pointer; color: #fff;
+      transition: opacity .15s, transform .12s;
+      text-decoration: none;
+    }
+    .modal-cta-btn:hover { opacity: .88; transform: translateY(-1px); color: #fff; }
+    .modal-cta-btn i { font-size: 15px; }
+
+    .modal-login-hint {
+      text-align: center; margin-top: 12px;
+      font-size: 12.5px; color: var(--ink-faint);
+    }
+    .modal-login-hint a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+    /* Dark mode */
+    [data-theme="dark"] body { background: #080f20; color: #e2e8f0; }
+    [data-theme="dark"] .plan-card { background: #0d1a3a; border-color: #1a2a5e; }
+    [data-theme="dark"] .plan-name,
     [data-theme="dark"] .plan-price { color: #e2e8f0; }
+    [data-theme="dark"] .plans-hero h1 { color: #e2e8f0; }
+    [data-theme="dark"] .modal-box { background: #0d1a3a; }
+    [data-theme="dark"] .modal-plan-name,
+    [data-theme="dark"] .modal-price { color: #e2e8f0; }
+    [data-theme="dark"] .modal-price-block { background: #080f20; }
+    [data-theme="dark"] .modal-features-list li { border-color: #1a2a5e; color: #90CAF9; }
+    [data-theme="dark"] .modal-close-btn { background: #1a2a5e; color: #90CAF9; }
     [data-theme="dark"] .trust-pill { background: #0d1a3a; border-color: #1a2a5e; color: #90CAF9; }
-.brand-logo-img {
-  height: 220px;
-}
 
-@media (max-width: 767px) {
-  .brand-logo-img {
-    height: 250px;
-  }
-}
-    @media (max-width: 500px) {
-      .plan-card-body { padding: 20px 18px; }
-      .plan-price { font-size: 28px; }
+    /* Responsive */
+    @media (max-width: 767px) {
+      .h-navbar-top { padding: 0 16px; height: 60px; }
+      .h-topbar-search { display: none !important; }
+      :root { --page-pad: 18px; }
+      .plans-hero h1 { font-size: 28px; }
+      .plans-hero p { font-size: 15px; }
+      .modal-body { padding: 22px 18px 20px; }
+      .modal-price { font-size: 30px; }
     }
-    @media (max-width: 500px) {
-  .plan-card-body { padding: 20px 18px; }
-  .plan-price { font-size: 28px; }
-
-  /* smaller preloader dots on mobile */
-  .loader > div {
-    width: 16px;
-    height: 16px;
-    margin: 0 3px;
-  }
-}
-    
+    @media (max-width: 480px) {
+      .plans-hero h1 { font-size: 24px; }
+      .plan-price { font-size: 28px; }
+      .loader > div { width: 16px; height: 16px; margin: 0 3px; }
+    }
   </style>
 </head>
 <body>
@@ -329,31 +485,39 @@
   </div>
 </div>
 
-<!-- NAVBAR -->
+<!-- ════════════ NAVBAR ════════════ -->
 <nav class="h-navbar">
   <div class="h-navbar-top">
 
-    <!-- Mobile hamburger placeholder (no drawer needed on this public page) -->
-    <button class="h-menu-toggle" style="visibility:hidden;" aria-hidden="true">
-      <i class="icon-menu"></i>
-    </button>
-
-    <!-- Brand -->
+    <!-- Brand logo -->
     <div class="brand-logo">
-      
-        
+      <a href="{% url 'student_portal:dashboard' %}" style="display:flex;align-items:center;text-decoration:none;">
         <img src="{% static 'student_portal/assets/img/edu.png' %}"
-     alt="Edusetin"
-     class="brand-logo-img"
-     style="width:auto;object-fit:contain;">
+             alt="Edusetin"
+             style="height:220px;width:auto;object-fit:contain;">
       </a>
+    </div>
+
+    <!-- Search bar -->
+    <div class="h-topbar-search">
+      <i class="icon-search search-icon"></i>
+      <input type="text"
+             class="search-input"
+             id="globalSearch"
+             placeholder="Search plans…"
+             autocomplete="off"
+             spellcheck="false">
+      <span id="searchCount"></span>
+      <button class="search-clear" id="searchClear" title="Clear" type="button">
+        <i class="icon-x"></i>
+      </button>
     </div>
 
     <!-- Right actions -->
     <div class="h-topbar-actions">
 
       <!-- Theme toggle -->
-      <button id="themeToggle" title="Toggle theme" type="button">
+      <button class="topbar-btn" id="themeToggle" title="Toggle theme" type="button">
         <i class="icon-moon" id="themeIcon"></i>
       </button>
 
@@ -376,30 +540,48 @@
   </div>
 </nav>
 
-<!-- PAGE HEADING -->
-<div class="plans-page-head">
-  <h1 style="font-size: 28px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 4px;">Choose your preparation plan</h1>
-  <p style="font-size: 14px; color: var(--ink-soft);">Pick the plan that fits how you're studying. Access activates the moment your payment is verified.</p>
-</div>
-<!-- MESSAGES -->
-{% if messages %}
-<div class="messages-wrap">
-  {% for message in messages %}
-  <div class="msg msg-{{ message.tags }}">{{ message }}</div>
-  {% endfor %}
-</div>
-{% endif %}
+<!-- ════════════ PAGE CONTENT ════════════ -->
+<div class="page-wrap">
 
-<!-- PLANS GRID -->
-<div class="plans-wrap">
+  <!-- Hero heading -->
+  <div class="plans-hero">
+    <h1>Choose your preparation plan</h1>
+    <p>Pick the plan that fits how you're studying. Access activates the moment your payment is verified.</p>
+  </div>
+
+  <!-- Django messages -->
+  {% if messages %}
+  <div class="messages-wrap">
+    {% for message in messages %}
+    <div class="msg msg-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Plans grid -->
   <div class="plans-grid">
     {% for plan in plans %}
-    <div class="plan-card{% if plan.is_featured %} featured{% endif %}">
+    <div class="plan-card{% if plan.is_featured %} featured{% endif %}"
+         data-plan-id="{{ plan.uuid }}"
+         onclick="openPlanModal(this)">
+
+      <!-- Data attributes for the modal (server-rendered, JS reads them) -->
+      <div style="display:none;" class="plan-data"
+           data-name="{{ plan.name }}"
+           data-desc="{{ plan.description|default:'Full access to all study materials.' }}"
+           data-duration="{{ plan.duration_days }}"
+           data-price="{% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:0 }}{% endif %}"
+           data-price-is-free="{% if plan.price == 0 %}1{% else %}0{% endif %}"
+           data-price-day="{% if plan.price == 0 %}No payment required, ever{% else %}≈ ₹{% widthratio plan.price plan.duration_days 1 %} per day{% endif %}"
+           data-checkout-url="{% url 'student_portal:plan_checkout' plan.uuid %}"
+           data-features="{% for subject in plan.subjects.all %}{{ subject.name }}|{% endfor %}{% for submodule in plan.submodules.all %}{{ submodule.subject.name }} → {{ submodule.name }}|{% endfor %}{% for exam in plan.exams.all %}{{ exam.title }}|{% endfor %}Detailed explanations|Performance analytics">
+      </div>
+
       <div class="plan-card-body">
 
         <div class="plan-card-head">
           <div class="plan-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <i class="icon-gauge"></i>
           </div>
           <span class="plan-duration-chip">{{ plan.duration_days }} day{{ plan.duration_days|pluralize }}</span>
         </div>
@@ -412,7 +594,9 @@
             <span class="plan-price{% if plan.price == 0 %} is-free{% endif %}">
               {% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:0 }}{% endif %}
             </span>
-            {% if plan.price != 0 %}<span class="plan-price-unit">/ {{ plan.duration_days }}d</span>{% endif %}
+            {% if plan.price != 0 %}
+              <span class="plan-price-unit">/ {{ plan.duration_days }}d</span>
+            {% endif %}
           </div>
           <div class="plan-price-meta">
             {% if plan.price == 0 %}
@@ -426,83 +610,123 @@
         <div class="plan-divider"></div>
         <div class="plan-includes-label">What's included</div>
 
-        <ul class="plan-features">
-          {% for subject in plan.subjects.all %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ subject.name }}</li>
+        <ul class="plan-features-preview">
+          {% for subject in plan.subjects.all|slice:":3" %}
+          <li>
+            <span class="tick"><i class="icon-check"></i></span>
+            {{ subject.name }}
+          </li>
           {% endfor %}
-          {% for submodule in plan.submodules.all %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ submodule.subject.name }} → {{ submodule.name }}</li>
-          {% endfor %}
-          {% for exam in plan.exams.all %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>{{ exam.title }}</li>
-          {% endfor %}
-          {% if not plan.subjects.exists and not plan.submodules.exists and not plan.exams.exists %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>All subjects</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>All mock tests &amp; PYQs</li>
+          {% if not plan.subjects.exists %}
+          <li><span class="tick"><i class="icon-check"></i></span>All subjects</li>
+          <li><span class="tick"><i class="icon-check"></i></span>All mock tests &amp; PYQs</li>
+          <li><span class="tick"><i class="icon-check"></i></span>Detailed explanations</li>
           {% endif %}
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Detailed explanations</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Performance analytics</li>
         </ul>
 
-        {% if request.user.is_authenticated %}
-          <a href="{% url 'student_portal:plan_checkout' plan.uuid %}" class="btn btn-primary">
-            Get this plan
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        {% else %}
-          <a href="{% url 'student_portal:register' %}?next={% url 'student_portal:plan_checkout' plan.uuid %}" class="btn btn-primary">
-            Get started
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-          <div class="login-hint">
-            Already registered?
-            <a href="{% url 'student_portal:login' %}?next={% url 'student_portal:plan_checkout' plan.uuid %}">Log in</a>
-          </div>
+        {% with extra_count=plan.subjects.count|add:plan.submodules.count|add:plan.exams.count|add:2 %}
+        {% if extra_count > 3 %}
+        <div class="plan-more-tag">+ {{ extra_count|add:"-3" }} more included</div>
         {% endif %}
+        {% endwith %}
+
+        <button type="button" class="plan-view-btn">
+          View plan details <i class="icon-arrow-right"></i>
+        </button>
 
       </div>
     </div>
     {% empty %}
-    <div class="empty">No plans available right now. Check back soon.</div>
+    <div class="empty-state">
+      <i class="icon-inbox"></i>
+      No plans available right now. Check back soon.
+    </div>
     {% endfor %}
   </div>
-</div>
 
-<!-- TRUST STRIP -->
-<div class="trust-strip">
-  <span class="trust-pill">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-    Secure payments via Razorpay
-  </span>
-  <span class="trust-pill">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="12"/><line x1="11" y1="20" x2="11" y2="6"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
-    Performance analytics included
-  </span>
-  <span class="trust-pill">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/></svg>
-    Cancel anytime
-  </span>
+  <!-- Trust strip -->
+  <div class="trust-strip">
+    <span class="trust-pill"><i class="icon-lock"></i> Secure payments via Razorpay</span>
+    <span class="trust-pill"><i class="icon-chart-bar"></i> Performance analytics included</span>
+    <span class="trust-pill"><i class="icon-refresh-cw"></i> Cancel anytime</span>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<!-- ════════════ PLAN DETAIL MODAL ════════════ -->
+<div class="modal-overlay" id="planModal" role="dialog" aria-modal="true" aria-labelledby="modalPlanName">
+
+  <div class="modal-box" id="planModalBox">
+    <div class="modal-top-bar" id="modalTopBar"></div>
+
+    <button class="modal-close-btn" id="modalCloseBtn" type="button" aria-label="Close modal">
+      <i class="icon-x"></i>
+    </button>
+
+    <div class="modal-body">
+
+      <div class="modal-head">
+        <div class="modal-icon" id="modalIconEl">
+          <i class="icon-gauge"></i>
+        </div>
+        <div>
+          <div class="modal-plan-name" id="modalPlanName">Plan name</div>
+          <div class="modal-plan-sub"  id="modalPlanSub">Plan subtitle</div>
+        </div>
+      </div>
+
+      <div class="modal-price-block">
+        <span class="modal-price" id="modalPriceEl">₹0</span>
+        <span class="modal-price-unit" id="modalPriceUnit"></span>
+        <span class="modal-price-day" id="modalPriceDay"></span>
+      </div>
+
+      <div class="modal-section-title">What's included</div>
+      <ul class="modal-features-list" id="modalFeaturesList"></ul>
+
+      <a href="#" class="modal-cta-btn" id="modalCtaBtn">
+        Get this plan <i class="icon-arrow-right"></i>
+      </a>
+
+      {% if not request.user.is_authenticated %}
+      <div class="modal-login-hint" id="modalLoginHint">
+        Already registered?
+        <a href="{% url 'student_portal:login' %}" id="modalLoginLink">Log in</a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
 </div>
+<!-- ── END MODAL ── -->
+
+<!-- SEARCH BANNER -->
+<div id="searchBanner"></div>
 
 <script src="{% static 'student_portal/assets/js/vendor/bootstrap.bundle.min.js' %}"></script>
+
 <script>
-/* PRELOADER */
+/* ──────────────────────────────────────────
+   PRELOADER
+────────────────────────────────────────── */
 window.addEventListener('load', function () {
-  var preloader = document.getElementById('preloader');
-  if (preloader) {
-    setTimeout(function () {
-      preloader.style.opacity = '0';
-      setTimeout(function () { preloader.style.display = 'none'; }, 600);
-    }, 1000);
-  }
+  var pre = document.getElementById('preloader');
+  if (!pre) return;
+  setTimeout(function () {
+    pre.style.opacity = '0';
+    setTimeout(function () { pre.style.display = 'none'; }, 500);
+  }, 900);
 });
 
-/* THEME TOGGLE */
+/* ──────────────────────────────────────────
+   THEME TOGGLE
+────────────────────────────────────────── */
 (function () {
-  var html      = document.documentElement;
-  var btn       = document.getElementById('themeToggle');
-  var icon      = document.getElementById('themeIcon');
-  var saved     = localStorage.getItem('theme') || 'light';
+  var html  = document.documentElement;
+  var btn   = document.getElementById('themeToggle');
+  var icon  = document.getElementById('themeIcon');
+  var saved = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', saved);
   icon.className = saved === 'dark' ? 'icon-sun' : 'icon-moon';
 
@@ -511,6 +735,237 @@ window.addEventListener('load', function () {
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
     icon.className = next === 'dark' ? 'icon-sun' : 'icon-moon';
+  });
+})();
+
+/* ──────────────────────────────────────────
+   PAGE SEARCH — filters & highlights plan
+   cards on the current page
+────────────────────────────────────────── */
+(function () {
+  var input    = document.getElementById('globalSearch');
+  var clearBtn = document.getElementById('searchClear');
+  var countEl  = document.getElementById('searchCount');
+  var banner   = document.getElementById('searchBanner');
+  if (!input) return;
+
+  var bannerTimer = null;
+  var originalMap = new Map();
+
+  function escRx(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function showBanner(msg) {
+    banner.textContent = msg;
+    banner.style.display = 'block';
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(function () { banner.style.display = 'none'; }, 2200);
+  }
+
+  function walkTextNodes(el, cb) {
+    var walker = document.createTreeWalker(
+      el, NodeFilter.SHOW_TEXT,
+      { acceptNode: function (node) {
+          var tag = node.parentElement && node.parentElement.tagName;
+          if (['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','INPUT','SELECT'].indexOf(tag) > -1)
+            return NodeFilter.FILTER_REJECT;
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_SKIP;
+          return NodeFilter.FILTER_ACCEPT;
+      }}
+    );
+    var n;
+    while ((n = walker.nextNode())) cb(n);
+  }
+
+  function clearHighlights() {
+    originalMap.forEach(function (original, el) { el.innerHTML = original; });
+    originalMap.clear();
+    document.querySelectorAll('.search-no-match').forEach(function (el) {
+      el.classList.remove('search-no-match');
+    });
+  }
+
+  function doSearch(query) {
+    clearHighlights();
+    var grid = document.querySelector('.plans-grid');
+    if (!grid) return;
+
+    if (!query) {
+      countEl.style.display = 'none';
+      clearBtn.style.display = 'none';
+      banner.style.display = 'none';
+      return;
+    }
+
+    clearBtn.style.display = 'flex';
+
+    var rx = new RegExp('(' + escRx(query) + ')', 'gi');
+    var matchCount = 0;
+    var cards = grid.querySelectorAll('.plan-card');
+
+    cards.forEach(function (card) {
+      var cardMatches = 0;
+      var textNodes = [];
+      walkTextNodes(card, function (node) {
+        var parent = node.parentElement;
+        if (parent && parent.classList.contains('plan-data')) return;
+        textNodes.push(node);
+      });
+
+      textNodes.forEach(function (node) {
+        var val = node.nodeValue;
+        if (!rx.test(val)) { rx.lastIndex = 0; return; }
+        rx.lastIndex = 0;
+        var parent = node.parentElement;
+        if (!parent) return;
+        if (!originalMap.has(parent)) originalMap.set(parent, parent.innerHTML);
+        parent.innerHTML = parent.innerHTML.replace(rx,
+          '<mark class="search-highlight">$1</mark>'
+        );
+        var found = (val.match(rx) || []).length;
+        cardMatches += found;
+        matchCount  += found;
+        rx.lastIndex = 0;
+      });
+
+      if (cardMatches === 0) card.classList.add('search-no-match');
+    });
+
+    if (matchCount > 0) {
+      countEl.textContent  = matchCount + ' found';
+      countEl.style.display = 'inline-block';
+      showBanner(matchCount + ' result' + (matchCount > 1 ? 's' : '') + ' for "' + query + '"');
+      var first = grid.querySelector('.search-highlight');
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      countEl.textContent  = 'No results';
+      countEl.style.display = 'inline-block';
+      showBanner('No results for "' + query + '"');
+    }
+  }
+
+  var debounceTimer;
+  input.addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    var q = input.value.trim();
+    debounceTimer = setTimeout(function () { doSearch(q); }, 220);
+  });
+
+  clearBtn.addEventListener('click', function () {
+    input.value = '';
+    input.focus();
+    clearHighlights();
+    countEl.style.display = 'none';
+    clearBtn.style.display = 'none';
+    banner.style.display = 'none';
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      input.value = '';
+      clearHighlights();
+      countEl.style.display = 'none';
+      clearBtn.style.display = 'none';
+      banner.style.display = 'none';
+      input.blur();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      if (document.activeElement.tagName !== 'INPUT' &&
+          document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      }
+    }
+  });
+})();
+
+/* ──────────────────────────────────────────
+   PLAN MODAL
+────────────────────────────────────────── */
+(function () {
+  var COLORS = [
+    { accent: '#2F6BFF', tint: '#EAF1FF' },
+    { accent: '#15A36B', tint: '#E4F8EE' },
+    { accent: '#D97706', tint: '#FFF3DE' },
+    { accent: '#7C5CFC', tint: '#F0ECFE' }
+  ];
+
+  var overlay   = document.getElementById('planModal');
+  var closeBtn  = document.getElementById('modalCloseBtn');
+  var topBar    = document.getElementById('modalTopBar');
+  var iconEl    = document.getElementById('modalIconEl');
+  var nameEl    = document.getElementById('modalPlanName');
+  var subEl     = document.getElementById('modalPlanSub');
+  var priceEl   = document.getElementById('modalPriceEl');
+  var unitEl    = document.getElementById('modalPriceUnit');
+  var dayEl     = document.getElementById('modalPriceDay');
+  var featList  = document.getElementById('modalFeaturesList');
+  var ctaBtn    = document.getElementById('modalCtaBtn');
+  var loginLink = document.getElementById('modalLoginLink');
+
+  function cardIndex(card) {
+    var cards = document.querySelectorAll('.plan-card');
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i] === card) return i;
+    }
+    return 0;
+  }
+
+  window.openPlanModal = function (card) {
+    var d   = card.querySelector('.plan-data').dataset;
+    var idx = cardIndex(card) % 4;
+    var c   = COLORS[idx];
+
+    topBar.style.background = c.accent;
+    iconEl.style.background = c.tint;
+    iconEl.style.color      = c.accent;
+
+    nameEl.textContent = d.name;
+    subEl.textContent  = d.duration + ' days access · ' + d.desc;
+
+    var isFree = d.priceIsFree === '1';
+    priceEl.textContent = d.price;
+    priceEl.className   = 'modal-price' + (isFree ? ' is-free' : '');
+    unitEl.textContent  = isFree ? '' : '/ plan';
+    dayEl.textContent   = d.priceDay;
+
+    var features = d.features.split('|').filter(function (f) { return f.trim(); });
+    featList.innerHTML = features.map(function (feat) {
+      return '<li>' +
+        '<span class="modal-tick" style="background:' + c.tint + ';color:' + c.accent + '">' +
+          '<i class="icon-check"></i>' +
+        '</span>' +
+        feat.trim() +
+      '</li>';
+    }).join('');
+
+    ctaBtn.style.background = c.accent;
+    ctaBtn.href = d.checkoutUrl;
+
+    if (loginLink) {
+      loginLink.href = loginLink.href.split('?')[0] + '?next=' + encodeURIComponent(d.checkoutUrl);
+    }
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function closeModal() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
   });
 })();
 </script>

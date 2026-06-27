@@ -259,7 +259,7 @@
       font-family: var(--font-display);
       font-size: var(--fs-h2);
        font-weight: 700;
-      color: #0B1E3D;
+      color: #0b1e3d;
       line-height: 0.96;
        letter-spacing: -1.5px;
       margin-bottom: 20px;
@@ -285,7 +285,7 @@
     ══════════════════════════════════════════ */
   .about-section {
   background: linear-gradient(135deg, var(--navy) 0%, #0d2144 60%, #0a2a6e 100%);
-  position: relative; overflow: hidden;
+  position: relative; overflow: visible;
 }
 .about-section::before {
   content: ''; position: absolute;
@@ -405,6 +405,28 @@
 .about-feat-desc {
   font-size: 0.875rem; color: #4B5563; line-height: 1.68; font-weight: 400;
 }
+/* ── ABOUT CURVE DIVIDER ── */
+.about-curve-wrap {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;           /* ← extend past edges */
+  width: calc(100% + 4px);  /* ← cover full width */
+  overflow: hidden;
+  line-height: 0;
+  z-index: 10;
+}
+
+.about-curve-svg {
+  display: block;
+  width: 100%;
+  height: 80px;
+}
+
+@media (max-width: 768px) {
+  .about-curve-svg {
+    height: 50px;
+  }
+}
 
 @media(max-width:768px){
   .about-feat-card { flex: 0 0 275px; min-width: 275px; }
@@ -442,7 +464,7 @@
     /* ══════════════════════════════════════════
        EVERYTHING
     ══════════════════════════════════════════ */
-    .everything { background: var(--navy); }
+   .everything { background: #1447b3; }
     .everything-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 68px; align-items: center; }
     .everything .section-h { color: #fff; letter-spacing: -3px; line-height: 0.96; }
     .everything .section-h span { color: #64B5F6; }
@@ -471,84 +493,226 @@
     /* ══════════════════════════════════════════
        PLATFORM FEATURES
     ══════════════════════════════════════════ */
-    .features { background: #000; position: relative; }
-    .feat-header-wrap { padding: 96px 0 56px; background: #000; position: relative; z-index: 2; }
-    .feat-header-wrap .lbl { color: #64B5F6; }
-    .feat-header-wrap .section-h { color: #fff; letter-spacing: -3px; line-height: 0.96; }
-    .feat-header-wrap .section-h span { color: #64B5F6; }
-    .feat-header-wrap .section-desc { color: rgba(255,255,255,.55); font-weight: 400; }
-    .feat-scroll-track { position: relative; }
-    .feat-sticky-viewport { position: sticky; top: 0; height: 100vh; overflow: hidden; background: #000; }
-    .feat-stack { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-    .feat-card {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      max-width: none; padding: 0;
-      transform: translateY(100vh); opacity: 0; pointer-events: none;
-      transition: transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.50s cubic-bezier(0.22,1,0.36,1), filter 0.50s ease;
-      will-change: transform, opacity;
-    }
-    .feat-card.fc-active { transform: translateY(0) scale(1) !important; opacity: 1 !important; filter: brightness(1) !important; pointer-events: auto; z-index: 20 !important; }
-    .feat-card.fc-behind { pointer-events: none; }
-    .fc-card-surface {
-      background: #000; border: none; border-radius: 0;
-      width: 100%; height: 100%; position: relative; overflow: hidden;
-      display: grid; grid-template-columns: 1fr 420px; gap: 0 6%;
-      align-items: center; padding: 0 8% 0 8%;
-    }
-    .fc-num { position: absolute; top: 32px; left: 8%; font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: 2px; line-height: 1; user-select: none; }
-    .fc-body { padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
-    .fc-cat-label { font-family: var(--font-body); font-size: 12px; font-weight: 500; color: rgba(255,255,255,.35); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; opacity: 0; transform: translateY(8px); transition: opacity .4s ease .1s, transform .4s ease .1s; }
-    .feat-card.fc-active .fc-cat-label { opacity: 1; transform: translateY(0); }
-    .fc-title {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 3.5vw, 3.2rem);
-      font-weight: 700;
-      color: #fff;
-      line-height: 0.95;
-      letter-spacing: -1.5px;
+  .features { 
+  background: #0B1724; 
+  position: relative; 
+  padding-bottom: 0;
+  isolation: isolate;
+}
+.feat-header-wrap { 
+  padding: 72px 0 64px; 
+  background: #0B1724; 
+  position: relative; 
+  z-index: 2;
+  margin-bottom: 0;
+}
+.feat-header-wrap .section-head { margin-bottom: 0; padding-bottom: 0; }
+.feat-header-wrap .container { padding-bottom: 0; }
+.feat-header-wrap .lbl { color: #64B5F6; }
+.feat-header-wrap .section-h { color: #fff; letter-spacing: -3px; line-height: 0.96; }
+.feat-header-wrap .section-h span { color: #64B5F6; }
+.feat-header-wrap .section-desc { color: rgba(255,255,255,.55); font-weight: 400; }
+.feat-scroll-track { position: relative; margin-top: 0; }
+.feat-sticky-viewport { position: sticky; top: 0; height: 100vh; overflow: hidden; background: #0B1724; }
+.feat-stack { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.feat-card {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  max-width: none; padding: 0;
+  transform: translateY(100vh); opacity: 0; pointer-events: none;
+  transition: transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.50s cubic-bezier(0.22,1,0.36,1), filter 0.50s ease;
+  will-change: transform, opacity;
+  overflow: hidden; /* ← KEY: clips overlay text inside each card */
+}
+.feat-card.fc-active { transform: translateY(0) scale(1) !important; opacity: 1 !important; filter: brightness(1) !important; pointer-events: auto; z-index: 20 !important; }
+.feat-card.fc-behind { pointer-events: none; }
+.fc-card-surface {
+  background: #0B1724; border: none; border-radius: 0;
+  width: 100%; height: 100%; position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 480px; gap: 0 6%;
+  align-items: center; padding: 0 8% 0 8%;
+}
+.fc-num { position: absolute; top: 32px; left: 8%; font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: 2px; line-height: 1; user-select: none; z-index: 5; }
+.fc-body { padding-top: 0; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 3; }
+.fc-cat-label { font-family: var(--font-body); font-size: 12px; font-weight: 500; color: rgba(255,255,255,.35); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; opacity: 0; transform: translateY(8px); transition: opacity .4s ease .1s, transform .4s ease .1s; }
+.feat-card.fc-active .fc-cat-label { opacity: 1; transform: translateY(0); }
+.fc-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 0.95;
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .55s ease .12s, transform .55s ease .12s;
+}
+.feat-card.fc-active .fc-title { opacity: 1; transform: translateY(0); }
+.fc-desc { font-size: 1.0625rem; line-height: 1.74; color: rgba(255,255,255,.52); max-width: 520px; margin-bottom: 36px; font-family: var(--font-body); font-weight: 400; opacity: 0; transform: translateY(10px); transition: opacity .5s ease .22s, transform .5s ease .22s; }
+.feat-card.fc-active .fc-desc { opacity: 1; transform: translateY(0); }
+.fc-btns { display: flex; gap: 12px; flex-wrap: wrap; opacity: 0; transform: translateY(8px); transition: opacity .45s ease .30s, transform .45s ease .30s; }
+.feat-card.fc-active .fc-btns { opacity: 1; transform: translateY(0); }
+.fc-btn-primary { display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px; border-radius: 50px; background: #1447b3; color: #fff; font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 2px solid #1447b3; transition: all .22s; cursor: pointer; }
+.fc-btn-primary:hover { background: #0a2a6e; border-color: #0a2a6e; transform: translateY(-2px); }
+.fc-btn-primary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.fc-btn-secondary { display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px; border-radius: 50px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.80); font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 2px solid rgba(255,255,255,.15); transition: all .22s; cursor: pointer; }
+.fc-btn-secondary:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.30); transform: translateY(-2px); }
+.fc-btn-secondary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.fc-visual { width: 100%; height: clamp(340px, 58vh, 540px); border-radius: 6px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10); position: relative; overflow: hidden; transform: translateX(40px) scale(.94); opacity: 0; transition: opacity .6s cubic-bezier(.22,1,.36,1) .15s, transform .6s cubic-bezier(.22,1,.36,1) .15s; z-index: 1; }
+.feat-card.fc-active .fc-visual { opacity: 1; transform: translateX(0) scale(1); border-color: rgba(100,181,246,.15); }
+.fc-visual-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: linear-gradient(135deg, rgba(20,71,179,.18) 0%, rgba(11,23,36,.95) 100%); position: relative; }
+.fc-visual-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 22px; background: linear-gradient(0deg, rgba(11,23,36,.90) 0%, transparent 100%); z-index: 2; }
+.fc-visual-title-overlay span { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: -1px; line-height: 1.0; }
+.feat-progress-dots { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+.feat-prog-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.18); transition: background .35s, height .35s, border-radius .35s; }
+.feat-prog-dot.fp-active { background: #64B5F6; height: 24px; border-radius: 3px; }
+.feat-scroll-hint { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0; transition: opacity .4s; pointer-events: none; z-index: 50; }
+.feat-scroll-hint.visible { opacity: 1; }
+.feat-scroll-hint span { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.30); font-family: var(--font-display); }
+.feat-scroll-hint-arrow { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; animation: bounce-arrow 1.8s ease-in-out infinite; }
+.feat-scroll-hint-arrow svg { width: 14px; height: 14px; stroke: rgba(255,255,255,.35); fill: none; stroke-width: 2; }
+@keyframes bounce-arrow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+@keyframes fc-pulse-g{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.75)}}
 
-      text-transform: uppercase;
-      margin-bottom: 28px;
-      opacity: 0; transform: translateY(20px);
-      transition: opacity .55s ease .12s, transform .55s ease .12s;
-    }
-    .feat-card.fc-active .fc-title { opacity: 1; transform: translateY(0); }
-    .fc-desc { font-size: 1.0625rem; line-height: 1.74; color: rgba(255,255,255,.52); max-width: 520px; margin-bottom: 36px; font-family: var(--font-body); font-weight: 400; opacity: 0; transform: translateY(10px); transition: opacity .5s ease .22s, transform .5s ease .22s; }
-    .feat-card.fc-active .fc-desc { opacity: 1; transform: translateY(0); }
-    .fc-btns { display: flex; gap: 12px; flex-wrap: wrap; opacity: 0; transform: translateY(8px); transition: opacity .45s ease .30s, transform .45s ease .30s; }
-    .feat-card.fc-active .fc-btns { opacity: 1; transform: translateY(0); }
-    .fc-btn-primary { display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px; border-radius: 50px; background: #1447b3; color: #fff; font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 2px solid #1447b3; transition: all .22s; cursor: pointer; }
-    .fc-btn-primary:hover { background: #0a2a6e; border-color: #0a2a6e; transform: translateY(-2px); }
-    .fc-btn-primary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
-    .fc-btn-secondary { display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px; border-radius: 50px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.80); font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 2px solid rgba(255,255,255,.15); transition: all .22s; cursor: pointer; }
-    .fc-btn-secondary:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.30); transform: translateY(-2px); }
-    .fc-btn-secondary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
-    .fc-visual { width: 100%; height: clamp(260px, 45vh, 420px); border-radius: 6px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10); position: relative; overflow: hidden; transform: translateX(40px) scale(.94); opacity: 0; transition: opacity .6s cubic-bezier(.22,1,.36,1) .15s, transform .6s cubic-bezier(.22,1,.36,1) .15s; }
-    .feat-card.fc-active .fc-visual { opacity: 1; transform: translateX(0) scale(1); border-color: rgba(100,181,246,.15); }
-    .fc-visual-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: linear-gradient(135deg, rgba(20,71,179,.25) 0%, rgba(0,0,0,.80) 100%); position: relative; }
-    .fc-visual-inner::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(100,181,246,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(100,181,246,.06) 1px, transparent 1px); background-size: 32px 32px; }
-    .fc-visual-icon { width: 72px; height: 72px; border-radius: 16px; background: rgba(20,71,179,.35); border: 1px solid rgba(100,181,246,.25); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; transition: transform .6s cubic-bezier(.22,1,.36,1) .25s, background .35s; }
-    .feat-card.fc-active .fc-visual-icon { transform: scale(1.10) translateY(-6px); background: #1447b3; }
-    .fc-visual-icon svg { width: 30px; height: 30px; stroke: #90CAF9; fill: none; stroke-width: 1.6; transition: stroke .3s; }
-    .feat-card.fc-active .fc-visual-icon svg { stroke: #fff; }
-    .fc-visual-label { font-size: 11px; font-weight: 700; font-family: var(--font-display); color: rgba(100,181,246,.50); letter-spacing: 2px; text-transform: uppercase; position: relative; z-index: 1; }
-    .fc-visual-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 22px; background: linear-gradient(0deg, rgba(0,0,0,.85) 0%, transparent 100%); z-index: 2; }
-    .fc-visual-title-overlay span { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: -1px; line-height: 1.0; }
-    .feat-progress-dots { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
-    .feat-prog-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.18); transition: background .35s, height .35s, border-radius .35s; }
-    .feat-prog-dot.fp-active { background: #64B5F6; height: 24px; border-radius: 3px; }
-    .feat-scroll-hint { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0; transition: opacity .4s; pointer-events: none; z-index: 50; }
-    .feat-scroll-hint.visible { opacity: 1; }
-    .feat-scroll-hint span { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.30); font-family: var(--font-display); }
-    .feat-scroll-hint-arrow { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; animation: bounce-arrow 1.8s ease-in-out infinite; }
-    .feat-scroll-hint-arrow svg { width: 14px; height: 14px; stroke: rgba(255,255,255,.35); fill: none; stroke-width: 2; }
-    @keyframes bounce-arrow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
-    @media(max-width:1100px){ .fc-card-surface { grid-template-columns: 1fr 340px; gap: 0 4%; padding: 0 6% 0 6%; } }
-    @media(max-width:900px){ .fc-card-surface { grid-template-columns: 1fr; gap: 28px 0; padding: 80px 6% 40px; align-content: center; } .fc-visual { height: 200px; } .fc-title { font-size: 2.8rem; letter-spacing: -1.5px; } .fc-num { left: 6%; } }
-    @media(max-width:768px){ .fc-card-surface { padding: 72px 5% 32px; gap: 20px 0; } .fc-title { font-size: 2.2rem; letter-spacing: -1px; } .fc-num { left: 5%; } .fc-visual { height: 180px; } }
-    @media(max-width:480px){ .fc-card-surface { padding: 64px 4% 28px; } .fc-title { font-size: 1.9rem; } .fc-num { left: 4%; } }
-    @media(prefers-reduced-motion:reduce){ .feat-card { transition: none !important; } .feat-card.fc-active { transform: translateY(0) !important; opacity: 1 !important; filter: none !important; } }
+@media(max-width:1100px){
+  .fc-card-surface { grid-template-columns: 1fr 380px; gap: 0 4%; padding: 0 6% 0 6%; }
+}
 
+@media(max-width:900px){
+  .feat-sticky-viewport {
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .feat-card {
+    overflow: hidden;
+  }
+
+  .fc-card-surface {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    /* padding-top set dynamically by JS */
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-bottom: 0;
+    gap: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .fc-num {
+    left: 5%;
+    /* top set dynamically by JS */
+    font-size: 0.82rem;
+    z-index: 10;
+  }
+
+  .fc-body {
+    position: relative;
+    z-index: 5;
+    background: #0B1724;
+    flex: 0 0 auto;
+    padding-top: 4px;
+    padding-bottom: 10px;
+  }
+
+  .fc-title {
+    font-size: 1.55rem;
+    letter-spacing: -0.8px;
+    margin-bottom: 8px;
+  }
+
+  .fc-cat-label { margin-bottom: 8px; font-size: 10px; }
+
+  .fc-desc {
+    font-size: 0.82rem;
+    line-height: 1.55;
+    margin-bottom: 10px;
+    max-width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .fc-btns {
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+
+  .fc-btn-primary, .fc-btn-secondary {
+    padding: 8px 14px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+  }
+
+  .fc-visual {
+    flex: 1 1 0;
+    width: 100%;
+    height: 0;
+    min-height: 0;
+    max-height: none;
+    position: relative;
+    z-index: 1;
+    transform: none !important;
+    overflow: hidden;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .feat-card.fc-active .fc-visual {
+    opacity: 1;
+    transform: none !important;
+  }
+
+  .fc-visual-inner {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px;
+    justify-content: flex-start;
+    align-items: stretch;
+    height: 100%;
+  }
+
+  .fc-visual-title-overlay { display: none !important; }
+  .feat-progress-dots { display: none; }
+  .feat-scroll-hint { display: none; }
+}
+
+@media(max-width:640px){
+  .fc-card-surface { padding-left: 4%; padding-right: 4%; }
+  .fc-num { left: 4%; font-size: 0.76rem; }
+  .fc-title { font-size: 1.35rem; }
+}
+
+@media(max-width:400px){
+  .fc-card-surface { padding-left: 4%; padding-right: 4%; }
+  .fc-title { font-size: 1.2rem; }
+  .fc-desc { -webkit-line-clamp: 2; }
+  .fc-btn-primary, .fc-btn-secondary { padding: 7px 11px; font-size: 9px; }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .feat-card { transition: none !important; }
+  .feat-card.fc-active { transform: translateY(0) !important; opacity: 1 !important; filter: none !important; }
+}
+
+@media(max-width:1023px){
+  .features,
+  .feat-header-wrap,
+  .feat-sticky-viewport,
+  .feat-scroll-track,
+  .feat-stack,
+  .fc-card-surface {
+    background-color: #0B1724 !important;
+  }
+}
     /* ══════════════════════════════════════════
        HOW IT WORKS
     ══════════════════════════════════════════ */
@@ -575,7 +739,36 @@
     .how-step.reached h3 { color: #0B1E3D; }
     .how-step p { font-size: 0.9375rem; color: #9CA3AF; line-height: 1.74; transition: color .4s ease; font-family: var(--font-body); font-weight: 400; }
     .how-step.reached p { color: #4B5563; }
-
+    .how-step-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 14px;
+  padding: 9px 20px;
+  border-radius: 50px;
+  background: transparent;
+  border: 2px solid var(--grey-200);
+  color: var(--grey-400);
+  font-size: 0.8125rem; font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: .05em; text-transform: uppercase;
+  transition: all .3s cubic-bezier(.22,1,.36,1);
+  opacity: 0;
+  pointer-events: none;
+}
+.how-step-btn svg { stroke: currentColor; flex-shrink: 0; }
+.how-step.reached .how-step-btn {
+  opacity: 1;
+  pointer-events: auto;
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+  transform: translateY(0);
+}
+.how-step.reached .how-step-btn:hover {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(21,101,192,.30);
+}
     /* ══════════════════════════════════════════
        EXAM EXPERIENCE
     ══════════════════════════════════════════ */
@@ -727,7 +920,7 @@
     #backTop { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px; border-radius: 50%; background: var(--blue); color: #fff; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 18px; z-index: 8000; box-shadow: var(--shadow-md); transition: all var(--tr); }
     #backTop.show { display: flex; }
     #backTop:hover { background: var(--blue-dark); transform: translateY(-4px); }
-
+ 
     /* ══════════════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════════════ */
@@ -775,10 +968,10 @@
       .faq-a-inner{padding-left:42px}
     }
     @media(max-width:480px){
-     .hero-content h1 { font-size: 2rem; letter-spacing: -1px; }
+  .hero-content h1 { font-size: 2rem; letter-spacing: -1px; }
+  .hero-actions { flex-direction: column; align-items: flex-start; }
+  .section-h { font-size: 1.9rem; letter-spacing: -1px; }
 }
-      .hero-actions{flex-direction:column;align-items:flex-start}
-      .section-h { font-size: 1.9rem; letter-spacing: -1px; }
   </style>
 </head>
 <body>
@@ -1029,13 +1222,20 @@
 
     </div>
   </div>
+  <div class="about-curve-wrap">
+      <svg class="about-curve-svg" viewBox="0 0 1440 80" preserveAspectRatio="none">
+        <path class="about-curve-path" d="M0,80 C360,0 1080,0 1440,80 L1440,80 L0,80 Z" fill="#ffffff"/>
+      </svg>
+    </div>
+
+
 </section>
 <!-- WHY CHOOSE -->
-<section class="section" style="background:#fff;">
+<section class="section" style="background:#fff; margin-top:-4px;">
   <div class="container">
     <div class="section-head">
-      <span class="lbl sr sr-fade">Why Choose Edusetin</span>
-      <h2 class="section-h sr sr-up d1">Why Choose <span>Edusetin?</span></h2>
+      <span class="lbl sr sr-fade" style="background: transparent; border: 1.5px solid #64B5F6; color: #64B5F6; padding: 5px 16px; border-radius: 30px;">Why Choose Edusetin</span>
+     <h2 class="section-h sr sr-up d1" style="font-size: clamp(2.6rem, 4vw, 5rem); letter-spacing: -2px; line-height: 0.96;">Why Choose <span>Edusetin?</span></h2>
       <p class="section-desc sr sr-up d2">Success in the IMAT requires more than reading textbooks. It requires consistent practice, understanding the exam pattern, and learning from every attempt. Edusetin brings all the essential preparation tools together in one easy-to-use platform.</p>
     </div>
     <div class="why-grid">
@@ -1054,8 +1254,8 @@
   <div class="container">
     <div class="everything-grid">
       <div>
-        <span class="lbl sr sr-fade" style="color:#64B5F6;">Everything Included</span>
-        <h2 class="section-h sr sr-up d1" style="color:#fff;">Everything You Need to <span style="color:#64B5F6;">Prepare for the IMAT</span></h2>
+        <span class="lbl sr sr-fade" style="background:transparent; border:1.5px solid #64B5F6; color:#64B5F6; padding:5px 16px; border-radius:30px;">Everything Included</span>
+        <h2 class="section-h sr sr-up d1" style="color:#fff; font-family:'Work Sans',sans-serif; font-size:clamp(2.6rem, 4vw, 5rem); font-weight:900; letter-spacing:-2px; line-height:0.96;">Everything You Need to <span style="color:#64B5F6;">Prepare for the IMAT</span></h2>
         <p class="section-desc sr sr-up d2" style="color:rgba(255,255,255,.60);">No scattered resources. No complicated setup. Everything you need is available in one platform.</p>
         <div class="check-grid sr sr-up d3">
           <div class="check-row"><div class="check-tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span>Topic-wise Quizzes</span></div>
@@ -1101,19 +1301,17 @@
 ═══════════════════════════════════════════ -->
 <section class="features" id="feat-section">
 
-  <!-- Static header -->
   <div class="feat-header-wrap">
     <div class="container">
-      <div class="section-head center sr sr-up">
-        <span class="lbl">Platform Features</span>
-        <h2 class="section-h">Powerful Features Designed for <span>Better Preparation</span></h2>
-        <p class="section-desc">Every tool you need to practice smarter, track progress, and walk into the IMAT with confidence.</p>
+      <div class="section-head center">
+        <span class="lbl sr sr-fade" style="background:transparent; border:1.5px solid #64B5F6; color:#64B5F6; padding:5px 16px; border-radius:30px;">Platform Features</span>
+        <h2 class="section-h sr sr-up d1" style="color:#fff; font-family:'Work Sans',sans-serif; font-size:clamp(2.6rem, 4vw, 5rem); font-weight:900; letter-spacing:-2px; line-height:0.96;">Powerful Features Designed for <span style="color:#64B5F6;">Better Preparation</span></h2>
+        <p class="section-desc sr sr-up d2" style="color:rgba(255,255,255,.55);">Every tool you need to practice smarter, track progress, and walk into the IMAT with confidence.</p>
       </div>
     </div>
   </div>
 
-  <!-- Scroll track -->
-  <div class="feat-scroll-track" id="featScrollTrack">
+  <div class="feat-scroll-track" id="featScrollTrack" style="margin-top:0">
     <div class="feat-sticky-viewport" id="featStickyViewport">
       <div class="feat-progress-dots" id="featProgressDots"></div>
       <div class="feat-scroll-hint" id="featScrollHint">
@@ -1142,9 +1340,31 @@
               </div>
             </div>
             <div class="fc-visual">
-              <div class="fc-visual-inner">
-                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-                <div class="fc-visual-label">Analytics</div>
+              <div class="fc-visual-inner" style="padding:20px;flex-direction:column;justify-content:flex-start;gap:10px;align-items:stretch;position:relative;">
+                <div style="position:absolute;top:12px;right:12px;background:rgba(20,200,100,.15);border:1px solid rgba(20,200,100,.30);border-radius:20px;padding:4px 10px;font-size:9px;color:#4CAF50;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:4px;z-index:2">
+                  <div style="width:5px;height:5px;border-radius:50%;background:#4CAF50;animation:fc-pulse-g 1.6s infinite"></div>Live
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:relative;z-index:1;margin-top:8px">
+                  <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 8px;text-align:center">
+                    <div class="fc1-stat-val" data-target="78" style="font-size:1.6rem;font-weight:900;font-family:'Work Sans',sans-serif;color:#fff;line-height:1">0</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Score</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 8px;text-align:center">
+                    <div class="fc1-stat-val" data-target="24" style="font-size:1.6rem;font-weight:900;font-family:'Work Sans',sans-serif;color:#fff;line-height:1">0</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Exams</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 8px;text-align:center">
+                    <div class="fc1-stat-pct" style="font-size:1.6rem;font-weight:900;font-family:'Work Sans',sans-serif;color:#fff;line-height:1">—</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Ready</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px;position:relative;z-index:1">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.50);width:38px;flex-shrink:0">Bio</span><div style="flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div class="fc1-bar" data-w="91%" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.50);width:30px;text-align:right">91%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.50);width:38px;flex-shrink:0">Chem</span><div style="flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div class="fc1-bar" data-w="78%" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.50);width:30px;text-align:right">78%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.50);width:38px;flex-shrink:0">Phys</span><div style="flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div class="fc1-bar" data-w="65%" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.50);width:30px;text-align:right">65%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.50);width:38px;flex-shrink:0">Math</span><div style="flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div class="fc1-bar" data-w="84%" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.50);width:30px;text-align:right">84%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.50);width:38px;flex-shrink:0">Logic</span><div style="flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div class="fc1-bar" data-w="72%" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.50);width:30px;text-align:right">72%</span></div>
+                </div>
               </div>
               <div class="fc-visual-title-overlay"><span>Student<br>Dashboard</span></div>
             </div>
@@ -1171,9 +1391,40 @@
               </div>
             </div>
             <div class="fc-visual">
-              <div class="fc-visual-inner">
-                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-                <div class="fc-visual-label">Question Bank</div>
+              <div class="fc-visual-inner" style="padding:20px;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;position:relative;">
+                <div style="position:absolute;top:14px;right:14px;background:rgba(20,71,179,.30);border:1px solid rgba(100,181,246,.30);border-radius:20px;padding:4px 12px;font-size:10px;color:#64B5F6;font-weight:700;letter-spacing:.5px;z-index:2">Topic Mode</div>
+                <div style="display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;margin-top:36px" id="fc2-subs-placeholder">
+                  <div class="fc2-sub" style="display:flex;align-items:center;gap:10px;background:rgba(20,71,179,.30);border:1px solid rgba(100,181,246,.30);border-radius:10px;padding:10px 14px;transition:all .35s">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#64B5F6;flex-shrink:0"></div>
+                    <span style="font-size:12px;color:rgba(255,255,255,.85);flex:1;font-weight:600">Biology</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,.40);font-weight:600">240 Q</span>
+                    <span style="font-size:11px;color:#64B5F6;font-weight:700">▶</span>
+                  </div>
+                  <div class="fc2-sub" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;transition:all .35s">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#90CAF9;flex-shrink:0"></div>
+                    <span style="font-size:12px;color:rgba(255,255,255,.55);flex:1;font-weight:500">Chemistry</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,.25);font-weight:600">185 Q</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.20)">▶</span>
+                  </div>
+                  <div class="fc2-sub" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;transition:all .35s">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#42A5F5;flex-shrink:0"></div>
+                    <span style="font-size:12px;color:rgba(255,255,255,.55);flex:1;font-weight:500">Physics</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,.25);font-weight:600">120 Q</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.20)">▶</span>
+                  </div>
+                  <div class="fc2-sub" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;transition:all .35s">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#1E88E5;flex-shrink:0"></div>
+                    <span style="font-size:12px;color:rgba(255,255,255,.55);flex:1;font-weight:500">Mathematics</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,.25);font-weight:600">98 Q</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.20)">▶</span>
+                  </div>
+                  <div class="fc2-sub" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;transition:all .35s">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#1565C0;flex-shrink:0"></div>
+                    <span style="font-size:12px;color:rgba(255,255,255,.55);flex:1;font-weight:500">Logical Reasoning</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,.25);font-weight:600">76 Q</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.20)">▶</span>
+                  </div>
+                </div>
               </div>
               <div class="fc-visual-title-overlay"><span>Topic-wise<br>Practice</span></div>
             </div>
@@ -1200,9 +1451,34 @@
               </div>
             </div>
             <div class="fc-visual">
-              <div class="fc-visual-inner">
-                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                <div class="fc-visual-label">Mock Exams</div>
+              <div class="fc-visual-inner" style="flex-direction:column;align-items:center;justify-content:center;gap:16px;position:relative;">
+                <div style="display:flex;gap:32px;align-items:center;position:relative;z-index:1">
+                  <div style="position:relative;width:120px;height:120px;flex-shrink:0">
+                    <svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+                      <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="8"/>
+                      <circle id="fc3-ring" cx="60" cy="60" r="52" fill="none" stroke="#1447b3" stroke-width="8" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="82" style="transition:stroke-dashoffset .5s linear,stroke .5s"/>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <div id="fc3-time" style="font-size:1.25rem;font-weight:900;font-family:'Work Sans',sans-serif;color:#fff;line-height:1">1:23:05</div>
+                      <div style="font-size:8px;color:rgba(255,255,255,.30);letter-spacing:1px;text-transform:uppercase;margin-top:3px">left</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <div>
+                      <div style="font-size:9px;color:rgba(255,255,255,.30);letter-spacing:1.5px;text-transform:uppercase;font-weight:600">Question</div>
+                      <div id="fc3-qnum" style="font-size:2.8rem;font-weight:900;font-family:'Work Sans',sans-serif;color:#64B5F6;line-height:1">12</div>
+                      <div style="font-size:9px;color:rgba(255,255,255,.25)">of 60</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <div style="font-size:9px;color:rgba(255,255,255,.30)">Answered</div>
+                      <div id="fc3-ans" style="font-size:13px;font-weight:700;color:#4CAF50">11</div>
+                      <div style="font-size:9px;color:rgba(255,255,255,.20)">/ skipped</div>
+                      <div style="font-size:13px;font-weight:700;color:#FF9800">3</div>
+                    </div>
+                  </div>
+                </div>
+                <div id="fc3-dots" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:260px;position:relative;z-index:1"></div>
+                <div style="position:absolute;bottom:12px;right:12px;background:rgba(244,67,54,.12);border:1px solid rgba(244,67,54,.25);border-radius:6px;padding:4px 10px;font-size:9px;color:#EF9A9A;font-weight:700;z-index:2">−0.4 / wrong</div>
               </div>
               <div class="fc-visual-title-overlay"><span>Mock Test<br>Center</span></div>
             </div>
@@ -1229,9 +1505,40 @@
               </div>
             </div>
             <div class="fc-visual">
-              <div class="fc-visual-inner">
-                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                <div class="fc-visual-label">Past Papers</div>
+              <div class="fc-visual-inner" style="padding:20px;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;position:relative;">
+                <div style="position:absolute;top:14px;right:14px;background:rgba(20,71,179,.25);border:1px solid rgba(100,181,246,.20);border-radius:6px;padding:4px 10px;font-size:9px;color:#64B5F6;font-weight:700;letter-spacing:.5px;z-index:2">5 Papers</div>
+                <div style="display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;margin-top:36px">
+                  <div class="fc4-paper" style="display:flex;align-items:center;gap:10px;background:rgba(20,71,179,.25);border:1px solid rgba(100,181,246,.25);border-radius:10px;padding:11px 14px;transition:all .35s;transform:translateX(4px)">
+                    <span style="font-size:13px;font-weight:800;color:#64B5F6;width:38px;flex-shrink:0;font-family:'Work Sans',sans-serif">2024</span>
+                    <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div class="fc4-bar" data-w="88%" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div></div>
+                    <span style="font-size:10px;color:#64B5F6;font-weight:700;width:30px;text-align:right">88%</span>
+                    <span style="font-size:11px;color:#64B5F6">▶</span>
+                  </div>
+                  <div class="fc4-paper" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 14px;transition:all .35s">
+                    <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,.50);width:38px;flex-shrink:0;font-family:'Work Sans',sans-serif">2023</span>
+                    <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div class="fc4-bar" data-w="74%" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;width:30px;text-align:right">74%</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.25)">▶</span>
+                  </div>
+                  <div class="fc4-paper" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 14px;transition:all .35s">
+                    <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,.50);width:38px;flex-shrink:0;font-family:'Work Sans',sans-serif">2022</span>
+                    <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div class="fc4-bar" data-w="91%" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;width:30px;text-align:right">91%</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.25)">▶</span>
+                  </div>
+                  <div class="fc4-paper" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 14px;transition:all .35s">
+                    <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,.50);width:38px;flex-shrink:0;font-family:'Work Sans',sans-serif">2021</span>
+                    <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div class="fc4-bar" data-w="66%" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;width:30px;text-align:right">66%</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.25)">▶</span>
+                  </div>
+                  <div class="fc4-paper" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 14px;transition:all .35s">
+                    <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,.50);width:38px;flex-shrink:0;font-family:'Work Sans',sans-serif">2020</span>
+                    <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div class="fc4-bar" data-w="79%" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#1447b3,#64B5F6);width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;width:30px;text-align:right">79%</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.25)">▶</span>
+                  </div>
+                </div>
               </div>
               <div class="fc-visual-title-overlay"><span>Previous<br>Year Papers</span></div>
             </div>
@@ -1258,9 +1565,35 @@
               </div>
             </div>
             <div class="fc-visual">
-              <div class="fc-visual-inner">
-                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-                <div class="fc-visual-label">History</div>
+              <div class="fc-visual-inner" style="padding:20px;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:10px;position:relative;">
+                <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:1">
+                  <span style="font-size:16px;color:#4CAF50;font-weight:700">↑</span>
+                  <span style="font-size:10px;color:rgba(255,255,255,.45)">Score trend · last 8 tests</span>
+                  <span style="font-size:13px;font-weight:700;color:#4CAF50;margin-left:auto">+12 pts</span>
+                </div>
+                <div id="fc5-chart" style="display:flex;align-items:flex-end;gap:6px;height:110px;padding:0 2px;position:relative;z-index:1"></div>
+                <div style="display:flex;flex-direction:column;gap:7px;position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.07);padding-top:10px">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:10px">
+                    <span style="color:rgba(255,255,255,.28);width:38px">Jun 22</span>
+                    <span style="color:rgba(255,255,255,.50);flex:1">Full Mock #8</span>
+                    <span style="font-weight:700;color:#64B5F6">78</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;font-size:10px">
+                    <span style="color:rgba(255,255,255,.28);width:38px">Jun 18</span>
+                    <span style="color:rgba(255,255,255,.50);flex:1">Full Mock #7</span>
+                    <span style="font-weight:700;color:#64B5F6">74</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;font-size:10px">
+                    <span style="color:rgba(255,255,255,.28);width:38px">Jun 14</span>
+                    <span style="color:rgba(255,255,255,.50);flex:1">Full Mock #6</span>
+                    <span style="font-weight:700;color:#64B5F6">71</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;font-size:10px">
+                    <span style="color:rgba(255,255,255,.28);width:38px">Jun 09</span>
+                    <span style="color:rgba(255,255,255,.50);flex:1">Full Mock #5</span>
+                    <span style="font-weight:700;color:#64B5F6">68</span>
+                  </div>
+                </div>
               </div>
               <div class="fc-visual-title-overlay"><span>Exam<br>History</span></div>
             </div>
@@ -1287,9 +1620,47 @@
               </div>
             </div>
             <div class="fc-visual">
-              <div class="fc-visual-inner">
-                <div class="fc-visual-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-                <div class="fc-visual-label">Reports</div>
+              <div class="fc-visual-inner" style="padding:20px;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:12px;position:relative;">
+                <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
+                  <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+                    <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
+                      <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="8"/>
+                      <circle id="fc6-ring" cx="50" cy="50" r="42" fill="none" stroke="#64B5F6" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" style="transition:stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1)"/>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <div style="font-size:1.4rem;font-weight:900;font-family:'Work Sans',sans-serif;color:#fff;line-height:1">91%</div>
+                      <div style="font-size:8px;color:rgba(255,255,255,.35);letter-spacing:.5px;text-transform:uppercase;margin-top:3px">Ready</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+                    <div style="display:flex;align-items:center;gap:8px;background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.15);border-radius:8px;padding:8px 12px">
+                      <div style="width:18px;height:18px;border-radius:5px;background:rgba(76,175,80,.20);display:flex;align-items:center;justify-content:center;font-size:9px;color:#4CAF50;flex-shrink:0">✓</div>
+                      <span style="font-size:10px;color:rgba(255,255,255,.55);flex:1;font-weight:600">Correct</span>
+                      <span style="font-size:1rem;font-weight:900;color:#4CAF50;font-family:'Work Sans',sans-serif">42</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;background:rgba(244,67,54,.08);border:1px solid rgba(244,67,54,.15);border-radius:8px;padding:8px 12px">
+                      <div style="width:18px;height:18px;border-radius:5px;background:rgba(244,67,54,.20);display:flex;align-items:center;justify-content:center;font-size:9px;color:#F44336;flex-shrink:0">✗</div>
+                      <span style="font-size:10px;color:rgba(255,255,255,.55);flex:1;font-weight:600">Wrong</span>
+                      <span style="font-size:1rem;font-weight:900;color:#F44336;font-family:'Work Sans',sans-serif">11</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.15);border-radius:8px;padding:8px 12px">
+                      <div style="width:18px;height:18px;border-radius:5px;background:rgba(255,152,0,.20);display:flex;align-items:center;justify-content:center;font-size:9px;color:#FF9800;flex-shrink:0">—</div>
+                      <span style="font-size:10px;color:rgba(255,255,255,.55);flex:1;font-weight:600">Skipped</span>
+                      <span style="font-size:1rem;font-weight:900;color:#FF9800;font-family:'Work Sans',sans-serif">7</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;background:rgba(100,181,246,.08);border:1px solid rgba(100,181,246,.15);border-radius:8px;padding:8px 12px">
+                      <div style="width:18px;height:18px;border-radius:5px;background:rgba(100,181,246,.20);display:flex;align-items:center;justify-content:center;font-size:9px;color:#64B5F6;flex-shrink:0">⏱</div>
+                      <span style="font-size:10px;color:rgba(255,255,255,.55);flex:1;font-weight:600">Avg time</span>
+                      <span style="font-size:1rem;font-weight:900;color:#64B5F6;font-family:'Work Sans',sans-serif">1m 23s</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.07);padding-top:10px">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.40);width:52px;flex-shrink:0">Biology</span><div style="flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div class="fc6-bar" data-w="91%" style="height:100%;border-radius:3px;background:#64B5F6;width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.35);width:24px;text-align:right">91%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.40);width:52px;flex-shrink:0">Chemistry</span><div style="flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div class="fc6-bar" data-w="78%" style="height:100%;border-radius:3px;background:#42A5F5;width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.35);width:24px;text-align:right">78%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.40);width:52px;flex-shrink:0">Physics</span><div style="flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div class="fc6-bar" data-w="65%" style="height:100%;border-radius:3px;background:#1E88E5;width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.35);width:24px;text-align:right">65%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:rgba(255,255,255,.40);width:52px;flex-shrink:0">Maths</span><div style="flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div class="fc6-bar" data-w="84%" style="height:100%;border-radius:3px;background:#1447b3;width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)"></div></div><span style="font-size:10px;color:rgba(255,255,255,.35);width:24px;text-align:right">84%</span></div>
+                </div>
               </div>
               <div class="fc-visual-title-overlay"><span>Performance<br>Reports</span></div>
             </div>
@@ -1301,24 +1672,67 @@
   </div><!-- /feat-scroll-track -->
 
 </section>
-
 <!-- HOW IT WORKS -->
 <section class="section how-section">
   <div class="container">
     <div class="section-head center">
-      <span class="lbl sr sr-fade">How It Works</span>
-      <h2 class="section-h sr sr-up d1">Four Simple Steps to <span>Start Preparing</span></h2>
+      <span class="lbl sr sr-fade" style="background:transparent; border:1.5px solid #1447b3; color:#1447b3; padding:5px 16px; border-radius:30px;">How It Works</span>
+      <h2 class="section-h sr sr-up d1" style="font-size:clamp(2.6rem, 4vw, 5rem); font-weight:900; letter-spacing:-2px; line-height:0.96;">Four Simple Steps to <span>Start Preparing</span></h2>
     </div>
     <div class="how-timeline-wrap sr sr-up d2">
       <div class="how-timeline-line"><div class="how-timeline-line-fill" id="timelineFill" style="height:0;"></div></div>
-      <div class="how-step" data-step="0"><div class="how-num-wrap"><div class="how-num">1</div></div><div class="how-step-body"><h3>Create Your Account</h3><p>Sign up in seconds and access your personal IMAT preparation dashboard. No credit card required to get started.</p></div></div>
-      <div class="how-step" data-step="1"><div class="how-num-wrap"><div class="how-num">2</div></div><div class="how-step-body"><h3>Choose Your Practice</h3><p>Select topic-wise quizzes, subject-based practice sessions, or full-length mock exams — whichever suits your study plan today.</p></div></div>
-      <div class="how-step" data-step="2"><div class="how-num-wrap"><div class="how-num">3</div></div><div class="how-step-body"><h3>Take the Test</h3><p>Practice in a timed environment designed to simulate the real IMAT examination — with negative marking, auto-submission, and a live timer.</p></div></div>
-      <div class="how-step" data-step="3"><div class="how-num-wrap"><div class="how-num">4</div></div><div class="how-step-body"><h3>Review and Improve</h3><p>Analyze your performance, read detailed explanations, and keep practicing to steadily improve your score and readiness.</p></div></div>
+
+      <div class="how-step" data-step="0">
+        <div class="how-num-wrap"><div class="how-num">1</div></div>
+        <div class="how-step-body">
+          <h3>Create Your Account</h3>
+          <p>Sign up in seconds and access your personal IMAT preparation dashboard. No credit card required to get started.</p>
+          <a href="{% url 'student_portal:register' %}" class="how-step-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Register Free
+          </a>
+        </div>
+      </div>
+
+      <div class="how-step" data-step="1">
+        <div class="how-num-wrap"><div class="how-num">2</div></div>
+        <div class="how-step-body">
+          <h3>Choose Your Practice</h3>
+          <p>Select topic-wise quizzes, subject-based practice sessions, or full-length mock exams — whichever suits your study plan today.</p>
+          <a href="{% url 'student_portal:quiz_setup' %}" class="how-step-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Start Practice
+          </a>
+        </div>
+      </div>
+
+      <div class="how-step" data-step="2">
+        <div class="how-num-wrap"><div class="how-num">3</div></div>
+        <div class="how-step-body">
+          <h3>Take the Test</h3>
+          <p>Practice in a timed environment designed to simulate the real IMAT examination — with negative marking, auto-submission, and a live timer.</p>
+          <a href="{% url 'student_portal:exam_list' %}" class="how-step-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Take Mock Test
+          </a>
+        </div>
+      </div>
+
+      <div class="how-step" data-step="3">
+        <div class="how-num-wrap"><div class="how-num">4</div></div>
+        <div class="how-step-body">
+          <h3>Review and Improve</h3>
+          <p>Analyze your performance, read detailed explanations, and keep practicing to steadily improve your score and readiness.</p>
+          <a href="{% url 'student_portal:dashboard' %}" class="how-step-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            View Dashboard
+          </a>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
-
 <!-- EXAM EXPERIENCE -->
 <section class="section exam-exp" id="exam">
   <div class="container">
@@ -1574,6 +1988,27 @@
   function onScrollGlobal(){ var y=window.scrollY; if(navbar) navbar.classList.toggle('scrolled',y>80); if(backTop) backTop.classList.toggle('show',y>400); }
   window.addEventListener('scroll', onScrollGlobal, {passive:true});
   onScrollGlobal();
+  /* ── MOBILE NAVBAR HEIGHT FOR FEATURE CARDS ── */
+function setNavbarOffset(){
+  if(window.innerWidth <= 900){
+    var navH = navbar ? navbar.offsetHeight : 68;
+    document.querySelectorAll('.fc-card-surface').forEach(function(el){
+      el.style.paddingTop = (navH + 8) + 'px';
+    });
+    document.querySelectorAll('.fc-num').forEach(function(el){
+      el.style.top = (navH + 8) + 'px';
+    });
+  } else {
+    document.querySelectorAll('.fc-card-surface').forEach(function(el){
+      el.style.paddingTop = '';
+    });
+    document.querySelectorAll('.fc-num').forEach(function(el){
+      el.style.top = '';
+    });
+  }
+}
+setNavbarOffset();
+window.addEventListener('resize', setNavbarOffset);
 
   /* ── SMOOTH SCROLL ── */
   document.querySelectorAll('a[href^="#"]').forEach(function(a){
@@ -1627,7 +2062,7 @@
         entry.target.querySelectorAll('.mock-bar-fill[data-width]').forEach(function(b){ b.style.width='0'; });
       }
     });
-  },{threshold:0.10, rootMargin:'0px 0px -40px 0px'});
+  },{threshold:0.05, rootMargin:'0px 0px -20px 0px'});
   srEls.forEach(function(el){ obs.observe(el); });
 
   /* ── DARK BG BAR ANIMATIONS ── */
@@ -1652,6 +2087,30 @@
   },{rootMargin:'-35% 0px -60% 0px'});
   sections.forEach(function(s){ secObs.observe(s); });
 
+  /* ── ABOUT CARDS AUTO-SCROLL ── */
+  (function(){
+    var row = document.querySelector('.about-cards-row');
+    if(!row) return;
+    var speed = 0.6, isDragging = false, startX, scrollLeft;
+    function autoScroll(){
+      if(!isDragging){
+        row.scrollLeft += speed;
+        var halfWidth = row.scrollWidth / 2;
+        if(row.scrollLeft >= halfWidth){ row.scrollLeft -= halfWidth; }
+      }
+      requestAnimationFrame(autoScroll);
+    }
+    row.addEventListener('mousedown', function(e){ isDragging=true; row.classList.add('is-dragging'); startX=e.pageX-row.offsetLeft; scrollLeft=row.scrollLeft; });
+    document.addEventListener('mouseup', function(){ isDragging=false; row.classList.remove('is-dragging'); });
+    row.addEventListener('mousemove', function(e){ if(!isDragging) return; e.preventDefault(); row.scrollLeft=scrollLeft-(e.pageX-row.offsetLeft-startX); });
+    row.addEventListener('touchstart', function(e){ isDragging=true; startX=e.touches[0].pageX-row.offsetLeft; scrollLeft=row.scrollLeft; },{passive:true});
+    document.addEventListener('touchend', function(){ isDragging=false; });
+    row.addEventListener('touchmove', function(e){ if(!isDragging) return; row.scrollLeft=scrollLeft-(e.touches[0].pageX-row.offsetLeft-startX); },{passive:true});
+    row.addEventListener('mouseenter', function(){ isDragging=true; });
+    row.addEventListener('mouseleave', function(){ isDragging=false; });
+    autoScroll();
+  })();
+
   /* ════════════════════════════════════════════════
      PLATFORM FEATURES — 3D STACK SCROLL
   ════════════════════════════════════════════════ */
@@ -1665,17 +2124,19 @@
 
     if(!track || !allCards.length) return;
 
-    var SCROLL_PER_CARD  = 0.85;
-    var STACK_SCALE      = 0.045;
-    var STACK_Y          = 20;
-    var MAX_BEHIND       = 3;
+    var SCROLL_PER_CARD = 0.85;
+    var STACK_SCALE     = 0.045;
+    var STACK_Y         = 20;
+    var MAX_BEHIND      = 3;
 
     var visibleCards = allCards.slice();
     var activeIdx    = -1;
 
+    function isMobile(){ return window.innerWidth <= 900; }
+
     function buildDots(){
       dotsWrap.innerHTML = '';
-      visibleCards.forEach(function(_, i){
+      visibleCards.forEach(function(){
         var d = document.createElement('div');
         d.className = 'feat-prog-dot';
         dotsWrap.appendChild(d);
@@ -1690,67 +2151,75 @@
 
     function applyStack(idx){
       var n = visibleCards.length;
+      var mobile = isMobile();
 
       visibleCards.forEach(function(card, i){
         card.classList.remove('fc-active', 'fc-behind');
-        card.style.transform  = 'translateY(100vh)';
-        card.style.opacity    = '0';
-        card.style.filter     = '';
-        card.style.zIndex     = String(i + 1);
-        card.style.transition = 'transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.50s cubic-bezier(0.22,1,0.36,1), filter 0.50s ease';
+        card.style.transform     = 'translateY(100vh)';
+        card.style.opacity       = '0';
+        card.style.filter        = '';
+        card.style.zIndex        = String(i + 1);
+        card.style.transition    = 'transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.50s cubic-bezier(0.22,1,0.36,1), filter 0.50s ease';
         card.style.pointerEvents = 'none';
 
         if(i === idx){
+          /* ── Active card: same on all screen sizes ── */
           card.classList.add('fc-active');
           card.style.zIndex        = String(n + 10);
           card.style.pointerEvents = 'auto';
-        } else if(i < idx){
-          var depth = idx - i;
-          if(depth > MAX_BEHIND){
-            card.style.opacity   = '0';
-            card.style.transform = 'translateY(0) scale(' + (1 - STACK_SCALE * MAX_BEHIND) + ')';
-            card.style.zIndex    = String(i + 1);
-            return;
-          }
-          card.classList.add('fc-behind');
-          var scale      = 1 - (STACK_SCALE * depth);
-          var translateY = -(STACK_Y * depth);
-          var brightness = Math.max(0.25, 0.80 - (depth - 1) * 0.22);
-          var opacity    = Math.max(0, 1 - (depth - 1) * 0.28);
 
-          card.style.zIndex    = String(n - depth + 1);
-          card.style.transform = 'translateY(' + translateY + 'px) scale(' + scale + ')';
-          card.style.opacity   = String(opacity);
-          card.style.filter    = 'brightness(' + brightness + ')';
-          card.style.pointerEvents = 'none';
+        } else if(i < idx){
+          /* ── Behind cards ── */
+          if(mobile){
+            /* On mobile: fully hide all behind cards so text never bleeds */
+            card.style.opacity   = '0';
+            card.style.transform = 'translateY(0)';
+            card.style.zIndex    = '0';
+            card.style.filter    = '';
+          } else {
+            /* Desktop: 3D stack effect */
+            var depth = idx - i;
+            if(depth > MAX_BEHIND){
+              card.style.opacity   = '0';
+              card.style.transform = 'translateY(0) scale(' + (1 - STACK_SCALE * MAX_BEHIND) + ')';
+              card.style.zIndex    = String(i + 1);
+              return;
+            }
+            card.classList.add('fc-behind');
+            card.style.zIndex    = String(n - depth + 1);
+            card.style.transform = 'translateY(' + (-(STACK_Y * depth)) + 'px) scale(' + (1 - STACK_SCALE * depth) + ')';
+            card.style.opacity   = String(Math.max(0, 1 - (depth - 1) * 0.28));
+            card.style.filter    = 'brightness(' + Math.max(0.25, 0.80 - (depth - 1) * 0.22) + ')';
+            card.style.pointerEvents = 'none';
+          }
+
         } else {
+          /* ── Upcoming cards: slide in from below ── */
           card.style.transform = 'translateY(100vh)';
           card.style.opacity   = '0';
           card.style.zIndex    = String(i + 1);
         }
       });
 
-      var dotEls = dotsWrap.querySelectorAll('.feat-prog-dot');
-      dotEls.forEach(function(d, i){ d.classList.toggle('fp-active', i === idx); });
-
+      dotsWrap.querySelectorAll('.feat-prog-dot').forEach(function(d, i){
+        d.classList.toggle('fp-active', i === idx);
+      });
       if(hint) hint.classList.toggle('visible', idx === 0);
     }
 
     function onFeatScroll(){
-      var rect  = track.getBoundingClientRect();
-      var vh    = window.innerHeight;
-      var n     = visibleCards.length;
+      var rect      = track.getBoundingClientRect();
+      var vh        = window.innerHeight;
+      var n         = visibleCards.length;
       var scrolledIn = -rect.top;
 
       if(scrolledIn < 0){
-        if(activeIdx !== -1){ activeIdx = -1; applyStack(-1); }
+        if(activeIdx !== 0){ activeIdx = 0; applyStack(0); }
         return;
       }
 
       var scrollPerCard = SCROLL_PER_CARD * vh;
-      var rawIdx = Math.floor(scrolledIn / scrollPerCard);
-      var idx    = Math.min(Math.max(rawIdx, 0), n - 1);
-
+      var idx = Math.min(Math.max(Math.floor(scrolledIn / scrollPerCard), 0), n - 1);
       if(scrolledIn > n * scrollPerCard){ idx = n - 1; }
 
       if(idx !== activeIdx){
@@ -1761,12 +2230,16 @@
 
     buildDots();
     setTrackHeight();
-    applyStack(0);
     activeIdx = 0;
-
-    window.addEventListener('scroll',  onFeatScroll, { passive: true });
-    window.addEventListener('resize',  function(){ setTrackHeight(); onFeatScroll(); });
+    applyStack(0);
     onFeatScroll();
+
+    window.addEventListener('scroll', onFeatScroll, { passive: true });
+    window.addEventListener('resize', function(){
+      setTrackHeight();
+      applyStack(activeIdx); /* re-apply so mobile/desktop logic updates on resize */
+      onFeatScroll();
+    });
 
   })();
 
@@ -1792,21 +2265,16 @@
   window.addEventListener('scroll', updateTimeline, {passive:true});
   updateTimeline();
 
-  /* ── FAQ — Image 2 style ── */
+  /* ── FAQ ── */
   window.toggleFaq = function(btn){
     var ans = btn.nextElementSibling;
     var isOpen = btn.classList.contains('active');
-    // Close all
     document.querySelectorAll('.faq-q').forEach(function(q){
       q.classList.remove('active');
       var a = q.nextElementSibling;
       if(a) a.classList.remove('open');
     });
-    // Open this one if it was closed
-    if(!isOpen){
-      btn.classList.add('active');
-      ans.classList.add('open');
-    }
+    if(!isOpen){ btn.classList.add('active'); ans.classList.add('open'); }
   };
 
   /* ── EXAM OPTION SELECT ── */
@@ -1831,12 +2299,230 @@
   });
 
 })();
+
+/* ════════════════════════════════════════════════
+   FEATURE CARD LIVE ANIMATIONS
+════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  /* inject blink keyframe */
+  if(!document.getElementById('fc-anim-style')){
+    var ks = document.createElement('style');
+    ks.id  = 'fc-anim-style';
+    ks.textContent = '@keyframes fc-blink{0%,100%{opacity:1}50%{opacity:.25}} @keyframes fc-pulse-g{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.75)}}';
+    document.head.appendChild(ks);
+  }
+
+  /* ── Card 3: build question dots ── */
+  function buildC3Dots(answered, total){
+    var wrap = document.getElementById('fc3-dots');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    var show = Math.min(total, 24);
+    for(var i = 0; i < show; i++){
+      var d = document.createElement('div');
+      var isCurrent = (i === answered);
+      var isAnswered = (i < answered);
+      d.style.cssText = [
+        'width:9px','height:9px','border-radius:2px','flex-shrink:0','transition:all .3s',
+        'background:' + (isAnswered ? '#1447b3' : isCurrent ? '#64B5F6' : 'rgba(255,255,255,.08)')
+      ].join(';');
+      if(isCurrent) d.style.animation = 'fc-blink .9s infinite';
+      wrap.appendChild(d);
+    }
+  }
+
+  /* ── Card 5: build bar chart ── */
+  function buildC5Chart(){
+    var wrap = document.getElementById('fc5-chart');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    var scores = [54,59,63,66,68,71,74,78];
+    var months = ['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+    var maxS   = 80;
+    scores.forEach(function(s, i){
+      var col = document.createElement('div');
+      col.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;flex:1';
+      var bar = document.createElement('div');
+      bar.style.cssText = 'width:100%;border-radius:3px 3px 0 0;min-height:4px;height:4px;transition:height 1s cubic-bezier(.22,1,.36,1) ' + (i*55) + 'ms;background:' + (i===scores.length-1 ? '#64B5F6' : '#1447b3');
+      bar.setAttribute('data-h', Math.round((s/maxS)*68) + 'px');
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:7px;color:rgba(255,255,255,.22);text-align:center';
+      lbl.textContent = months[i];
+      col.appendChild(bar);
+      col.appendChild(lbl);
+      wrap.appendChild(col);
+    });
+  }
+
+  /* initialise static content */
+  buildC3Dots(11, 24);
+  buildC5Chart();
+
+  /* ── Trigger animations per card ── */
+  function animCard(cardEl, idx){
+
+    if(idx === 0){
+      cardEl.querySelectorAll('.fc1-stat-val').forEach(function(el){
+        var target = parseInt(el.getAttribute('data-target') || '0');
+        var cur = 0;
+        var iv = setInterval(function(){
+          cur += target / 50;
+          if(cur >= target){ cur = target; clearInterval(iv); }
+          el.textContent = Math.round(cur);
+        }, 18);
+      });
+      var pct = cardEl.querySelector('.fc1-stat-pct');
+      if(pct){ pct.textContent = '—'; setTimeout(function(){ pct.textContent = '91%'; }, 900); }
+      cardEl.querySelectorAll('.fc1-bar').forEach(function(b, i){
+        b.style.width = '0';
+        setTimeout(function(){ b.style.width = b.getAttribute('data-w'); }, 250 + i * 80);
+      });
+    }
+
+    if(idx === 1){
+      if(cardEl._fc2iv) clearInterval(cardEl._fc2iv);
+      var subs = cardEl.querySelectorAll('.fc2-sub');
+      var si = 0;
+      function c2step(){
+        subs.forEach(function(s){
+          s.style.background   = 'rgba(255,255,255,.04)';
+          s.style.borderColor  = 'rgba(255,255,255,.08)';
+          s.style.transform    = '';
+          var name = s.querySelector('.fc2-name');
+          if(name) name.style.color = 'rgba(255,255,255,.55)';
+          var arrow = s.querySelector('.fc2-arrow');
+          if(arrow) arrow.style.color = 'rgba(255,255,255,.20)';
+        });
+        if(subs[si]){
+          subs[si].style.background  = 'rgba(20,71,179,.30)';
+          subs[si].style.borderColor = 'rgba(100,181,246,.30)';
+          subs[si].style.transform   = 'translateX(4px)';
+          var name = subs[si].querySelector('.fc2-name');
+          if(name) name.style.color = 'rgba(255,255,255,.90)';
+          var arrow = subs[si].querySelector('.fc2-arrow');
+          if(arrow) arrow.style.color = '#64B5F6';
+        }
+        si = (si + 1) % subs.length;
+      }
+      c2step();
+      cardEl._fc2iv = setInterval(c2step, 1300);
+    }
+
+    if(idx === 2){
+      if(cardEl._fc3iv) clearInterval(cardEl._fc3iv);
+      var fc3secs  = 4985;
+      var fc3q     = 12;
+      var totalSec = 100 * 60;
+      var ring     = document.getElementById('fc3-ring');
+      var timeEl   = document.getElementById('fc3-time');
+      var qnumEl   = document.getElementById('fc3-qnum');
+      var ansEl    = document.getElementById('fc3-ans');
+      function fc3update(){
+        var h = Math.floor(fc3secs/3600), m = Math.floor((fc3secs%3600)/60), s = fc3secs%60;
+        if(timeEl) timeEl.textContent = (h>0?h+':':'') + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        if(ring)   ring.style.strokeDashoffset = String(264 - (264 * (fc3secs / totalSec)));
+        if(ring && fc3secs < 300) ring.style.stroke = '#EF9A9A';
+      }
+      fc3update();
+      buildC3Dots(fc3q - 1, 24);
+      cardEl._fc3iv = setInterval(function(){
+        fc3secs--;
+        if(fc3secs < 0){ fc3secs = 4985; fc3q = 12; if(ring){ ring.style.stroke='#1447b3'; } }
+        fc3update();
+        if(fc3secs % 7 === 0 && fc3q < 60){
+          fc3q++;
+          if(qnumEl) qnumEl.textContent = String(fc3q);
+          if(ansEl)  ansEl.textContent  = String(fc3q - 1);
+          buildC3Dots(fc3q - 1, 24);
+        }
+      }, 1000);
+    }
+
+    if(idx === 3){
+      cardEl.querySelectorAll('.fc4-bar').forEach(function(b, i){
+        b.style.width = '0';
+        setTimeout(function(){ b.style.width = b.getAttribute('data-w'); }, 200 + i * 100);
+      });
+      if(cardEl._fc4iv) clearInterval(cardEl._fc4iv);
+      var papers = cardEl.querySelectorAll('.fc4-paper');
+      var pi = 0;
+      function c4step(){
+        papers.forEach(function(p){
+          p.style.background  = 'rgba(255,255,255,.04)';
+          p.style.borderColor = 'rgba(255,255,255,.08)';
+          p.style.transform   = '';
+          var yr = p.querySelector('.fc4-yr');
+          if(yr) yr.style.color = 'rgba(255,255,255,.45)';
+          var ar = p.querySelector('.fc4-arrow');
+          if(ar) ar.style.color = 'rgba(255,255,255,.20)';
+        });
+        if(papers[pi]){
+          papers[pi].style.background  = 'rgba(20,71,179,.25)';
+          papers[pi].style.borderColor = 'rgba(100,181,246,.25)';
+          papers[pi].style.transform   = 'translateX(4px)';
+          var yr = papers[pi].querySelector('.fc4-yr');
+          if(yr) yr.style.color = '#64B5F6';
+          var ar = papers[pi].querySelector('.fc4-arrow');
+          if(ar) ar.style.color = '#64B5F6';
+        }
+        pi = (pi + 1) % papers.length;
+      }
+      c4step();
+      cardEl._fc4iv = setInterval(c4step, 1500);
+    }
+
+    if(idx === 4){
+      var bars = document.querySelectorAll('#fc5-chart [data-h]');
+      bars.forEach(function(b){
+        b.style.height = '4px';
+        setTimeout(function(){ b.style.height = b.getAttribute('data-h'); }, 200);
+      });
+    }
+
+    if(idx === 5){
+      var r6 = document.getElementById('fc6-ring');
+      if(r6){
+        r6.style.strokeDashoffset = '188';
+        setTimeout(function(){ r6.style.strokeDashoffset = String(Math.round(188 - 188 * 0.91)); }, 300);
+      }
+      cardEl.querySelectorAll('.fc6-bar').forEach(function(b, i){
+        b.style.width = '0';
+        setTimeout(function(){ b.style.width = b.getAttribute('data-w'); }, 400 + i * 100);
+      });
+    }
+  }
+
+  /* ── Stop intervals when card leaves ── */
+  function deanimCard(cardEl, idx){
+    if(cardEl._fc2iv){ clearInterval(cardEl._fc2iv); cardEl._fc2iv = null; }
+    if(cardEl._fc3iv){ clearInterval(cardEl._fc3iv); cardEl._fc3iv = null; }
+    if(cardEl._fc4iv){ clearInterval(cardEl._fc4iv); cardEl._fc4iv = null; }
+  }
+
+  /* ── Watch fc-active class — fires animCard on change ── */
+  var allCards  = Array.from(document.querySelectorAll('#featStack .feat-card'));
+  var lastActive = -1;
+  function watchCards(){
+    allCards.forEach(function(c, i){
+      if(c.classList.contains('fc-active') && i !== lastActive){
+        if(lastActive >= 0) deanimCard(allCards[lastActive], lastActive);
+        lastActive = i;
+        animCard(c, i);
+      }
+    });
+    requestAnimationFrame(watchCards);
+  }
+  watchCards();
+
+})();
+
 /* ── HERO ANIMATED BACKGROUND ── */
 (function(){
   var canvas = document.getElementById('heroBgCanvas');
   if(!canvas) return;
   var ctx = canvas.getContext('2d');
-
   var W, H;
   function resize(){
     W = canvas.width  = canvas.offsetWidth;
@@ -1844,12 +2530,7 @@
   }
   resize();
   window.addEventListener('resize', resize);
-
   var t = 0;
-
-  /* ════════════════════════════════
-     1. FLOATING GRID DOTS
-  ════════════════════════════════ */
   var GRID_COLS = 15, GRID_ROWS = 9;
   var gridDots = [];
   for(var r = 0; r < GRID_ROWS; r++){
@@ -1863,10 +2544,6 @@
       });
     }
   }
-
-  /* ════════════════════════════════
-     2. CONNECTOR LINES
-  ════════════════════════════════ */
   var connectors = [];
   for(var i = 0; i < gridDots.length; i++){
     for(var j = i + 1; j < gridDots.length; j++){
@@ -1875,10 +2552,6 @@
       if(Math.sqrt(dx*dx + dy*dy) < 0.13) connectors.push([i, j]);
     }
   }
-
-  /* ════════════════════════════════
-     3. FLOATING SCIENCE LABELS
-  ════════════════════════════════ */
   var labels = [
     'E = mc²', 'F = ma', 'PV = nRT',
     'ATP→ADP', 'C₆H₁₂O₆',
@@ -1890,12 +2563,9 @@
     'Physics', 'Maths', 'Logical',
     'Reading', '∑', 'π', 'Δ', '∞', 'α', 'β'
   ];
-
   var LABEL_COUNT = 20;
   var floaters = [];
-
   function rand(a, b){ return a + Math.random() * (b - a); }
-
   function makeFloater(fromBottom){
     return {
       x:       rand(0.05, 0.95),
@@ -1912,28 +2582,18 @@
       lifeSpd: rand(0.0002, 0.0005)
     };
   }
-
   for(var k = 0; k < LABEL_COUNT; k++) floaters.push(makeFloater(false));
-
-  /* ════════════════════════════════
-     4. ORBITING RINGS — 3 atoms
-  ════════════════════════════════ */
   var rings = [
     { cx: 0.88, cy: 0.20, r: 46, electrons: 3, phase: 0,   speed: 0.004 },
     { cx: 0.10, cy: 0.78, r: 34, electrons: 2, phase: 1.5, speed: 0.006 },
     { cx: 0.50, cy: 0.08, r: 28, electrons: 2, phase: 2.8, speed: 0.005 }
   ];
-
-  /* ════════════════════════════════
-     5. HEXAGON TILES — 4 tiles
-  ════════════════════════════════ */
   var hexTiles = [
     { cx: 0.72, cy: 0.15, r: 40, phase: 0,   speed: 0.003 },
     { cx: 0.18, cy: 0.50, r: 30, phase: 1.0, speed: 0.004 },
     { cx: 0.85, cy: 0.72, r: 24, phase: 2.1, speed: 0.005 },
     { cx: 0.42, cy: 0.88, r: 20, phase: 0.6, speed: 0.004 }
   ];
-
   function drawHex(cx, cy, r, alpha){
     ctx.save();
     ctx.globalAlpha = alpha;
@@ -1950,20 +2610,12 @@
     ctx.stroke();
     ctx.restore();
   }
-
-  /* ════════════════════════════════
-     6. SINE WAVE LINES — 4 waves
-  ════════════════════════════════ */
   var waves = [
     { y: 0.18, amp: 14, freq: 0.010, phase: 0,   speed: 0.007, alpha: 0.09 },
     { y: 0.38, amp: 18, freq: 0.012, phase: 0.8, speed: 0.008, alpha: 0.10 },
     { y: 0.62, amp: 12, freq: 0.018, phase: 1.5, speed: 0.010, alpha: 0.08 },
     { y: 0.82, amp: 22, freq: 0.009, phase: 3.0, speed: 0.006, alpha: 0.07 }
   ];
-
-  /* ════════════════════════════════
-     7. PERIODIC ELEMENT TILES — 4 tiles
-  ════════════════════════════════ */
   var elements = [
     { sym:'C',  num:6,  name:'Carbon',   px:0.93, py:0.35, vy:-0.09 },
     { sym:'O',  num:8,  name:'Oxygen',   px:0.03, py:0.30, vy:-0.07 },
@@ -1974,7 +2626,6 @@
     e.x = e.px * (W || 1440);
     e.y = e.py * (H || 800);
   });
-
   function drawElement(x, y, sym, num, name, alpha){
     var s = 36;
     ctx.save();
@@ -1990,127 +2641,9 @@
     ctx.font = '6px monospace';       ctx.fillText(name, x+2, y+34);
     ctx.restore();
   }
-
-  /* ════════════════════════════════
-     8. RUNNING STUDENT FIGURES — 4 runners
-  ════════════════════════════════ */
-  var runners = [
-    { x: -0.10, y: 0.74, speed: 0.0012, scale: 0.90, phase: 0,   alpha: 0.28 },
-    { x: -0.30, y: 0.80, speed: 0.0009, scale: 0.72, phase: 1.2, alpha: 0.18 },
-    { x: -0.55, y: 0.70, speed: 0.0014, scale: 0.82, phase: 2.5, alpha: 0.22 },
-    { x: -0.75, y: 0.76, speed: 0.0010, scale: 0.78, phase: 3.8, alpha: 0.20 }
-  ];
-
-  function drawRunner(cx, cy, scale, phase, alpha){
-    var legSwing  = Math.sin(phase) * 28;
-    var armSwing  = Math.sin(phase + Math.PI) * 22;
-    var bodyBob   = Math.abs(Math.sin(phase)) * 3;
-    var sc = scale * (H / 600);
-    var bx = cx;
-    var by = cy - bodyBob * sc;
-
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = '#90CAF9';
-    ctx.lineCap     = 'round';
-    ctx.lineJoin    = 'round';
-
-    /* head */
-    ctx.lineWidth = 1.5 * sc;
-    ctx.beginPath();
-    ctx.arc(bx, by - 22 * sc, 7 * sc, 0, Math.PI * 2);
-    ctx.stroke();
-
-    /* backpack */
-    ctx.lineWidth = 1.2 * sc;
-    ctx.strokeRect(bx + 2 * sc, by - 16 * sc, 5 * sc, 10 * sc);
-
-    /* torso */
-    ctx.lineWidth = 2 * sc;
-    ctx.beginPath();
-    ctx.moveTo(bx, by - 14 * sc);
-    ctx.lineTo(bx, by + 2 * sc);
-    ctx.stroke();
-
-    /* left arm */
-    ctx.lineWidth = 1.5 * sc;
-    ctx.beginPath();
-    ctx.moveTo(bx, by - 10 * sc);
-    ctx.lineTo(
-      bx + Math.sin(armSwing * 0.055) * 14 * sc,
-      by - 2 * sc + Math.cos(armSwing * 0.055) * 6 * sc
-    );
-    ctx.stroke();
-
-    /* right arm */
-    ctx.beginPath();
-    ctx.moveTo(bx, by - 10 * sc);
-    ctx.lineTo(
-      bx - Math.sin(armSwing * 0.055) * 14 * sc,
-      by - 2 * sc + Math.cos(armSwing * 0.055) * 6 * sc
-    );
-    ctx.stroke();
-
-    /* left leg upper */
-    ctx.lineWidth = 1.8 * sc;
-    var lUpperAngle = legSwing * 0.055;
-    var lKneeX = bx + Math.sin(lUpperAngle) * 14 * sc;
-    var lKneeY = by + 2 * sc + Math.cos(lUpperAngle) * 14 * sc;
-    ctx.beginPath();
-    ctx.moveTo(bx, by + 2 * sc);
-    ctx.lineTo(lKneeX, lKneeY);
-    ctx.stroke();
-
-    /* left leg lower */
-    var lLowerAngle = lUpperAngle - 0.4;
-    ctx.beginPath();
-    ctx.moveTo(lKneeX, lKneeY);
-    ctx.lineTo(
-      lKneeX + Math.sin(lLowerAngle) * 13 * sc,
-      lKneeY + Math.cos(lLowerAngle) * 13 * sc
-    );
-    ctx.stroke();
-
-    /* right leg upper */
-    var rUpperAngle = -legSwing * 0.055;
-    var rKneeX = bx + Math.sin(rUpperAngle) * 14 * sc;
-    var rKneeY = by + 2 * sc + Math.cos(rUpperAngle) * 14 * sc;
-    ctx.beginPath();
-    ctx.moveTo(bx, by + 2 * sc);
-    ctx.lineTo(rKneeX, rKneeY);
-    ctx.stroke();
-
-    /* right leg lower */
-    var rLowerAngle = rUpperAngle + 0.4;
-    ctx.beginPath();
-    ctx.moveTo(rKneeX, rKneeY);
-    ctx.lineTo(
-      rKneeX + Math.sin(rLowerAngle) * 13 * sc,
-      rKneeY + Math.cos(rLowerAngle) * 13 * sc
-    );
-    ctx.stroke();
-
-    /* book in hand */
-    ctx.lineWidth = 1 * sc;
-    var bookX = bx + Math.sin(armSwing * 0.055) * 14 * sc;
-    var bookY = by - 2 * sc + Math.cos(armSwing * 0.055) * 6 * sc;
-    ctx.strokeRect(bookX - 3 * sc, bookY - 5 * sc, 7 * sc, 5 * sc);
-    ctx.beginPath();
-    ctx.moveTo(bookX, bookY - 5 * sc);
-    ctx.lineTo(bookX, bookY);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  /* ════════════════════════════════
-     DRAW LOOP
-  ════════════════════════════════ */
   function draw(){
     if(!W || !H){ requestAnimationFrame(draw); return; }
     ctx.clearRect(0, 0, W, H);
-
-    /* — 1. grid connector lines — */
     ctx.save();
     ctx.strokeStyle = 'rgba(100,181,246,0.10)';
     ctx.lineWidth = 0.6;
@@ -2123,8 +2656,6 @@
       ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
     });
     ctx.restore();
-
-    /* — 1b. grid dots — */
     gridDots.forEach(function(d){
       var x = d.cx * W + Math.sin(d.phase + t * d.speed * 80) * d.amp;
       var y = d.cy * H + Math.cos(d.phase + t * d.speed * 60) * d.amp;
@@ -2134,8 +2665,6 @@
       ctx.fillStyle = '#90CAF9'; ctx.fill();
       ctx.restore();
     });
-
-    /* — 2. sine wave lines — */
     waves.forEach(function(w){
       w.phase += w.speed;
       ctx.save();
@@ -2150,8 +2679,6 @@
       ctx.stroke();
       ctx.restore();
     });
-
-    /* — 3. hexagon tiles — */
     hexTiles.forEach(function(h){
       h.phase += h.speed;
       var cx = h.cx * W;
@@ -2159,8 +2686,6 @@
       drawHex(cx, cy, h.r, 0.11);
       drawHex(cx, cy, h.r * 0.55, 0.07);
     });
-
-    /* — 4. orbiting atoms — */
     rings.forEach(function(a){
       a.phase += a.speed;
       var cx = a.cx * W, cy = a.cy * H;
@@ -2189,8 +2714,6 @@
         ctx.restore();
       }
     });
-
-    /* — 5. floating science labels — */
     floaters.forEach(function(p){
       p.life += p.lifeSpd;
       if(p.life > 1){ Object.assign(p, makeFloater(true)); return; }
@@ -2206,78 +2729,41 @@
       ctx.fillText(p.text, p.x * W, p.y * H);
       ctx.restore();
     });
-
-    /* — 6. periodic element tiles — */
     elements.forEach(function(el){
       el.y += el.vy * 0.25;
       if(el.y < -50) el.y = H + 50;
       drawElement(el.x - 18, el.y - 18, el.sym, el.num, el.name, 0.22);
     });
-
-    /* — 7. running student figures — */
-    
+    t++;
     requestAnimationFrame(draw);
   }
-
   draw();
 })();
-/* ── ABOUT CARDS DRAG SCROLL ── */
-/* ── ABOUT CARDS AUTO-SCROLL + DRAG ── */
-/* ── ABOUT CARDS AUTO-SCROLL + DRAG ── */
-(function(){
-  var row = document.querySelector('.about-cards-row');
-  if(!row) return;
 
-  var speed = 0.6;
-  var paused = false;
-  var isDown = false, startX, scrollLeft, moved = false;
-
-  function tick(){
-    if(!paused && !isDown){
-      row.scrollLeft += speed;
-      /* seamless loop — reset when halfway (back to original set) */
-      if(row.scrollLeft >= row.scrollWidth / 2){
-        row.scrollLeft = 0;
+/* ── ABOUT CURVE ANIMATION ── */
+var curvePath = document.querySelector('.about-curve-path');
+var curveWrap = document.querySelector('.about-curve-wrap');
+if(curvePath && curveWrap){
+  var lastScrollY = window.scrollY;
+  function updateCurve(){
+    var rect = curveWrap.getBoundingClientRect();
+    var inView = rect.top < window.innerHeight && rect.bottom > 0;
+    var scrollingDown = window.scrollY > lastScrollY;
+    lastScrollY = window.scrollY;
+    if(inView){
+      if(scrollingDown){
+        curvePath.style.transition = 'transform 1.2s cubic-bezier(.22,1,.36,1)';
+        curvePath.style.transform  = 'scaleY(1)';
+      } else {
+        curvePath.style.transition = 'transform 0.8s cubic-bezier(.22,1,.36,1)';
+        curvePath.style.transform  = 'scaleY(0.02)';
       }
     }
-    requestAnimationFrame(tick);
   }
-  requestAnimationFrame(tick);
-
-  row.addEventListener('mouseenter', function(){ paused = true; });
-  row.addEventListener('mouseleave', function(){ paused = false; });
-
-  row.addEventListener('mousedown', function(e){
-    isDown = true; moved = false;
-    row.classList.add('is-dragging');
-    startX = e.pageX - row.offsetLeft;
-    scrollLeft = row.scrollLeft;
-  });
-  document.addEventListener('mouseup', function(){
-    isDown = false;
-    row.classList.remove('is-dragging');
-    paused = false;
-  });
-  row.addEventListener('mousemove', function(e){
-    if(!isDown) return;
-    e.preventDefault(); moved = true;
-    var x = e.pageX - row.offsetLeft;
-    row.scrollLeft = scrollLeft - (x - startX) * 1.5;
-  });
-  row.addEventListener('click', function(e){
-    if(moved){ e.stopPropagation(); e.preventDefault(); moved = false; }
-  }, true);
-
-  var tX, tScroll;
-  row.addEventListener('touchstart', function(e){
-    paused = true;
-    tX = e.touches[0].pageX; tScroll = row.scrollLeft;
-  }, {passive:true});
-  row.addEventListener('touchmove', function(e){
-    row.scrollLeft = tScroll + (tX - e.touches[0].pageX);
-  }, {passive:true});
-  row.addEventListener('touchend', function(){ paused = false; });
-})();
+  curvePath.style.transformOrigin = 'center bottom';
+  curvePath.style.transform       = 'scaleY(1)';
+  window.addEventListener('scroll', updateCurve, { passive: true });
+}
 </script>
 </body>
 </html>

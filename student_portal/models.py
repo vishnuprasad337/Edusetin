@@ -271,3 +271,12 @@ class NotificationRead(models.Model):
 
     class Meta:
         unique_together = ('student', 'notif_key')
+import uuid
+
+class UserSession(models.Model):
+    user        = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_session')
+    session_key = models.CharField(max_length=255)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} — {self.session_key[:8]}..."

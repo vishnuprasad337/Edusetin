@@ -108,6 +108,7 @@
                     <th>Question Preview</th>
                     <th>Source</th>
                     <th>Year</th>
+                    <th>imported At</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -122,6 +123,7 @@
                     data-preview="{{ question.question_text|lower|truncatechars:200 }}"
                     data-source="{{ question.source|default:''|lower }}"
                     data-year="{{ question.year|default:'' }}"
+                    data-created="{{ question.created_at|date:'Y-m-d' }}"
                     data-status="{% if question.is_active %}active{% else %}inactive{% endif %}"
                 >
                     <td class="text-muted" style="font-size:12px;">#{{ question.id }}</td>
@@ -144,6 +146,7 @@
                         {% endif %}
                     </td>
                     <td class="text-muted" style="font-size:13px;">{{ question.year|default:"—" }}</td>
+                    <td class="text-muted" style="font-size:12px;">{{ question.created_at|date:"M j, Y" }}</td>
                     <td>
                         {% if question.is_active %}
                             <span class="badge bg-success">Active</span>
@@ -160,7 +163,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
+                    <td colspan="9" class="text-center py-4 text-muted">
                         No questions found.
                         <a href="{% url 'student_management:question_create' %}">Create one now.</a>
                     </td>

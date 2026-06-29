@@ -10,10 +10,11 @@ import secrets
 import datetime
 from django.http import JsonResponse
 from .forms import StudentRegistrationForm, StudentLoginForm
-from .models import Student,ExamAttempt, AttemptResponse
+from .models import Student,ExamAttempt, AttemptResponse,UserSession
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from student_management.models import Exam
+import uuid
 # ─────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────
@@ -164,7 +165,13 @@ def verify_otp(request):
             # Double-check email uniqueness (edge-case: someone registered
             # with same email in the 10-min window between sessions)
             if User.objects.filter(email=email).exists():
-                login(request, user)   
+                login(request, user)
+                new_key = str(uuid.uuid4())
+                UserSession.objects.update_or_create(
+                user=user,
+                defaults={'session_key': new_key}
+                )
+                request.session['session_key'] = new_key
                 _clear_registration_session(request)
                 messages.error(
                     request,
@@ -266,10 +273,8 @@ def resend_otp(request):
 @never_cache
 def student_login(request):
     if request.user.is_authenticated:
-        # Only redirect to dashboard if user actually has a Student profile
         if hasattr(request.user, 'student'):
             return redirect('student_portal:dashboard')
-        # Non-student authenticated user — log them out silently
         logout(request)
 
     if request.method == 'POST':
@@ -279,14 +284,27 @@ def student_login(request):
             password = form.cleaned_data['password']
             user = authenticate(username=email, password=password)
             if user is not None:
-                # Ensure the authenticated user has a Student profile
                 if not hasattr(user, 'student'):
                     messages.error(
                         request,
                         "No student account found for this email. Please register first."
                     )
                 else:
+                    
+                    existing_session = UserSession.objects.filter(user=user).first()
+                    if existing_session:
+                        messages.error(
+                            request,
+                            "This account is already logged in on another device. "
+                            "Please logout from the other device first."
+                        )
+                        return render(request, 'student_portal/login.html', {'form': form})
+                    # ───────────────────────────────────────────────────
+
                     login(request, user)
+                    new_key = str(uuid.uuid4())
+                    UserSession.objects.create(user=user, session_key=new_key)
+                    request.session['session_key'] = new_key
                     return redirect('student_portal:dashboard')
             else:
                 messages.error(request, "Invalid email or password.")
@@ -342,6 +360,7 @@ def student_dashboard(request):
         ).select_related('plan').prefetch_related('plan__exams')
         .order_by('expires_at')
     )
+    
 
     for payment in active_payments:
         if payment.expires_at:
@@ -744,6 +763,9 @@ def _icon_for_name(name):
 # ─────────────────────────────────────────────
 
 def student_logout(request):
+    if request.user.is_authenticated:
+        UserSession.objects.filter(user=request.user).delete()
+    request.session.flush()
     logout(request)
     return redirect('student_portal:login')
 
@@ -1029,7 +1051,6 @@ def _compute_score(attempt, exam, post_data):
 # ─────────────────────────────────────────────
 # EXAM LIST
 # ─────────────────────────────────────────────
- 
 @never_cache
 @login_required(login_url='student_portal:login')
 def exam_list_student(request):
@@ -1045,13 +1066,11 @@ def exam_list_student(request):
         expires_at__gt=timezone.now(),
     ).select_related('plan').prefetch_related('plan__exams')
 
-    
     exam_ids = set()
     for payment in active_payments:
         for exam in payment.plan.exams.filter(is_active=True):
             exam_ids.add(exam.id)
 
-    
     exams = (
         Exam.objects.filter(id__in=exam_ids, is_active=True)
         .select_related('exam_type')
@@ -1059,9 +1078,6 @@ def exam_list_student(request):
         .order_by('exam_type__name', 'title')
     )
 
-    # Allow-list on STATUS_SUBMITTED (not "exclude in_progress") so a
-    # timed_out attempt with zero real answers can't show up as the
-    # student's "last attempt" or count toward attempt_count below.
     last_attempts_map = {}
     for attempt in (
         ExamAttempt.objects.filter(
@@ -1096,7 +1112,8 @@ def exam_list_student(request):
         exam.question_count  = q_count
         exam.total_marks_val = round(q_count * float(exam.marks_per_question), 2)
 
-        type_name = exam.exam_type.name
+        
+        type_name = str(exam.exam_type)
         if type_name not in exams_by_type:
             exams_by_type[type_name] = []
         exams_by_type[type_name].append(exam)
@@ -1177,6 +1194,7 @@ def exam_preview(request, exam_uid):
 # EXAM START
 # ─────────────────────────────────────────────
 from django.http import Http404
+
 @never_cache
 @login_required(login_url='student_portal:login')
 def exam_start(request, exam_uid):
@@ -1184,7 +1202,6 @@ def exam_start(request, exam_uid):
     if not student:
         return redirect('student_portal:login')
 
-    # extract id from slug
     try:
         exam_id = int(exam_uid.rsplit('-', 1)[-1])
     except (ValueError, IndexError):
@@ -1197,11 +1214,11 @@ def exam_start(request, exam_uid):
     from student_management.models import Exam
     exam = get_object_or_404(Exam, id=exam_id, is_active=True)
 
-    # Canonical URL check
     if exam_uid != exam.uid:
         return redirect('student_portal:exam_start', exam_uid=exam.uid, permanent=True)
 
     resume_id = request.GET.get('resume')
+
     if resume_id:
         attempt = get_object_or_404(
             ExamAttempt,
@@ -1210,7 +1227,6 @@ def exam_start(request, exam_uid):
             exam=exam,
         )
 
-        # ── BACK-BUTTON GUARD ─────────────────────────────────────────
         if attempt.status != ExamAttempt.STATUS_IN_PROGRESS:
             messages.warning(request, "This attempt has already been submitted.")
             return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
@@ -1226,7 +1242,23 @@ def exam_start(request, exam_uid):
             return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
 
     else:
-        # Expire any stale in-progress attempts
+        # ── BACK-BUTTON GUARD ─────────────────────────────────────────
+        # Session flag is set at submit time. If present, student just
+        # submitted and pressed back — redirect to result.
+        # Flag is consumed (popped) so retry later works normally.
+        session_key = f'just_submitted_exam_{exam.id}'
+
+        if request.session.pop(session_key, False):
+            last_submitted = ExamAttempt.objects.filter(
+                student=student,
+                exam=exam,
+                status=ExamAttempt.STATUS_SUBMITTED,
+            ).order_by('-submitted_at').first()
+
+            if last_submitted:
+                return redirect('student_portal:exam_result', attempt_slug=last_submitted.slug)
+
+        # No flag — normal start or retry, both work the same way
         ExamAttempt.objects.filter(
             student=student,
             exam=exam,
@@ -1260,6 +1292,7 @@ def exam_start(request, exam_uid):
     })
 
     return _no_cache_response(response)
+
  
 # ─────────────────────────────────────────────
 # EXAM AUTO-SAVE  (AJAX)
@@ -1333,15 +1366,14 @@ def exam_log_tab_switch(request, attempt_id):
 # ─────────────────────────────────────────────
 # EXAM SUBMIT
 # ─────────────────────────────────────────────
- 
 @login_required(login_url='student_portal:login')
 @require_POST
+@never_cache
 def exam_submit(request, exam_uid):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
 
-    # extract id from slug
     try:
         exam_id = int(exam_uid.rsplit('-', 1)[-1])
     except (ValueError, IndexError):
@@ -1376,6 +1408,10 @@ def exam_submit(request, exam_uid):
     attempt.percentage         = stats['percentage']
     attempt.tab_switch_count   = max(attempt.tab_switch_count, tab_switches)
     attempt.save()
+
+    # ── Set session flag so immediate back-button press goes to result ──
+    # Flag is consumed on first read in exam_start, so retries work normally
+    request.session[f'just_submitted_exam_{exam.id}'] = True
 
     return redirect('student_portal:exam_result', attempt_slug=attempt.slug)
 
@@ -1488,17 +1524,19 @@ def student_update(request):
     except Exception:
         messages.error(request, "Student profile not found.")
         return redirect('student_portal:plan_list')
- 
+    
     if request.method == 'POST':
         form = StudentUpdateForm(request.POST, request.FILES, instance=student)
         if form.is_valid():
             updated_student = form.save()
+            # Keeps user logged in after email/password change
             update_session_auth_hash(request, updated_student.user)
             messages.success(request, "Profile updated successfully.")
             return redirect('student_portal:student_detail')
+        # Invalid — fall through, form re-renders with errors
     else:
         form = StudentUpdateForm(instance=student)
- 
+
     return render(request, 'student_portal/student_update.html', {
         'form':    form,
         'student': student,

@@ -1289,6 +1289,12 @@ def question_import(request):
 
     return render(request, 'student_management/question_import.html', {
         'import_report': import_report,
+        'recent_questions': Question.objects.select_related('subject', 'submodule')
+                                            .order_by('-created_at')[:50],
+        'subjects': Subject.objects.filter(is_active=True).order_by('name'),
+        'submodules': SubModule.objects.filter(is_active=True)
+                                       .select_related('subject')
+                                       .order_by('subject__name', 'name'),
     })
 
 

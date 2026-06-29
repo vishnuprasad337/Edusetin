@@ -522,6 +522,10 @@ let skippedCount = 0;
 let pendingLeaveHref = null;
 const answeredKeys = {};
 
+// Push twice to create a trap entry behind current page
+history.pushState(null, '', window.location.href);
+history.pushState(null, '', window.location.href);
+
 function goTo(idx) {
   if (idx < 0 || idx >= TOTAL) return;
   document.getElementById(`qcard-${currentIdx}`).classList.remove('active');
@@ -553,7 +557,7 @@ function lockQuestionUI(qIdx, selectedKey, isSkip) {
     tagWrap.innerHTML = `<span class="quiz-result-tag skipped"><i class="icon-clock"></i> Time's up — correct answer is ${correctAnswer}</span>`;
     document.querySelectorAll('.quiz-dot')[qIdx].classList.add('skipped');
   } else {
-    const isCorrect       = selectedKey === correctAnswer;
+    const isCorrect        = selectedKey === correctAnswer;
     const selectedOptionEl = document.getElementById(`opt-${qIdx}-${selectedKey}`);
     selectedOptionEl.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
     if (!isCorrect) {
@@ -576,8 +580,8 @@ function selectOption(qIdx, radio) {
     radio.checked = (radio.value === answeredKeys[qIdx]);
     return;
   }
-  const selectedKey    = radio.value;
-  answeredKeys[qIdx]   = selectedKey;
+  const selectedKey  = radio.value;
+  answeredKeys[qIdx] = selectedKey;
   lockQuestionUI(qIdx, selectedKey, false);
 }
 
@@ -596,11 +600,11 @@ function handleNext(qIdx) {
 function updateProgress() {
   const answeredSoFar = Object.keys(answeredKeys).length;
   const pct = Math.round((answeredSoFar / TOTAL) * 100);
-  document.getElementById('progressBar').style.width   = pct + '%';
-  document.getElementById('correctCount').textContent  = correctCount;
-  document.getElementById('wrongCount').textContent    = wrongCount;
-  document.getElementById('skippedCount').textContent  = skippedCount;
-  document.getElementById('currentQNum').textContent   = currentIdx + 1;
+  document.getElementById('progressBar').style.width  = pct + '%';
+  document.getElementById('correctCount').textContent = correctCount;
+  document.getElementById('wrongCount').textContent   = wrongCount;
+  document.getElementById('skippedCount').textContent = skippedCount;
+  document.getElementById('currentQNum').textContent  = currentIdx + 1;
 }
 
 function formatTime(totalSecs) {
@@ -612,9 +616,9 @@ function formatTime(totalSecs) {
 function tickTimer() {
   secondsLeft--;
   if (secondsLeft < 0) secondsLeft = 0;
-  document.getElementById('timerValue').textContent    = formatTime(secondsLeft);
+  document.getElementById('timerValue').textContent = formatTime(secondsLeft);
   const pct = Math.max(0, Math.round((secondsLeft / TOTAL_SECONDS) * 100));
-  document.getElementById('timerFill').style.width    = pct + '%';
+  document.getElementById('timerFill').style.width  = pct + '%';
   const timerBar = document.getElementById('timerBar');
   timerBar.classList.remove('warning','danger');
   if      (secondsLeft <= TOTAL_SECONDS * 0.15) timerBar.classList.add('danger');
@@ -629,8 +633,8 @@ function timeExpired() {
     answeredKeys[i] = '';
     const optsWrap = document.getElementById(`opts-${i}`);
     optsWrap.querySelectorAll('input[type="radio"]').forEach(r => { r.disabled = true; r.checked = false; });
-    const card          = document.getElementById(`qcard-${i}`);
-    const correctAnswer = card.dataset.correct;
+    const card            = document.getElementById(`qcard-${i}`);
+    const correctAnswer   = card.dataset.correct;
     const correctOptionEl = document.getElementById(`opt-${i}-${correctAnswer}`);
     if (correctOptionEl) correctOptionEl.classList.add('is-correct');
     skippedCount++;
@@ -654,22 +658,34 @@ function finishQuiz() {
 document.getElementById('timerValue').textContent = formatTime(secondsLeft);
 timerInterval = setInterval(tickTimer, 1000);
 
+// ── Leave toast ──────────────────────────────────────────────────────────────
+
 function showLeaveToast(href) {
   pendingLeaveHref = href;
   document.getElementById('leaveToast').classList.add('show');
 }
+
 function hideLeaveToast() {
   document.getElementById('leaveToast').classList.remove('show');
   pendingLeaveHref = null;
 }
-document.getElementById('leaveToastStay').addEventListener('click', hideLeaveToast);
+
+document.getElementById('leaveToastStay').addEventListener('click', function () {
+  hideLeaveToast();
+  // Re-push twice to reset the trap for next back-button press
+  history.pushState(null, '', window.location.href);
+  history.pushState(null, '', window.location.href);
+});
+
 document.getElementById('leaveToastLeave').addEventListener('click', function () {
   const href = pendingLeaveHref;
   quizFinished = true;
+  clearInterval(timerInterval);
   hideLeaveToast();
   if (href) window.location.href = href;
 });
 
+// Intercept all in-page link clicks
 document.addEventListener('click', function (e) {
   if (quizFinished) return;
   const link = e.target.closest('a[href]');
@@ -680,10 +696,16 @@ document.addEventListener('click', function (e) {
   showLeaveToast(link.href);
 });
 
-window.addEventListener('beforeunload', function (e) {
-  if (!quizFinished) { e.preventDefault(); e.returnValue = ''; }
+// Intercept back/forward browser button — no native dialog
+window.addEventListener('popstate', function () {
+  if (quizFinished) return;
+  // Re-push twice to reset the trap
+  history.pushState(null, '', window.location.href);
+  history.pushState(null, '', window.location.href);
+  showLeaveToast(document.referrer || '/');
 });
 
+// Keyboard shortcuts
 document.addEventListener('keydown', function (e) {
   if (document.getElementById('finishingOverlay').classList.contains('open')) return;
   if (document.getElementById('leaveToast').classList.contains('show')) {

@@ -136,7 +136,7 @@
     </div>
 </div>
 
-<form id="examForm" method="post" action="{% url 'student_portal:exam_submit' exam.id %}">
+<form id="examForm" method="post" action="{% url 'student_portal:exam_submit' exam_uid=exam.uid %}">
     {% csrf_token %}
     <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
     <input type="hidden" name="time_taken" id="timeTakenInput" value="0">
@@ -177,8 +177,8 @@
                             </div>
 
                             <h4 class="fw-700">
-                                {{ question.text }}
-                            </h4>
+    {{ question.question_text }}
+</h4>
 
                             {% for media in question.media_files.all %}
                                 {% if media.file_type == 'image' %}
@@ -328,27 +328,48 @@
     <button type="button" class="quiz-leave-toast-btn leave" id="leaveToastLeave">Leave anyway</button>
   </div>
 </div>
+
+
 <script>
+    
+const RESULT_URL    = "{% url 'student_portal:exam_result' attempt_slug=attempt.slug %}";
+const EXAM_LIST_URL = "{% url 'student_portal:exam_list' %}";
+const ATTEMPT_KEY   = 'submitted_attempt_{{ attempt.id }}';
+
+if (sessionStorage.getItem(ATTEMPT_KEY) === 'submitted') {
+    window.location.replace(RESULT_URL);
+}
+
+window.addEventListener('pageshow', function (e) {
+    if (e.persisted || sessionStorage.getItem(ATTEMPT_KEY) === 'submitted') {
+        window.location.replace(RESULT_URL);
+    }
+});
+
 (function () {
-    // ── State ─────────────────────────────────────────
-    const totalQuestions   = {{ total_questions }};
-    let durationSeconds    = {{ duration_seconds }};
-    let currentIndex       = 0;
-    let tabSwitches        = 0;
-    let examSubmitted      = false;
-    let warnedOnce         = false;
-    let pendingLeaveHref   = null;
+    const totalQuestions = {{ total_questions }};
+    let durationSeconds  = {{ duration_seconds }};
+    let currentIndex     = 0;
+    let tabSwitches      = 0;
+    let examSubmitted    = false;
+    let warnedOnce       = false;
+    let pendingLeaveHref = null;
+
+    // ── Two history entries: replaceState (floor) + pushState (ceiling)
+    // Back button pops the pushState entry → popstate fires → toast shows
+    // Without pushState there is nothing to pop so the page just unloads
+    history.replaceState({ examActive: true }, '');
+    history.pushState({ examActive: true }, '');
 
     const existingResponses = JSON.parse('{{ existing_responses|escapejs }}' || '{}');
 
-    const slides   = document.querySelectorAll('.q-slide');
-    const qpBtns   = document.querySelectorAll('.qp-btn');
-    const form     = document.getElementById('examForm');
+    const slides = document.querySelectorAll('.q-slide');
+    const qpBtns = document.querySelectorAll('.qp-btn');
+    const form   = document.getElementById('examForm');
 
     const answered = new Set();
     const marked   = new Set();
 
-    // ── Restore existing responses (resume) ─────────────
     Object.keys(existingResponses).forEach(function (qid) {
         const data = existingResponses[qid];
         if (data.selected_answer) {
@@ -364,7 +385,6 @@
         }
     });
 
-    // ── Slide navigation ─────────────────────────────────
     function showSlide(index) {
         slides.forEach(function (s, i) { s.classList.toggle('active', i === index); });
         qpBtns.forEach(function (b, i) { b.classList.toggle('current', i === index); });
@@ -391,7 +411,6 @@
     slides.forEach(function (slide, i) { refreshPaletteButton(i, slide.dataset.qid); });
     updateProgress();
 
-    // ── Option selection ─────────────────────────────────
     document.querySelectorAll('.option-card').forEach(function (card) {
         card.addEventListener('click', function () {
             const slide = card.closest('.q-slide');
@@ -406,7 +425,6 @@
         });
     });
 
-    // ── Mark for review ───────────────────────────────────
     document.querySelectorAll('.mark-review-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const slide = btn.closest('.q-slide');
@@ -418,7 +436,6 @@
         });
     });
 
-    // ── Prev / Next ───────────────────────────────────────
     document.querySelectorAll('.nav-prev-btn').forEach(function (btn) {
         btn.addEventListener('click', function () { if (currentIndex > 0) showSlide(currentIndex - 1); });
     });
@@ -437,7 +454,6 @@
     showSlide = function (i) { origShowSlide(i); refreshNavButtons(); };
     refreshNavButtons();
 
-    // ── Timer (wall-clock based — immune to tab suspension) ──
     const timerEl        = document.getElementById('timer');
     const timeTakenInput = document.getElementById('timeTakenInput');
     const startWallTime  = Date.now();
@@ -448,13 +464,11 @@
         const now       = Date.now();
         const remaining = Math.max(0, Math.round((endWallTime - now) / 1000));
         const elapsed   = Math.round((now - startWallTime) / 1000) + alreadyElapsed;
-
-        const minutes = Math.floor(remaining / 60);
-        const seconds = remaining % 60;
+        const minutes   = Math.floor(remaining / 60);
+        const seconds   = remaining % 60;
         timerEl.textContent = `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
         if (remaining <= 300) timerEl.style.color = '#ef4444';
         timeTakenInput.value = elapsed;
-
         if (remaining <= 0) {
             clearInterval(timerInterval);
             submitExam('timeout');
@@ -463,14 +477,10 @@
     tick();
     const timerInterval = setInterval(tick, 1000);
 
-    // ── Tab switch detection (client-only, no server log) ─
-    // First switch  → toast warning when they return
-    // Second switch → auto-submit immediately
     document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
             tabSwitches++;
             document.getElementById('tabSwitchesInput').value = tabSwitches;
-
             if (!warnedOnce) {
                 warnedOnce = true;
                 document.addEventListener('visibilitychange', function showWarning() {
@@ -485,38 +495,16 @@
         }
     });
 
-    function showTabWarning() {
-        // Reuse the leave-toast UI with a different message
-        const toast = document.getElementById('leaveToast');
-        document.getElementById('leaveToastTitle').textContent = '⚠️ Tab switch detected!';
-        document.getElementById('leaveToastText').textContent  =
-            'Do not switch tabs again — your exam will be submitted automatically.';
-        // Hide the "Leave anyway" button — this is a warning, not a navigation prompt
-        document.getElementById('leaveToastLeave').style.display = 'none';
-        document.getElementById('leaveToastStay').textContent = 'Got it';
-        toast.classList.add('show');
-        // Auto-dismiss after 6 s
-        setTimeout(function () {
-            toast.classList.remove('show');
-            // Reset toast to its default leave-navigation state
-            resetLeaveToast();
-        }, 6000);
-    }
-
-    // ── Auto-submit on window close / reload ──────────────
-    window.addEventListener('beforeunload', function (e) {
+    function beforeUnloadHandler(e) {
         if (examSubmitted) return;
-
+        sessionStorage.setItem(ATTEMPT_KEY, 'submitted');
         const fd = new FormData(form);
         fd.set('time_taken', timeTakenInput.value);
         fd.set('tab_switches', tabSwitches);
-        navigator.sendBeacon("{% url 'student_portal:exam_submit' exam.id %}", fd);
+        navigator.sendBeacon("{% url 'student_portal:exam_submit' exam_uid=exam.uid %}", fd);
+    }
+    window.addEventListener('beforeunload', beforeUnloadHandler);
 
-        e.preventDefault();
-        e.returnValue = '';
-    });
-
-    // ── Autosave ─────────────────────────────────────────
     let autosaveTimeout = null;
     function autosave() {
         if (autosaveTimeout) clearTimeout(autosaveTimeout);
@@ -535,7 +523,6 @@
         }, 600);
     }
 
-    // ── Submit ───────────────────────────────────────────
     document.getElementById('confirmSubmitBtn').addEventListener('click', function () {
         submitExam('manual');
     });
@@ -552,17 +539,18 @@
             alert('🚫 You switched tabs a second time. Your exam is being submitted automatically.');
         }
 
+        sessionStorage.setItem(ATTEMPT_KEY, 'submitted');
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+        history.replaceState({ examDone: true }, '', RESULT_URL);
         form.submit();
     }
 
-    // ── Submit modal summary ───────────────────────────────
     document.getElementById('submitExamModal').addEventListener('show.bs.modal', function () {
         document.getElementById('summaryAnswered').textContent   = answered.size;
         document.getElementById('summaryMarked').textContent     = marked.size;
         document.getElementById('summaryUnanswered').textContent = totalQuestions - answered.size;
     });
 
-    // ── Leave toast ───────────────────────────────────────
     function resetLeaveToast() {
         document.getElementById('leaveToastTitle').textContent = 'Leave the exam?';
         document.getElementById('leaveToastText').textContent  =
@@ -582,16 +570,30 @@
         pendingLeaveHref = null;
     }
 
+    function showTabWarning() {
+        const toast = document.getElementById('leaveToast');
+        document.getElementById('leaveToastTitle').textContent = '⚠️ Tab switch detected!';
+        document.getElementById('leaveToastText').textContent  =
+            'Do not switch tabs again — your exam will be submitted automatically.';
+        document.getElementById('leaveToastLeave').style.display = 'none';
+        document.getElementById('leaveToastStay').textContent = 'Got it';
+        toast.classList.add('show');
+        setTimeout(function () {
+            toast.classList.remove('show');
+            resetLeaveToast();
+        }, 6000);
+    }
+
     document.getElementById('leaveToastStay').addEventListener('click', hideLeaveToast);
 
     document.getElementById('leaveToastLeave').addEventListener('click', function () {
         const href = pendingLeaveHref;
-        examSubmitted = true;   // suppress beforeunload beacon + prompt
+        examSubmitted = true;
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
         hideLeaveToast();
         if (href) window.location.href = href;
     });
 
-    // Intercept all internal nav links
     document.addEventListener('click', function (e) {
         if (examSubmitted) return;
         const link = e.target.closest('a[href]');
@@ -606,12 +608,21 @@
         showLeaveToast(link.href);
     });
 
-    // Escape key dismisses toast
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && pendingLeaveHref) hideLeaveToast();
     });
 
+    // ── popstate — always last so all functions above are defined ──
+    window.addEventListener('popstate', function (e) {
+        if (sessionStorage.getItem(ATTEMPT_KEY) === 'submitted' || examSubmitted) {
+            window.location.replace(RESULT_URL);
+            return;
+        }
+        // Re-push so back button still works if user dismisses the toast
+        history.pushState({ examActive: true }, '');
+        showLeaveToast(EXAM_LIST_URL);
+    });
+
 })();
 </script>
-
 {% endblock %}

@@ -51,6 +51,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    'student_portal.middleware.SingleSessionMiddleware',
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "edusetin_app.middleware.no_cache_middleware.NoCacheMiddleware",
@@ -150,7 +151,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'msvishnu673@gmail.com'
 EMAIL_HOST_PASSWORD = 'sjcf tyva aldr ashi' 
 DEFAULT_FROM_EMAIL = 'EduSetin <msvishnu673@gmail.com>'
-RAZORPAY_KEY_ID = "rzp_test_T0KXIIUpQI4hrE"
-RAZORPAY_KEY_SECRET = "PgvGWO7Eimerh4Q84JGQpfK9"
+RAZORPAY_KEY_ID = "rzp_live_T6g0mKf9I9cZV9"
+RAZORPAY_KEY_SECRET = "LsITc6tgyzTiBBv9dyf6hEjH"
 
 

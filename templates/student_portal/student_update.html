@@ -154,6 +154,88 @@
 input[type="password"], input[type="text"] {
   padding-right: 36px !important;
 }
+/* ══ MOBILE PATCH ══ */
+@media (max-width: 767px) {
+
+  /* hide canvas bg animation on small screens (perf) */
+  #imat-bg-canvas { display: none; }
+
+  /* hero: stack vertically, tighter padding */
+  .sp-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 16px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+  .sp-hero-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .sp-hst { flex: 1; padding: 8px 10px; }
+
+  /* sidebar col goes full-width and stacks above the form */
+  .col-lg-4, .col-lg-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* sp-field: switch from 2-col grid to single-column stack */
+  .sp-field {
+    display: flex !important;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 12px;
+  }
+  .sp-field-label { font-size: .82rem; }
+  .sp-field-input { width: 100%; }
+  .sp-field-error { grid-column: unset; }
+
+  /* avatar sidebar: center everything */
+  .admio-card .d-flex.flex-column { padding: 14px 12px; }
+  .avatar-upload-wrap { width: 72px; height: 72px; }
+  .avatar-upload-wrap img,
+  .avatar-upload-wrap .avatar-initials { width: 72px; height: 72px; }
+  .avatar-initials { font-size: 1.8rem; }
+
+  /* meta box inside sidebar */
+  .sd-meta-row { font-size: .78rem; }
+
+  /* password field: keep eye-icon perfectly aligned on mobile */
+  .sp-field-input[style*="position:relative"],
+  .sp-field-input[style*="position: relative"] {
+    display: block;
+  }
+
+  /* action bar: stack note above buttons, full-width buttons */
+  .admio-card .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .admio-card .d-flex.gap-3:last-child {
+    width: 100%;
+  }
+  .admio-card .d-flex.gap-3:last-child .btn-admio,
+  .admio-card .d-flex.gap-3:last-child .btn-blue-save {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* page header: tighten */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .page-header-actions { width: 100%; }
+  .page-header-actions .btn-admio { width: 100%; justify-content: center; }
+
+  /* cards: slightly tighter horizontal padding */
+  .admio-card-body, .admio-card-body-sm { padding: 0; }
+  .admio-card-header { padding: 12px 14px; }
+}
 </style>
 <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
 <!-- Page Header -->
@@ -377,6 +459,15 @@ input[type="password"], input[type="text"] {
 </div>
 
 <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    ['id_old_password', 'id_new_password1', 'id_new_password2'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.value = '';
+        setTimeout(function () { el.value = ''; }, 100);
+        setTimeout(function () { el.value = ''; }, 500);
+    });
+});
   const nameInput    = document.querySelector('input[name="full_name"]');
   const emailInput   = document.querySelector('input[name="email"]');
   const imageInput   = document.getElementById('id_profile_image');

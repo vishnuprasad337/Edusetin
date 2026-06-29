@@ -572,7 +572,7 @@
            data-duration="{{ plan.duration_days }}"
            data-price="{% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:0 }}{% endif %}"
            data-price-is-free="{% if plan.price == 0 %}1{% else %}0{% endif %}"
-           data-price-day="{% if plan.price == 0 %}No payment required, ever{% else %}≈ ₹{% widthratio plan.price plan.duration_days 1 %} per day{% endif %}"
+          
            data-checkout-url="{% url 'student_portal:plan_checkout' plan.uuid %}"
            data-features="{% for subject in plan.subjects.all %}{{ subject.name }}|{% endfor %}{% for submodule in plan.submodules.all %}{{ submodule.subject.name }} → {{ submodule.name }}|{% endfor %}{% for exam in plan.exams.all %}{{ exam.title }}|{% endfor %}Detailed explanations|Performance analytics">
       </div>
@@ -599,12 +599,10 @@
             {% endif %}
           </div>
           <div class="plan-price-meta">
-            {% if plan.price == 0 %}
-              No payment required, ever
-            {% else %}
-              ≈ <span class="accent">₹{% widthratio plan.price plan.duration_days 1 %}</span> per day
-            {% endif %}
-          </div>
+  {% if plan.price == 0 %}
+    No payment required, ever
+  {% endif %}
+</div>
         </div>
 
         <div class="plan-divider"></div>

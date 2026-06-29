@@ -248,7 +248,30 @@
     .notif-item.unread { background: rgba(55,138,221,.04); }
     .notif-item.unread .notif-title { color: #0c447c; }
     .topbar-btn-notification { position: relative; }
+/* ─── NOTIFICATION PANEL MOBILE FIX ─── */
+.notif-panel {
+  position: fixed;
+  right: 8px;
+  top: 60px;
+  width: calc(100vw - 16px);
+  max-width: 380px;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 99998;
+  box-sizing: border-box;
+}
 
+@media (max-width: 767px) {
+  .notif-panel {
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    top: 58px;
+    border-radius: 0 0 16px 16px;
+    max-height: 60vh;
+  }
+}
     /* ─── NOTIFICATION MODAL ─── */
     #notifModal { display: none; }
     #notifModal.active {
@@ -1042,6 +1065,8 @@ window.addEventListener('load', function () {
     }
   });
 })();
+/* ══ REDIRECT IF NO ACTIVE SUBSCRIPTION ══ */
+
 </script>
 
 {% block extra_js %}{% endblock %}

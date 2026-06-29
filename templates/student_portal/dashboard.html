@@ -814,18 +814,21 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
                 {% endif %}
               </div>
               {% if exam.in_progress_attempt %}
-                <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">
-                  Resume <i class="ti ti-arrow-right" aria-hidden="true"></i>
-                </a>
-              {% elif exam.last_attempt %}
-                <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">
-                  Retry <i class="ti ti-refresh" aria-hidden="true"></i>
-                </a>
-              {% else %}
-                <a href="{% url 'student_portal:exam_list' %}?open={{ exam.id }}" class="ds-ec-cta">
-                  Start Exam <i class="ti ti-arrow-right" aria-hidden="true"></i>
-                </a>
-              {% endif %}
+  <button type="button" class="ds-ec-cta"
+          onclick="window.location.href='{% url 'student_portal:exam_list' %}?open={{ exam.uid }}'">
+    Resume <i class="ti ti-player-play" aria-hidden="true"></i>
+  </button>
+{% elif exam.last_attempt %}
+  <button type="button" class="ds-ec-cta"
+          onclick="window.location.href='{% url 'student_portal:exam_list' %}?open={{ exam.uid }}'">
+    Retry <i class="ti ti-refresh" aria-hidden="true"></i>
+  </button>
+{% else %}
+  <button type="button" class="ds-ec-cta"
+          onclick="window.location.href='{% url 'student_portal:exam_list' %}?open={{ exam.uid }}'">
+    Start Exam <i class="ti ti-arrow-right" aria-hidden="true"></i>
+  </button>
+{% endif %}
             </div>
           </div>
         </div>
@@ -887,7 +890,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
               <span class="ds-fc-chip"><i class="ti ti-help-circle" aria-hidden="true"></i> {{ sg.question_count|default:"—" }}Q</span>
               <span class="ds-fc-chip"><i class="ti ti-refresh" aria-hidden="true"></i> {{ sg.attempt_count|default:"0" }} attempts</span>
               {% if sg.has_score %}
-                <span class="ds-fc-chip"><i class="ti ti-chart-bar" aria-hidden="true"></i> {{ sg.avg_score|floatformat:0 }}% avg</span>
+                <span class="ds-fc-chip"><i class="ti ti-file-description" aria-hidden="true"></i> {{ sg.avg_score|floatformat:0 }}% in exams</span>
               {% endif %}
             </div>
             <div class="ds-fc-hint">
@@ -908,7 +911,7 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
                 <div class="ds-fc-stat-val" style="color:{% if sg.has_score %}{% if sg.avg_score >= 70 %}var(--green){% elif sg.avg_score >= 50 %}var(--amber){% else %}var(--red){% endif %}{% else %}var(--muted){% endif %}">
                   {% if sg.has_score %}{{ sg.avg_score|floatformat:0 }}%{% else %}—{% endif %}
                 </div>
-                <div class="ds-fc-stat-lbl">Avg score</div>
+              <div class="ds-fc-stat-lbl">Exam avg</div>
               </div>
               <div class="ds-fc-stat">
                 <div class="ds-fc-stat-val">{{ sg.attempt_count|default:"0" }}</div>
@@ -1822,5 +1825,6 @@ document.addEventListener('click',function(e){
   window.addEventListener('resize', buildDots);
   buildDots();
 })();
+
 </script>
 {% endblock %}

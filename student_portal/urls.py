@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 
 app_name = 'student_portal'
 
@@ -68,9 +69,7 @@ path('plans/<uuid:plan_uuid>/checkout/', views.plan_checkout, name='plan_checkou
          ), 
          name='password_reset_confirm'),
     
-    path('password-reset-complete/', 
-         auth_views.PasswordResetCompleteView.as_view(
-             template_name='student_portal/password_reset_complete.html'
-         ), 
-         name='password_reset_complete'),
+    path('password-reset-complete/',
+     RedirectView.as_view(url=reverse_lazy('student_portal:login')),
+     name='password_reset_complete'),
 ]

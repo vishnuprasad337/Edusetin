@@ -50,9 +50,11 @@
             </div>
         </div>
 
-        <!-- Right Column: Upload Form -->
+        <!-- Right Column: Upload Form + Recent Questions -->
         <div class="col-12 col-lg-5">
-            <div class="card shadow-sm border-0">
+
+            <!-- Upload Card -->
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom pt-3 pb-2">
                     <h6 class="mb-0 fw-semibold">Upload Excel File</h6>
                 </div>
@@ -72,9 +74,53 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Recent Questions Widget -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom pt-3 pb-2 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold">Recent Questions</h6>
+                    <a href="{% url 'student_management:question_list' %}" class="small text-primary text-decoration-none">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush" style="max-height:340px;overflow-y:auto;">
+                        {% for q in recent_questions %}
+                        <li class="list-group-item px-3 py-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <!-- Icon -->
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10"
+                                     style="width:36px;height:36px;">
+                                    <i class="fas fa-question text-danger" style="font-size:13px;"></i>
+                                </div>
+                                <!-- Text -->
+                                <div class="flex-grow-1" style="min-width:0;">
+                                    <div>
+                                        <span class="fw-bold text-dark">{{ q.subject.name }}</span>
+                                        <span class="text-muted fw-normal"> — {{ q.question_text|truncatechars:45 }}</span>
+                                    </div>
+                                    <div class="text-muted mt-1 small">
+                                        {{ q.created_at|timesince }} ago
+                                        {% if q.source %} · <span class="text-uppercase">{{ q.source }}</span>{% endif %}
+                                    </div>
+                                </div>
+                                <!-- Date -->
+                                <div class="flex-shrink-0 text-end fw-medium small text-secondary" style="white-space:nowrap;">
+                                    {{ q.created_at|date:"M j, Y" }}
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center text-muted py-4">
+                            No recent questions.
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
@@ -172,7 +218,6 @@
                 </div>
                 {% endif %}
 
-
                 <!-- ── No errors: success state ── -->
                 {% if not import_report.errors and not import_report.duplicate_rows and not import_report.media_missing_rows %}
                     <div class="alert alert-success d-flex align-items-center gap-2 mb-0">
@@ -269,6 +314,9 @@
             modal.show();
         }
     });
+
+
+
 </script>
 {% endif %}
 

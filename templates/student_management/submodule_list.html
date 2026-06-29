@@ -96,6 +96,7 @@
                     <th>Name</th>
                     <th>Subject</th>
                     <th>Order</th>
+                    <th>Created at</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -107,6 +108,7 @@
                     data-subject="{{ submodule.subject.name|lower }}"
                     data-subject-id="{{ submodule.subject.id }}"
                     data-status="{% if submodule.is_active %}active{% else %}inactive{% endif %}"
+                     data-created="{{ submodule.created_at|date:'Y-m-d' }}"
                 >
                     <td>
                         {% if submodule.image %}
@@ -122,6 +124,7 @@
                     <td class="fw-semibold">{{ submodule.name }}</td>
                     <td>{{ submodule.subject.name }}</td>
                     <td>{{ submodule.order }}</td>
+                    <td class="text-muted small">{{ submodule.created_at|date:"M j, Y" }}</td>
                     <td>
                         {% if submodule.is_active %}
                             <span class="badge bg-success">Active</span>
@@ -147,7 +150,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">No submodules found.</td>
+                    <td colspan="7" class="text-center py-4 text-muted">No submodules found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -311,7 +314,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (total === 0) {
             const tr = document.createElement("tr");
             tr.id = "noResultRow";
-            tr.innerHTML = `<td colspan="6" class="text-center py-5 text-muted">
+            tr.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">
                 <i class="fas fa-search fa-2x mb-2 d-block opacity-25"></i>
                 No submodules match the current filters.
                 <div class="small mt-1">Try adjusting your search or filters.</div>

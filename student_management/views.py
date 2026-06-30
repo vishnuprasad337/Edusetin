@@ -893,6 +893,17 @@ def question_delete(request, id):
         messages.success(request, "Question deleted successfully.")
         return redirect('student_management:question_list')
     return redirect('student_management:question_detail', id=question.id)
+@admin_login_required
+def question_bulk_delete(request):
+    if request.method=='POST':
+        ids=request.POST.getlist('question_ids')
+        if not ids:
+            messages.warning("No question were selected.")
+        else:
+            count=Question.objects.filter(id__in=ids).count()
+            Question.objects.filter(id__in=ids).delete()
+            messages.success(request, f"{count} question(s) deleted successfully.")
+    return redirect('student_management:question_list')
 
 
 @admin_login_required

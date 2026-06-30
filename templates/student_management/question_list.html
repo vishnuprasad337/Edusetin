@@ -13,13 +13,22 @@
                class="btn btn-sm btn-outline-success">
                 <i class="fas fa-file-excel me-1"></i> Export Excel
             </a>
-            
+
             <a href="{% url 'student_management:question_create' %}"
                class="btn btn-sm btn-primary">
                 <i class="fas fa-plus me-1"></i> Add Question
             </a>
         </div>
     </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
 
     <!-- ── Filter bar ── -->
     <div class="row g-2 align-items-end mb-3">
@@ -88,6 +97,10 @@
             <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn">
                 <i class="fas fa-times"></i> Clear
             </button>
+             <button type="button" class="btn btn-danger btn-sm ms-auto" id="bulkDeleteBtn" disabled
+                    data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                <i class="fas fa-trash me-1"></i> Delete Selected (<span id="bulkBtnCount">0</span>)
+            </button>
         </div>
 
     </div>
@@ -97,81 +110,123 @@
         <span class="badge bg-primary fw-normal" id="filterBadgeText"></span>
     </div>
 
-    <!-- ── Table ── -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle" id="questionsTable">
-            <thead class="table-light">
-                <tr>
-                    <th style="width:60px;">ID</th>
-                    <th>Subject</th>
-                    <th>Submodule</th>
-                    <th>Question Preview</th>
-                    <th>Source</th>
-                    <th>Year</th>
-                    <th>imported At</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="questionsTableBody">
-                {% for question in questions %}
-                <tr
-                    data-subject-id="{{ question.subject.id }}"
-                    data-subject="{{ question.subject.name|lower }}"
-                    data-submodule-id="{{ question.submodule.id|default:'' }}"
-                    data-submodule="{{ question.submodule.name|lower|default:'' }}"
-                    data-preview="{{ question.question_text|lower|truncatechars:200 }}"
-                    data-source="{{ question.source|default:''|lower }}"
-                    data-year="{{ question.year|default:'' }}"
-                    data-created="{{ question.created_at|date:'Y-m-d' }}"
-                    data-status="{% if question.is_active %}active{% else %}inactive{% endif %}"
-                >
-                    <td class="text-muted" style="font-size:12px;">#{{ question.id }}</td>
-                    <td>
-                        <span class="badge bg-secondary" style="font-size:11px;">{{ question.subject.name }}</span>
-                    </td>
-                    <td>
-                        {% if question.submodule %}
-                            <span class="badge bg-light text-dark border" style="font-size:11px;">{{ question.submodule.name }}</span>
-                        {% else %}
-                            <span class="text-muted">—</span>
-                        {% endif %}
-                    </td>
-                    <td style="max-width:300px; font-size:13px;">{{ question.question_text|truncatechars:90 }}</td>
-                    <td>
-                        {% if question.source %}
-                            <span class="badge bg-info text-dark" style="font-size:11px;">{{ question.source }}</span>
-                        {% else %}
-                            <span class="text-muted">—</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-muted" style="font-size:13px;">{{ question.year|default:"—" }}</td>
-                    <td class="text-muted" style="font-size:12px;">{{ question.created_at|date:"M j, Y" }}</td>
-                    <td>
-                        {% if question.is_active %}
-                            <span class="badge bg-success">Active</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end">
-                        <a href="{% url 'student_management:question_detail' question.id %}"
-                           class="btn btn-sm btn-outline-primary">View</a>
-                        <a href="{% url 'student_management:question_edit' question.id %}"
-                           class="btn btn-sm btn-outline-secondary">Edit</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="9" class="text-center py-4 text-muted">
-                        No questions found.
-                        <a href="{% url 'student_management:question_create' %}">Create one now.</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <!-- ── Bulk action bar ── -->
+    <form method="post" action="{% url 'student_management:question_bulk_delete' %}" id="bulkDeleteForm">
+        {% csrf_token %}
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="text-muted small" id="selectedInfo" style="display:none;">
+                <span id="selectedCount">0</span> selected
+            </div>
+           
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle" id="questionsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:36px;">
+                            <input type="checkbox" id="selectAllCheckbox" class="form-check-input">
+                        </th>
+                        <th style="width:60px;">ID</th>
+                        <th>Subject</th>
+                        <th>Submodule</th>
+                        <th>Question Preview</th>
+                        <th>Source</th>
+                        <th>Year</th>
+                        <th>imported At</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="questionsTableBody">
+                    {% for question in questions %}
+                    <tr
+                        data-subject-id="{{ question.subject.id }}"
+                        data-subject="{{ question.subject.name|lower }}"
+                        data-submodule-id="{{ question.submodule.id|default:'' }}"
+                        data-submodule="{{ question.submodule.name|lower|default:'' }}"
+                        data-preview="{{ question.question_text|lower|truncatechars:200 }}"
+                        data-source="{{ question.source|default:''|lower }}"
+                        data-year="{{ question.year|default:'' }}"
+                        data-created="{{ question.created_at|date:'Y-m-d' }}"
+                        data-status="{% if question.is_active %}active{% else %}inactive{% endif %}"
+                    >
+                        <td>
+                            <input type="checkbox" class="form-check-input row-check"
+                                   name="question_ids" value="{{ question.id }}">
+                        </td>
+                        <td class="text-muted" style="font-size:12px;">#{{ question.id }}</td>
+                        <td>
+                            <span class="badge bg-secondary" style="font-size:11px;">{{ question.subject.name }}</span>
+                        </td>
+                        <td>
+                            {% if question.submodule %}
+                                <span class="badge bg-light text-dark border" style="font-size:11px;">{{ question.submodule.name }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="max-width:300px; font-size:13px;">{{ question.question_text|truncatechars:90 }}</td>
+                        <td>
+                            {% if question.source %}
+                                <span class="badge bg-info text-dark" style="font-size:11px;">{{ question.source }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted" style="font-size:13px;">{{ question.year|default:"—" }}</td>
+                        <td class="text-muted" style="font-size:12px;">{{ question.created_at|date:"M j, Y" }}</td>
+                        <td>
+                            {% if question.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'student_management:question_detail' question.id %}"
+                               class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'student_management:question_edit' question.id %}"
+                               class="btn btn-sm btn-outline-secondary">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">
+                            No questions found.
+                            <a href="{% url 'student_management:question_create' %}">Create one now.</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ── Bulk delete confirmation modal ── -->
+        <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-semibold text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Delete Questions
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-muted small">
+                        Are you sure you want to delete <strong><span id="modalCount">0</span></strong> selected question(s)? This cannot be undone.
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 
     <!-- Footer: count + pagination -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 gap-2">
@@ -199,6 +254,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const rowCountLabel2  = document.getElementById("rowCountLabel2");
     const paginationNav   = document.getElementById("paginationNav");
 
+    // Bulk-select elements
+    const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+    const bulkDeleteBtn     = document.getElementById("bulkDeleteBtn");
+    const bulkBtnCount      = document.getElementById("bulkBtnCount");
+    const modalCount        = document.getElementById("modalCount");
+    const selectedInfo      = document.getElementById("selectedInfo");
+    const selectedCount     = document.getElementById("selectedCount");
+
     if (!tableBody) return;
 
     let currentPage   = 1;
@@ -225,7 +288,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function resetHighlights() {
         allRows.forEach(row => {
-            [2, 4].forEach(n => {
+            // Subject is col 3, Question Preview is col 5 (checkbox col shifted everything by 1)
+            [3, 5].forEach(n => {
                 const cell = row.querySelector(`td:nth-child(${n})`);
                 if (cell && cell.hasAttribute("data-original"))
                     cell.innerHTML = cell.getAttribute("data-original");
@@ -326,6 +390,64 @@ document.addEventListener("DOMContentLoaded", function () {
         paginationNav.appendChild(ul);
     }
 
+    // ── Bulk-select helpers ──
+    function getVisibleRows() {
+        return allRows.filter(row => row.style.display !== "none");
+    }
+
+    function updateBulkUI() {
+        const checkedBoxes = tableBody.querySelectorAll(".row-check:checked");
+        const count = checkedBoxes.length;
+
+        bulkDeleteBtn.disabled = count === 0;
+        bulkBtnCount.textContent = count;
+        modalCount.textContent = count;
+
+        if (count > 0) {
+            selectedInfo.style.display = "";
+            selectedCount.textContent = count;
+        } else {
+            selectedInfo.style.display = "none";
+        }
+
+        // Sync "select all" checkbox state against currently visible rows
+        const visibleChecks = getVisibleRows().map(r => r.querySelector(".row-check")).filter(Boolean);
+        const visibleChecked = visibleChecks.filter(cb => cb.checked).length;
+        if (visibleChecks.length === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (visibleChecked === visibleChecks.length) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (visibleChecked === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+
+    selectAllCheckbox.addEventListener("change", () => {
+        // Only (de)select rows visible on the current page
+        getVisibleRows().forEach(row => {
+            const cb = row.querySelector(".row-check");
+            if (cb) cb.checked = selectAllCheckbox.checked;
+        });
+        updateBulkUI();
+    });
+
+    tableBody.addEventListener("change", e => {
+        if (e.target.classList.contains("row-check")) updateBulkUI();
+    });
+
+    document.getElementById("bulkDeleteForm").addEventListener("submit", function (e) {
+        const checked = tableBody.querySelectorAll(".row-check:checked");
+        if (checked.length === 0) {
+            e.preventDefault();
+        }
+    });
+
     function render() {
         resetHighlights();
         const filtered   = getFiltered();
@@ -345,8 +467,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (i >= start && i < end) {
                 row.style.display = "";
                 if (activeSearch) {
-                    highlightCell(row.querySelector("td:nth-child(2)"), activeSearch);
-                    highlightCell(row.querySelector("td:nth-child(4)"), activeSearch);
+                    highlightCell(row.querySelector("td:nth-child(3)"), activeSearch);
+                    highlightCell(row.querySelector("td:nth-child(5)"), activeSearch);
                 }
             }
         });
@@ -354,7 +476,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (total === 0) {
             const tr = document.createElement("tr");
             tr.id = "noResultRow";
-            tr.innerHTML = `<td colspan="8" class="text-center py-5 text-muted">
+            tr.innerHTML = `<td colspan="10" class="text-center py-5 text-muted">
                 <i class="fas fa-search fa-2x mb-2 d-block opacity-25"></i>
                 No questions match the current filters.
                 <div class="small mt-1">Try adjusting your search or filters.</div>
@@ -369,6 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updateBadge();
         updateExportUrl();
         renderPagination(total);
+        updateBulkUI();
     }
 
     applyFilterBtn.addEventListener("click", () => {

@@ -551,7 +551,7 @@
     .price-card.featured:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
     .price-popular { display: none; }
     .price-plan { font-size: 0.92rem; font-weight: 800; font-family: var(--font-display); color: var(--blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
-    .price-amount { font-family: var(--font-display); font-size: 3.4rem; font-weight: 600; color: #0B1E3D; line-height: 1; margin-bottom: 7px; letter-spacing: -3px; }
+    .price-amount { font-family: var(--font-display); font-size: 2.6rem; font-weight: 600; color: #0B1E3D; line-height: 1; margin-bottom: 7px; letter-spacing: -3px; }
     .price-amount sup { font-size: 1.2rem; vertical-align: super; margin-right: 2px; }
     .price-amount sub { font-size: .95rem; font-weight: 500; opacity: .60; }
     .price-desc { font-size: 0.9375rem; color: #4B5563; margin-bottom: 24px; font-family: var(--font-body); font-weight: 400; line-height: 1.7; }
@@ -842,6 +842,120 @@
     gap: 32px;
   }
 }
+/* ── CTA SECTION — Mobile ── */
+@media (max-width: 768px) {
+  .cta-section { padding: 60px 0; }
+  .cta-inner { padding: 0 4px; }
+  .cta-inner h2 {
+    font-size: clamp(1.9rem, 7vw, 2.6rem);
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .cta-inner p {
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+  }
+  .cta-btns {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .cta-btns .btn-hero-primary,
+  .cta-btns .btn-hero-ghost {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ── FOOTER — Mobile ── */
+@media (max-width: 768px) {
+  .footer { padding: 48px 0 0; }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  /* Brand block: centered, full-width, no side border */
+  .footer-brand {
+    text-align: center;
+    padding-right: 0;
+    padding-bottom: 32px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 0;
+  }
+
+  .footer-logo-wrap img {
+    height: 80px;       /* scale down from 220px */
+    max-width: 200px;
+    margin: 0 auto;     /* center it */
+  }
+
+  .footer-brand p {
+    font-size: 0.9rem;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .footer-contact {
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  .footer-socials {
+    justify-content: center;
+  }
+
+  /* Link columns: side by side in a 2-col grid */
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  /* Wrap the two link cols in a row */
+  .footer-col {
+    padding-left: 0;
+    padding-top: 28px;
+    padding-bottom: 28px;
+    border-left: none !important;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .footer-col h4 { font-size: 1rem; margin-bottom: 16px; }
+  .footer-col ul li { margin-bottom: 10px; }
+  .footer-col ul li a { font-size: 0.9rem; }
+
+  /* Put the two cols side by side */
+  .footer-cols-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .footer-cols-row .footer-col:first-child {
+    border-right: 1px solid rgba(255,255,255,.08);
+    border-bottom: none;
+    padding-right: 16px;
+  }
+  .footer-cols-row .footer-col:last-child {
+    border-bottom: none;
+    padding-left: 16px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 4px;
+    padding: 16px 0;
+  }
+
+  .footer-bottom p { font-size: 11px; }
+}
 /* ══ WAVE PATTERN BACKGROUNDS ══ */
 .section-wave-canvas {
   position: absolute; top: 0; left: 0;
@@ -1026,6 +1140,147 @@
     opacity: 1 !important;
     transform: none !important;
   }
+}
+/* ══════════════════════════════════════════
+   MOBILE FONT-SIZE FIXES (all sections)
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Global overflow guard (FIXED — no longer touches html/body) ── */
+  * {
+    min-width: 0;
+  }
+  img, svg, canvas, video {
+    max-width: 100%;
+  }
+
+  /* keep clipping only at the section level, not document level */
+  .section,
+  .hero,
+  .features,
+  .footer {
+    overflow-x: hidden;
+  }
+
+  /* ── Base rhythm ── */
+  html { font-size: 16px; }
+  body { font-size: 1.0rem; line-height: 1.68; }
+
+  /* ── Section-level heading hierarchy (used everywhere) ── */
+  .lbl          { font-size: 0.88rem; letter-spacing: 2px; margin-bottom: 14px; }
+  .section-h    {
+    font-size: 2.5rem; line-height: 1.1; letter-spacing: -0.8px; margin-bottom: 16px;
+    word-wrap: break-word; overflow-wrap: break-word;
+  }
+  .section-desc { font-size: 1.15rem; line-height: 1.62; max-width: 100%; }
+  .section-head { margin-bottom: 36px; }
+  .section      { padding: 58px 0; }
+  .container    { padding: 0 18px; max-width: 100%; box-sizing: border-box; }
+
+  /* ── Hero ── */
+  .hero-eyebrow   { font-size: 0.88rem; padding: 6px 16px; margin-bottom: 16px; }
+  .hero-content h1{
+    font-size: 2.65rem; line-height: 1.1; letter-spacing: -0.8px; margin-bottom: 16px;
+    word-wrap: break-word; overflow-wrap: break-word;
+  }
+  .hero-content p { font-size: 1.15rem; line-height: 1.62; margin-bottom: 26px; }
+  .btn-hero-primary,
+  .btn-hero-ghost { font-size: 1.0rem; padding: 13px 22px; }
+  .hero-content-wrap { max-width: 100%; box-sizing: border-box; }
+  .hero-actions { flex-wrap: wrap; }
+
+  /* ── About feature cards ── */
+  .about-feat-title { font-size: 1.35rem; margin-bottom: 9px; }
+  .about-feat-desc  { font-size: 1.1rem; line-height: 1.58; }
+
+  /* ── Why-choose cards ── */
+  .why-card h3 { font-size: 1.35rem; word-wrap: break-word; }
+  .why-card p  { font-size: 1.1rem; line-height: 1.58; }
+
+  /* ── Everything-included checklist ── */
+  .check-row span  { font-size: 1.0rem; }
+  .check-row       { word-wrap: break-word; }
+  .mock-title      { font-size: 11px; }
+  .mock-stat-val   { font-size: 1.5rem; }
+  .mock-stat-lbl   { font-size: 10px; }
+  .mock-bar-lbl    { font-size: 12px; }
+
+  /* ── Platform feature cards (fc-*) ── */
+  .fc-cat-label { font-size: 13px; margin-bottom: 9px; }
+  .fc-title     {
+    font-size: 2.0rem; line-height: 1.1; letter-spacing: -0.6px; margin-bottom: 9px;
+    word-wrap: break-word; overflow-wrap: break-word;
+  }
+  .fc-desc      { font-size: 1.05rem; line-height: 1.52; margin-bottom: 12px; }
+  .fc-num       { font-size: 1.0rem; }
+  .fc-btn-primary, .fc-btn-secondary {
+    font-size: 12px; padding: 10px 17px; letter-spacing: 0.7px;
+    white-space: nowrap;
+  }
+  .fc-btns { max-width: 100%; }
+  .fc-card-surface { max-width: 100%; box-sizing: border-box; overflow: hidden; }
+
+  /* ── How it works ── */
+  .how-num   { width: 57px; height: 57px; font-size: 1.35rem; flex-shrink: 0; }
+  .how-step h3 { font-size: 1.55rem; word-wrap: break-word; }
+  .how-step p  { font-size: 1.1rem; line-height: 1.58; }
+  .how-step-btn { font-size: 0.9rem; padding: 9px 18px; }
+  .how-step { max-width: 100%; }
+
+  /* ── Exam experience ── */
+  .ef-lbl          { font-size: 0.95rem; }
+  .exam-ui-head h4 { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .timer-pill      { font-size: 13.5px; flex-shrink: 0; }
+  .q-text          { font-size: 16.5px; word-wrap: break-word; }
+  .opt-text        { font-size: 15px; word-wrap: break-word; }
+  .exam-prog-txt   { font-size: 12.5px; }
+  .exam-nav-btn    { font-size: 13.5px; }
+  .exam-ui-head    { gap: 8px; }
+
+  /* ── Pricing ── */
+  .price-plan   { font-size: 1.0rem; }
+  .price-amount { font-size: 2.5rem; letter-spacing: -1.2px; word-wrap: break-word; }
+  .price-desc   { font-size: 1.05rem; line-height: 1.62; }
+  .price-feat   { font-size: 1.05rem; word-wrap: break-word; }
+  .btn-price    { font-size: 1.05rem; }
+  .price-card   { max-width: 100%; box-sizing: border-box; overflow: hidden; }
+
+  /* ── FAQ ── */
+  .faq-num      { font-size: 1.05rem; }
+  .faq-text     { font-size: 1.25rem; word-wrap: break-word; }
+  .faq-a-inner  { font-size: 1.12rem; line-height: 1.58; max-width: 100%; box-sizing: border-box; }
+
+  /* ── CTA ── */
+  .cta-inner p { font-size: 1.12rem; line-height: 1.68; }
+
+  /* ── Footer ── */
+ .footer-logo-wrap {
+  padding: 0;
+  margin: 0 auto 0;
+  display: flex;
+  justify-content: center;
+  width: fit-content;
+}
+.footer-logo-wrap img { height: 170px; max-width: 320px; margin: 0; display: block; }
+.footer-brand p       { font-size: 1.08rem; line-height: 1.62; word-wrap: break-word; }
+.footer-contact       { font-size: 1.08rem; flex-wrap: wrap; }
+.footer-col h4        { font-size: 1.2rem; }
+.footer-col ul li a   { font-size: 1.08rem; word-wrap: break-word; }
+.footer-bottom p      { font-size: 12px; }
+.footer-grid          { max-width: 100%; box-sizing: border-box; }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 15px; }
+
+  .section-h        { font-size: 2.1rem; }
+  .hero-content h1  { font-size: 2.25rem; }
+  .fc-title         { font-size: 1.7rem; }
+  .price-amount     { font-size: 2.25rem; }
+  .faq-text         { font-size: 1.15rem; }
+  .about-feat-title { font-size: 1.25rem; }
+  .why-card h3      { font-size: 1.25rem; }
+  .how-step h3      { font-size: 1.3rem; }
 }
   </style>
 </head>
@@ -1641,7 +1896,7 @@
             {% if total >= 3 and forloop.counter == 2 %}<div class="price-popular">Most Popular</div>
             {% elif total < 3 and forloop.last %}<div class="price-popular">Best Value</div>{% endif %}
             <div class="price-plan">{{ plan.name }}</div>
-            <div class="price-amount">{% if plan.price == 0 %}Free{% else %}<sup>₹</sup>{{ plan.price|floatformat:0 }}<sub>/{{ plan.duration_days }}d</sub>{% endif %}</div>
+            <div class="price-amount">{% if plan.price == 0 %}Free{% else %}<sup>₹</sup>{{ plan.price|floatformat:0 }}</sub>{% endif %}</div>
             <div class="price-desc">{% if plan.description %}{{ plan.description }}{% else %}Valid for {{ plan.duration_days }} days.{% endif %}</div>
             <div class="price-divider"></div>
             <ul class="price-feats">
@@ -2547,6 +2802,8 @@ if(curvePath && curveWrap){
   }
 
 })();
+
+
 
 </script>
 </body>

@@ -377,17 +377,61 @@
         }
         .footer-item i { color: var(--blue-400); font-size: 12px; }
 
-        /* Alert */
-        .alert-stack { margin-bottom: 18px; }
-        .alert-stack .alert {
-            font-size: 0.84rem;
-            border-radius: 10px;
-            padding: 10px 14px;
-        }
         #imat-bg-canvas {
-  position: fixed; inset: 0; width: 100%; height: 100%;
-  pointer-events: none; z-index: 0;
-}
+            position: fixed; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ══ TOAST NOTIFICATIONS ══ */
+        #toastContainer {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+        }
+        .toast-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 10px 30px rgba(15,26,46,.18);
+            border-left: 4px solid var(--blue-600);
+            font-size: .86rem;
+            font-weight: 500;
+            color: var(--ink);
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity .3s ease, transform .3s ease;
+        }
+        .toast-item.show { opacity: 1; transform: translateX(0); }
+        .toast-item.hide { opacity: 0; transform: translateX(30px); }
+        .toast-item.toast-success { border-left-color: #16a34a; }
+        .toast-item.toast-error,
+        .toast-item.toast-danger   { border-left-color: #dc2626; }
+        .toast-item.toast-warning  { border-left-color: #d97706; }
+        .toast-item.toast-info     { border-left-color: var(--blue-600); }
+        .toast-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+        .toast-success .toast-icon { color: #16a34a; }
+        .toast-error .toast-icon,
+        .toast-danger .toast-icon  { color: #dc2626; }
+        .toast-warning .toast-icon { color: #d97706; }
+        .toast-info .toast-icon    { color: var(--blue-600); }
+        .toast-close {
+            margin-left: auto;
+            background: none; border: none; cursor: pointer;
+            color: var(--muted); font-size: 13px; padding: 0; flex-shrink: 0;
+        }
+        .toast-close:hover { color: var(--ink); }
+
+        @media (max-width: 480px) {
+            #toastContainer { top: 14px; right: 14px; left: 14px; max-width: 100%; }
+        }
 
         @media (max-width: 900px) {
             .auth-aside { width: 360px; padding: 40px 32px; }
@@ -404,6 +448,18 @@
 </head>
 <body>
     <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
+
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+
+    {% if messages %}
+    <ul id="toastSource" style="display:none;">
+      {% for message in messages %}
+      <li data-tag="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
     <!-- Left panel -->
     <aside class="auth-aside">
 
@@ -451,8 +507,6 @@
             </div>
         </div>
 
-       
-
     </aside>
 
     <!-- Right panel -->
@@ -461,17 +515,6 @@
 
             <h2 class="auth-heading">Welcome back</h2>
             <p class="auth-subheading">Sign in to continue your IMAT preparation</p>
-
-            <div class="alert-stack">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            </div>
 
             <form method="POST" action="{% url 'student_portal:login' %}">
                 {% csrf_token %}
@@ -515,7 +558,6 @@
                 {% endfor %}
 
                 <div class="row-between">
-                    
                     <a href="{% url 'student_portal:password_reset' %}" class="forgot-link">Forgot password?</a>
                 </div>
 
@@ -552,6 +594,50 @@ function togglePassword(fieldId) {
     }
 }
 
+/* ══ TOAST NOTIFICATIONS FROM DJANGO MESSAGES ══ */
+(function(){
+  var source = document.getElementById('toastSource');
+  var container = document.getElementById('toastContainer');
+  if (!source || !container) return;
+
+  var ICONS = {
+    success: 'fa-circle-check',
+    error:   'fa-circle-exclamation',
+    danger:  'fa-circle-exclamation',
+    warning: 'fa-triangle-exclamation',
+    info:    'fa-circle-info'
+  };
+
+  var items = source.querySelectorAll('li');
+  items.forEach(function(li, idx){
+    var tag = li.dataset.tag || 'info';
+    var text = li.textContent.trim();
+    var icon = ICONS[tag] || ICONS.info;
+
+    var toast = document.createElement('div');
+    toast.className = 'toast-item toast-' + tag;
+    toast.innerHTML =
+      '<i class="fas ' + icon + ' toast-icon"></i>' +
+      '<span>' + text + '</span>' +
+      '<button class="toast-close" aria-label="Dismiss"><i class="fas fa-xmark"></i></button>';
+
+    container.appendChild(toast);
+
+    setTimeout(function(){ toast.classList.add('show'); }, 50 + idx * 80);
+
+    function removeToast(){
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      setTimeout(function(){ toast.remove(); }, 300);
+    }
+
+    toast.querySelector('.toast-close').addEventListener('click', removeToast);
+    setTimeout(removeToast, 5000 + idx * 300);
+  });
+
+  source.remove();
+})();
+
 /* ══ ANIMATED BACKGROUND ENGINE v2 — ambient glow, parallax, DNA rungs,
    atom orbits, and a knowledge-graph of floating symbols ══ */
 (function(){
@@ -570,7 +656,6 @@ function togglePassword(fieldId) {
     grid:  function() { return DARK() ? 'rgba(91,141,238,'  : 'rgba(26,86,219,'; },
   };
 
-  /* ── crisp, DPR-aware resize ── */
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth; H = window.innerHeight;
@@ -587,14 +672,12 @@ function togglePassword(fieldId) {
 
   var rng = function(s) { var x = Math.sin(s*9301+49297)*233280; return x-Math.floor(x); };
 
-  /* ── subtle mouse parallax ── */
   var mouseTX=0, mouseTY=0, mouseX=0, mouseY=0;
   window.addEventListener('mousemove', function(e){
     mouseTX = (e.clientX / window.innerWidth  - 0.5) * 2;
     mouseTY = (e.clientY / window.innerHeight - 0.5) * 2;
   });
 
-  /* ── ambient glow orbs (background atmosphere) ── */
   var orbs = [
     { cx:0.16, cy:0.22, r:380, col:'16,185,129',  spx:0.00013, spy:0.00017, ph:0 },
     { cx:0.84, cy:0.68, r:420, col:'59,130,246',  spx:0.00011, spy:0.00014, ph:2 },
@@ -615,7 +698,6 @@ function togglePassword(fieldId) {
     ctx.restore();
   }
 
-  /* ── pulsing dot grid, slight parallax ── */
   function drawGrid(t) {
     var gs=36, pulse=0.045+0.02*Math.sin(t*0.0005);
     var ox = mouseX*10, oy = mouseY*10;
@@ -627,7 +709,6 @@ function togglePassword(fieldId) {
     ctx.restore();
   }
 
-  /* ── DNA helix with base-pair rungs + glowing nodes ── */
   var helixData=[
     {x:W*0.06,y0:0,y1:H,speed:0.006,cA:'#10b981',cB:'#3b82f6',t:0},
     {x:W*0.94,y0:0,y1:H,speed:0.005,cA:'#8b5cf6',cB:'#ec4899',t:0}
@@ -663,7 +744,6 @@ function togglePassword(fieldId) {
     ctx.restore();
   }
 
-  /* ── small orbiting "atom" accents (chemistry/physics) ── */
   var atoms=[
     {cx:0.13,cy:0.14,r:30,speed:0.018,col:'139,92,246'},
     {cx:0.88,cy:0.90,r:26,speed:-0.022,col:'59,130,246'}
@@ -693,7 +773,6 @@ function togglePassword(fieldId) {
     ctx.restore();
   }
 
-  /* ── floating symbols, now linked into a soft knowledge graph ── */
   var SYMS=['Σ','∫','π','λ','α','β','γ','H₂O','CO₂','ATP','DNA','E=mc²','F=ma','pH','A','B','C','D','?','✓'];
   var SYM_COLS=[PAL.bio,PAL.chem,PAL.phys,PAL.math,PAL.logic];
   var floatSyms = [];
@@ -737,7 +816,6 @@ function togglePassword(fieldId) {
     ctx.restore();
   }
 
-  /* ── soft gradient scan line ── */
   var scanY = -40;
   function drawScan(){
     scanY+=0.6; if(scanY>H+40) scanY=-40;

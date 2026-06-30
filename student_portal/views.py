@@ -1472,13 +1472,25 @@ def exam_result(request, attempt_slug):
 # ─────────────────────────────────────────────
 # EXAM HISTORY
 # ─────────────────────────────────────────────
- 
 @never_cache
 @login_required(login_url='student_portal:login')
 def exam_history(request):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
+
+    from student_management.models import Payment
+
+    has_active_subscription = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+    ).exists()
+
+    if not has_active_subscription:
+        return render(request, 'student_portal/exam_history.html', {
+            'attempts': ExamAttempt.objects.none(),
+            'has_active_subscription': False,
+        })
 
     attempts = (
         ExamAttempt.objects.filter(student=student)
@@ -1489,6 +1501,7 @@ def exam_history(request):
 
     return render(request, 'student_portal/exam_history.html', {
         'attempts': attempts,
+        'has_active_subscription': True,
     })
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -1899,14 +1912,30 @@ def quiz_history(request):
     student = _get_student_or_redirect(request)
     if not student:
         return redirect('student_portal:login')
- 
+
+    from student_management.models import Payment
+
+    has_active_subscription = student.payments.filter(
+        status=Payment.STATUS_SUCCESS,
+        expires_at__gt=timezone.now(),
+    ).exists()
+
+    if not has_active_subscription:
+        return render(request, 'student_portal/quiz_history.html', {
+            'attempts': QuizAttempt.objects.none(),
+            'has_active_subscription': False,
+        })
+
     attempts = (
         QuizAttempt.objects.filter(student=student, status=QuizAttempt.STATUS_SUBMITTED)
         .select_related('subject', 'submodule')
         .order_by('-submitted_at')
     )
- 
-    return render(request, 'student_portal/quiz_history.html', {'attempts': attempts})
+
+    return render(request, 'student_portal/quiz_history.html', {
+        'attempts': attempts,
+        'has_active_subscription': True,
+    })
 from django.utils.timesince import timesince
 @login_required
 def get_notifications(request):
@@ -2079,7 +2108,23 @@ def landing_page(request):
     ).order_by('price')
     return render(request, 'student_portal/index.html', {'plans': plans})
  
+from django.contrib.auth import views as auth_views
+from django.contrib import messages
+from django.urls import reverse_lazy
 
+class StudentPasswordResetView(auth_views.PasswordResetView):
+    template_name = 'student_portal/password_reset.html'
+    email_template_name = 'student_portal/password_reset_email.html'
+    subject_template_name = 'student_portal/password_reset_subject.txt'
+    success_url = reverse_lazy('student_portal:password_reset')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            "We've emailed you instructions for setting your password, if an account exists with that email. Check your inbox (and spam folder)."
+        )
+        return response
 
 
 

@@ -32,6 +32,7 @@ urlpatterns = [
     path('questions/<int:id>/activate/', views.question_activate, name='question_activate'),
     path('questions/<int:id>/deactivate/', views.question_deactivate, name='question_deactivate'),
     path('questions/<int:id>/delete/', views.question_delete, name='question_delete'),
+    path('questions/bulk-delete/', views.question_bulk_delete, name='question_bulk_delete'),
 
     # Media Management – Question-level
     path('media/pending/', views.media_pending, name='media_pending'),

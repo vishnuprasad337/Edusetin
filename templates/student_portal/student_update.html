@@ -236,6 +236,235 @@ input[type="password"], input[type="text"] {
   .admio-card-body, .admio-card-body-sm { padding: 0; }
   .admio-card-header { padding: 12px 14px; }
 }
+/* ══ MOBILE PATCH ══ */
+@media (max-width: 767px) {
+
+  /* hide canvas bg animation on small screens (perf) */
+  #imat-bg-canvas { display: none; }
+
+  /* hero: stack vertically, center text, tighter padding */
+  .sp-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px 16px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+  .sp-hero-body {
+    text-align: center;
+    width: 100%;
+  }
+  .sp-hero-name,
+  .sp-hero-email {
+    white-space: normal;
+    text-align: center;
+  }
+  .sp-hero-tags {
+    justify-content: center;
+  }
+  .sp-hero-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .sp-hst {
+    flex: 1;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  /* sidebar col goes full-width and stacks above the form */
+  .col-lg-4, .col-lg-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* sp-field: switch from 2-col grid to single-column stack, centered */
+  .sp-field {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 5px;
+    padding: 10px 12px;
+  }
+  .sp-field-label {
+    font-size: .82rem;
+    text-align: center;
+    width: 100%;
+  }
+  .sp-field-input {
+    width: 100%;
+    text-align: center;
+  }
+  .sp-field-input input,
+  .sp-field-input select,
+  .sp-field-input textarea {
+    text-align: center;
+  }
+  .sp-field-error {
+    grid-column: unset;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* avatar sidebar: center everything */
+  .admio-card .d-flex.flex-column {
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .avatar-upload-wrap { width: 72px; height: 72px; }
+  .avatar-upload-wrap img,
+  .avatar-upload-wrap .avatar-initials { width: 72px; height: 72px; }
+  .avatar-initials { font-size: 1.8rem; }
+
+  /* meta box inside sidebar — center labels and values */
+  .sd-meta-row {
+    font-size: .78rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+  }
+
+  /* password field: keep eye-icon perfectly aligned on mobile */
+  .sp-field-input[style*="position:relative"],
+  .sp-field-input[style*="position: relative"] {
+    display: block;
+  }
+
+  /* action bar: stack note above buttons, full-width buttons, centered text */
+  .admio-card .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    align-items: center;
+  }
+  .admio-card .d-flex.gap-3:last-child {
+    width: 100%;
+  }
+  .admio-card .d-flex.gap-3:last-child .btn-admio,
+  .admio-card .d-flex.gap-3:last-child .btn-blue-save {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* page header: tighten, center text */
+  .page-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+  .page-title,
+  .page-subtitle {
+    text-align: center;
+  }
+  .page-header-actions { width: 100%; }
+  .page-header-actions .btn-admio { width: 100%; justify-content: center; }
+
+  /* cards: slightly tighter horizontal padding */
+  .admio-card-body, .admio-card-body-sm { padding: 0; }
+  .admio-card-header {
+    padding: 12px 14px;
+    text-align: center;
+    justify-content: center;
+  }
+  .card-title {
+    text-align: center;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+  }
+  .page-header-actions .btn-admio {
+    width: auto;
+    padding: 7px 14px;
+    font-size: .8rem;
+  }
+}
+/* ══ DARK MODE OVERRIDES ══ */
+[data-theme="dark"] {
+  --blue-50:  rgba(26,86,219,.12);
+  --blue-100: rgba(26,86,219,.22);
+}
+
+[data-theme="dark"] .sp-field-label { color: #cbd5e1; }
+[data-theme="dark"] .sp-field-error { color: #fca5a5; }
+
+[data-theme="dark"] .sd-meta-lbl { color: #94a3b8; }
+[data-theme="dark"] .sd-meta-val { color: #e2e8f0; }
+
+[data-theme="dark"] .previewName,
+[data-theme="dark"] #previewName { color: #e2e8f0; }
+[data-theme="dark"] .text-secondary-c { color: #94a3b8 !important; }
+
+[data-theme="dark"] .avatar-initials {
+  background: rgba(26,86,219,.15);
+  color: #93c5fd;
+  border-color: rgba(26,86,219,.35);
+}
+
+[data-theme="dark"] .admio-card {
+  background: #0d1b35;
+  border-color: #1a2d4f;
+}
+[data-theme="dark"] .admio-card-header {
+  border-color: #1a2d4f;
+}
+[data-theme="dark"] .card-title {
+  color: #e2e8f0;
+}
+[data-theme="dark"] .page-title {
+  color: #e2e8f0;
+}
+[data-theme="dark"] .page-subtitle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .ai-insight-banner.blue-info {
+  background: rgba(26,86,219,.10) !important;
+  border-color: rgba(26,86,219,.30) !important;
+}
+[data-theme="dark"] .ai-insight-banner.blue-info .ai-banner-icon { color: #5b8dee !important; }
+[data-theme="dark"] .ai-insight-banner.blue-info .ai-banner-text { color: #cbd5e1 !important; }
+
+[data-theme="dark"] [style*="background:var(--blue-50)"],
+[data-theme="dark"] [style*="background: var(--blue-50)"] {
+  background: rgba(26,86,219,.10) !important;
+  border-color: rgba(26,86,219,.30) !important;
+}
+[data-theme="dark"] [style*="color:var(--blue-800)"],
+[data-theme="dark"] [style*="color: var(--blue-800)"] {
+  color: #93c5fd !important;
+}
+
+[data-theme="dark"] .sp-field-input input,
+[data-theme="dark"] .sp-field-input select,
+[data-theme="dark"] .sp-field-input textarea,
+[data-theme="dark"] .form-control {
+  background: #060d1f;
+  border-color: #1a2d4f;
+  color: #e2e8f0;
+}
+[data-theme="dark"] .sp-field-input input::placeholder,
+[data-theme="dark"] .sp-field-input textarea::placeholder {
+  color: #64748b;
+}
+
+[data-theme="dark"] .btn-admio.btn-white {
+  background: #0d1b35;
+  color: #e2e8f0;
+  border-color: #1a2d4f;
+}
+
+[data-theme="dark"] .fw-700.fs-5 {
+  color: #e2e8f0;
+}
+
 </style>
 <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
 <!-- Page Header -->

@@ -40,7 +40,7 @@
     </div>
     {% endif %}
 
-    <form method="post" action="{% url 'student_management:exam_edit' exam.pk %}" enctype="multipart/form-data" novalidate id="examForm">
+    <form method="post" action="{% url 'student_management:exam_edit' exam.title %}" enctype="multipart/form-data" novalidate id="examForm">
         {% csrf_token %}
 
         <div class="row g-4">

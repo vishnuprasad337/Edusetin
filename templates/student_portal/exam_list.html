@@ -703,9 +703,68 @@ body.rp-modal-locked {
   #imat-bg-canvas { display: none; }
   @keyframes rpModalIn { from{} to{} }
 }
+#toastContainer {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 360px;
+}
+.toast-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(15,26,46,.18);
+  border-left: 4px solid var(--hero-blue-deep);
+  font-size: .86rem;
+  font-weight: 500;
+  color: var(--royal-ink);
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity .3s ease, transform .3s ease;
+}
+[data-theme="dark"] .toast-item { background: var(--royal-card); }
+.toast-item.show { opacity: 1; transform: translateX(0); }
+.toast-item.hide { opacity: 0; transform: translateX(30px); }
+.toast-item.toast-success { border-left-color: #16a34a; }
+.toast-item.toast-error,
+.toast-item.toast-danger   { border-left-color: #dc2626; }
+.toast-item.toast-warning  { border-left-color: #d97706; }
+.toast-item.toast-info     { border-left-color: var(--hero-blue-deep); }
+.toast-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+.toast-success .toast-icon { color: #16a34a; }
+.toast-error .toast-icon,
+.toast-danger .toast-icon  { color: #dc2626; }
+.toast-warning .toast-icon { color: #d97706; }
+.toast-info .toast-icon    { color: var(--hero-blue-deep); }
+.toast-close {
+  margin-left: auto;
+  background: none; border: none; cursor: pointer;
+  color: var(--royal-muted); font-size: 13px; padding: 0; flex-shrink: 0;
+}
+.toast-close:hover { color: var(--royal-ink); }
+
+@media (max-width: 480px) {
+  #toastContainer { top: 14px; right: 14px; left: 14px; max-width: 100%; }
+}
 </style>
 
 <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
+<div id="toastContainer"></div>
+
+{% if messages %}
+<ul id="toastSource" style="display:none;">
+  {% for message in messages %}
+  <li data-tag="{{ message.tags }}">{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
 
 <div class="rp-wrap">
 
@@ -1480,6 +1539,48 @@ new MutationObserver(function() { qsApplyRings(); }).observe(
   } else {
     initReveal();
   }
+})();
+/* ══ TOAST NOTIFICATIONS FROM DJANGO MESSAGES ══ */
+(function(){
+  var source = document.getElementById('toastSource');
+  var container = document.getElementById('toastContainer');
+  if (!source || !container) return;
+
+  var ICONS = {
+    success: 'ti-circle-check',
+    error:   'ti-alert-circle',
+    danger:  'ti-alert-circle',
+    warning: 'ti-alert-triangle',
+    info:    'ti-info-circle'
+  };
+
+  var items = source.querySelectorAll('li');
+  items.forEach(function(li, idx){
+    var tag = li.dataset.tag || 'info';
+    var text = li.textContent.trim();
+    var icon = ICONS[tag] || ICONS.info;
+
+    var toast = document.createElement('div');
+    toast.className = 'toast-item toast-' + tag;
+    toast.innerHTML =
+      '<i class="ti ' + icon + ' toast-icon"></i>' +
+      '<span>' + text + '</span>' +
+      '<button class="toast-close" aria-label="Dismiss"><i class="ti ti-x"></i></button>';
+
+    container.appendChild(toast);
+    setTimeout(function(){ toast.classList.add('show'); }, 50 + idx * 80);
+
+    function removeToast(){
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      setTimeout(function(){ toast.remove(); }, 300);
+    }
+
+    toast.querySelector('.toast-close').addEventListener('click', removeToast);
+    setTimeout(removeToast, 5000 + idx * 300);
+  });
+
+  source.remove();
 })();
 </script>
 {% endblock %}

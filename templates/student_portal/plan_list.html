@@ -595,7 +595,7 @@
               {% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:0 }}{% endif %}
             </span>
             {% if plan.price != 0 %}
-              <span class="plan-price-unit">/ {{ plan.duration_days }}d</span>
+              <span class="plan-price-unit"></span>
             {% endif %}
           </div>
           <div class="plan-price-meta">
@@ -646,7 +646,7 @@
   <div class="trust-strip">
     <span class="trust-pill"><i class="icon-lock"></i> Secure payments via Razorpay</span>
     <span class="trust-pill"><i class="icon-chart-bar"></i> Performance analytics included</span>
-    <span class="trust-pill"><i class="icon-refresh-cw"></i> Cancel anytime</span>
+    
   </div>
 
 </div><!-- /page-wrap -->

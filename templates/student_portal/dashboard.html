@@ -588,10 +588,216 @@ body { background-color:var(--paper); font-family:var(--f-body); font-size:18px;
     gap: 3px;
   }
 }
+/* ─── NO SUBSCRIPTION TOP POPUP ─── */
+/* ─── NO SUBSCRIPTION TOP POPUP ─── */
+#noSubModal {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999999;
+  pointer-events: none; /* always none — never blocks clicks elsewhere */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+}
+#noSubModalBox {
+  pointer-events: auto;
+}
+
+#noSubModalBox {
+  position: relative;
+  background: #fff;
+  border-radius: 28px;
+  width: 680px;
+  max-width: 100%;
+  padding: 52px 60px 56px;
+  box-shadow: 0 28px 70px rgba(13,27,42,.25), 0 6px 18px rgba(13,27,42,.1);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-26px) scale(.96);
+  transition: opacity .4s var(--ease), transform .4s var(--ease);
+}
+#noSubModal.active #noSubModalBox {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* decorative gradient accent bar on top */
+#noSubModalBox::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #1a56db, #5b8dee, #7c3aed);
+}
+
+/* soft glow blob in the corner */
+#noSubModalBox::after {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,86,219,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+#noSubModalClose {
+  position: absolute;
+  top: 22px; right: 22px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; transition: all .15s; z-index: 2;
+}
+#noSubModalClose:hover { background: var(--red-xl); color: var(--red); border-color: var(--red); }
+
+.nosub-icon-badge {
+  width: 62px; height: 62px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #1a56db, #5b8dee);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 20px rgba(26,86,219,.3);
+  margin-bottom: 22px;
+  position: relative; z-index: 1;
+}
+.nosub-icon-badge i { font-size: 30px; color: #fff; }
+
+.nosub-tag {
+  display: inline-block;
+  color: #e63946; font-weight: 700; font-size: .82rem;
+  letter-spacing: .07em; font-family: var(--f-head);
+  background: var(--red-xl); border: 1px solid #f1c0c0;
+  padding: 7px 16px; border-radius: 100px;
+  margin-bottom: 18px;
+  position: relative; z-index: 1;
+}
+
+#noSubModalBox h2 {
+  font-family: var(--f-head); font-size: 2.5rem; font-weight: 800;
+  line-height: 1.18; color: #111827; margin: 0 0 18px;
+  letter-spacing: -.025em;
+  position: relative; z-index: 1;
+}
+
+#noSubModalBox p {
+  font-size: 1.1rem; font-family: var(--f-body); color: #6b7280;
+  margin: 0 0 32px; line-height: 1.65; max-width: 540px;
+  position: relative; z-index: 1;
+}
+
+.nosub-actions {
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+
+.nosub-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #1a56db, #5b8dee);
+  color: #fff; font-weight: 700;
+  font-family: var(--f-head); font-size: 1.05rem;
+  padding: 17px 34px; border-radius: 100px; text-decoration: none;
+  box-shadow: 0 8px 24px rgba(26,86,219,.32);
+  transition: all .22s var(--ease);
+}
+.nosub-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(26,86,219,.42);
+  color: #fff;
+}
+.nosub-cta i { font-size: 18px; transition: transform .2s var(--ease); }
+.nosub-cta:hover i { transform: translateX(3px); }
+
+.nosub-secondary {
+  font-size: .98rem; font-family: var(--f-head); font-weight: 600;
+  color: var(--blue); text-decoration: underline; text-decoration-color: rgba(26,86,219,.3);
+}
+.nosub-secondary:hover { color: var(--blue-d); text-decoration-color: var(--blue-d); }
+
+@media (max-width: 720px) {
+  #noSubModal { top: 14px; padding: 0 14px; }
+  #noSubModalBox { padding: 38px 30px 40px; border-radius: 22px; }
+  #noSubModalBox h2 { font-size: 1.8rem; }
+  #noSubModalBox p { font-size: .98rem; }
+  .nosub-icon-badge { width: 52px; height: 52px; border-radius: 14px; }
+  .nosub-icon-badge i { font-size: 24px; }
+  .nosub-cta { padding: 14px 26px; font-size: .95rem; width: 100%; justify-content: center; }
+  .nosub-actions { flex-direction: column; align-items: flex-start; gap: 14px; width: 100%; }
+}
+
+@media (max-width: 480px) {
+  #noSubModal {
+    top: 72px;          /* pushed below navbar instead of overlapping it */
+    z-index: 500;        /* lowered so it no longer covers navbar/hamburger */
+    padding: 0 10px;
+  }
+  #noSubModalBox {
+    padding: 18px 16px 20px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 340px;     /* smaller overall card on mobile */
+  }
+  #noSubModalBox::before { height: 3px; }
+  #noSubModalClose {
+    width: 26px; height: 26px;
+    top: 10px; right: 10px;
+    font-size: .78rem;
+  }
+  .nosub-icon-badge {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    margin-bottom: 10px;
+  }
+  .nosub-icon-badge i { font-size: 17px; }
+  .nosub-tag {
+    font-size: .62rem;
+    padding: 4px 10px;
+    margin-bottom: 10px;
+  }
+  #noSubModalBox h2 {
+    font-size: 1.1rem;
+    line-height: 1.22;
+    margin-bottom: 8px;
+  }
+  #noSubModalBox p {
+    font-size: .78rem;
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+  .nosub-cta {
+    padding: 9px 16px;
+    font-size: .78rem;
+  }
+  .nosub-cta i { font-size: 13px; }
+  .nosub-secondary { font-size: .75rem; }
+  .nosub-actions { gap: 8px; }
+}
 </style>
 
 <canvas id="imat-bg-canvas" aria-hidden="true"></canvas>
-
+{% if not has_active_subscription %}
+<div id="noSubModal">
+  <div id="noSubModalBox">
+    <button id="noSubModalClose" aria-label="Close"><i class="ti ti-x" aria-hidden="true"></i></button>
+    <div class="nosub-icon-badge">
+      <i class="ti ti-lock-open" aria-hidden="true"></i>
+    </div>
+    <span class="nosub-tag">SUBSCRIPTION REQUIRED</span>
+    <h2>Unlock Full Access </h2>
+    <p>Get full access to mock exams, quizzes, performance tracking, and your complete dashboard. Subscribe today and take your preparation to the next level.</p>
+    <div class="nosub-actions">
+      <a href="{% url 'student_portal:plan_list' %}" class="nosub-cta">
+        View Plans <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </a>
+      
+    </div>
+  </div>
+</div>
+{% endif %}
 <div class="ds-wrap" id="dsWrap">
 
 <!-- HERO -->
@@ -1825,6 +2031,34 @@ document.addEventListener('click',function(e){
   window.addEventListener('resize', buildDots);
   buildDots();
 })();
+(function(){
+  var modal = document.getElementById('noSubModal');
+  if(!modal) return;
 
+  var REPEAT_MS = 5000;
+  var intervalId = null;
+
+  function showModal(){
+    modal.classList.add('active');
+  }
+
+  function closeModal(){
+    modal.classList.remove('active');
+  }
+
+  function startCycle(){
+    // show immediately on first cycle start, then repeat
+    showModal();
+    intervalId = setInterval(showModal, REPEAT_MS);
+  }
+
+  // initial delay before the very first appearance, then loop every 5s after that
+  setTimeout(startCycle, REPEAT_MS);
+
+  document.getElementById('noSubModalClose').addEventListener('click', closeModal);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+  });
+})();
 </script>
 {% endblock %}

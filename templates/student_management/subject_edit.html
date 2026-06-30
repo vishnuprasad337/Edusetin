@@ -20,7 +20,7 @@
         <div class="col-12 col-lg-7">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <form method="post" action="{% url 'student_management:subject_edit' subject.id %}" enctype="multipart/form-data">
+                    <form method="post" action="{% url 'student_management:subject_edit' subject.name %}" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <div class="mb-3">

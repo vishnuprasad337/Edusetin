@@ -343,7 +343,7 @@
                   <th>Plan</th>
                   <th>Amount</th>
                   <th>Status</th>
-                  <th>Transaction ID</th>
+                  
                   <th>Date</th>
                   <th>Expires</th>
                 </tr>
@@ -368,13 +368,7 @@
                       <span class="sd-badge sd-badge-failed">Failed</span>
                     {% endif %}
                   </td>
-                  <td>
-                    {% if payment.transaction_id %}
-                      <code style="font-size:.72rem; background:#f3f4f6; padding:2px 6px; border-radius:4px; color:#374151;">{{ payment.transaction_id|truncatechars:20 }}</code>
-                    {% else %}
-                      <span style="color:#d1d5db;">—</span>
-                    {% endif %}
-                  </td>
+                
                   <td style="white-space:nowrap; color:#374151;">
                     {{ payment.created_at|date:"d M Y" }}
                     <div style="font-size:.72rem; color:#9ca3af;">{{ payment.created_at|date:"H:i" }}</div>

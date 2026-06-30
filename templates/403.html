@@ -1,0 +1,217 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- ========== Meta Tags ========== -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Edusetin Study Abroad - Access Denied" />
+
+    <!-- ========== Page Title ========== -->
+    <title>Access Denied - Edusetin Study Abroad</title>
+
+    <!-- ========== Favicon Icon ========== -->
+    <link rel="shortcut icon" href="{% static 'admin-static/assets/img/favicon.ico' %}" type="image/x-icon" />
+  </head>
+
+  <body>
+    <style>
+      /* 403 Page Specific Styles */
+      .error-content {
+        padding: 80px 0 100px;
+        text-align: center;
+        background: #f9f9f9;
+      }
+
+      .error-code {
+        font-size: 120px;
+        font-weight: 700;
+        color: #d3202a;
+        margin-bottom: 10px;
+        line-height: 1;
+      }
+
+      .error-title {
+        font-size: 32px;
+        margin-bottom: 20px;
+        color: #1e3a8a;
+      }
+
+      .error-text {
+        font-size: 18px;
+        margin-bottom: 40px;
+        color: #6b7280;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .error-actions {
+        margin-top: 30px;
+      }
+
+      /* Lock Animation Styles */
+      .animation-container {
+        margin: 0 auto 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 250px;
+        position: relative;
+      }
+
+      .error-animation {
+        width: 220px;
+        height: 220px;
+        position: relative;
+      }
+
+      .shield {
+        position: absolute;
+        width: 160px;
+        height: 190px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: shieldPulse 3s ease-in-out infinite;
+      }
+
+      .lock-body {
+        position: relative;
+        width: 70px;
+        height: 56px;
+        background: #d3202a;
+        border-radius: 8px;
+        margin-top: 18px;
+      }
+
+      .lock-body::before {
+        content: '';
+        position: absolute;
+        top: -34px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 42px;
+        height: 42px;
+        border: 8px solid #1e3a8a;
+        border-bottom: none;
+        border-radius: 50% 50% 0 0;
+      }
+
+      .lock-keyhole {
+        position: absolute;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+      }
+
+      .lock-keyhole::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 5px;
+        height: 10px;
+        background: white;
+      }
+
+      .alert-icon {
+        position: absolute;
+        width: 56px;
+        height: 56px;
+        background: #4faaff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 26px;
+        font-weight: bold;
+        top: -6px;
+        right: -6px;
+        z-index: 10;
+        animation: pulse 2s infinite;
+        box-shadow: 0 5px 15px rgba(79, 170, 255, 0.4);
+      }
+
+      @keyframes shieldPulse {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.04);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Breadcrumb area fix */
+      .breadcrumb-area {
+        padding: 80px 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      .breadcrumb-area::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+      }
+    </style>
+
+    <!-- Start 403 Content -->
+    <div class="error-content">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 offset-lg-2">
+            <div class="animation-container">
+              <div class="error-animation">
+                <div class="shield">
+                  <div class="lock-body">
+                    <div class="lock-keyhole"></div>
+                  </div>
+                </div>
+                <div class="alert-icon">!</div>
+              </div>
+            </div>
+            <h1 class="error-code">403</h1>
+            <h2 class="error-title">Access Denied</h2>
+            <p class="error-text">You don't have permission to access this page. If you believe this is a mistake, please sign in with the correct account or contact support.</p>
+            <div class="error-actions">
+              <a href="{% url 'home' %}" class="btn-style-one circle">Back to Homepage <span></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End 403 Content -->
+  </body>
+</html>
